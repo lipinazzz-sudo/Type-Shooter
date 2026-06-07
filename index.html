@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Invest</title>
+    <style>
+        :root {
+            --bg-main: #121212;
+            --bg-container: #1e1e1e;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --input-bg: #2d2d2d;
+            --button-color: #dc3545;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-color);
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--bg-container);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 1px solid #2a2a2a;
+        }
+
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            border-bottom: 2px solid #333333;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 15px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        #inputData {
+            background-color: transparent;
+            border: none;
+            resize: none;
+            overflow: hidden;
+            height: auto;
+            padding: 0;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button.btn-execute {
+            background-color: var(--button-color);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button.btn-execute:hover {
+            background-color: #bd2130;
+        }
+
+        .bottom-layout {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
+        }
+
+        .output-container {
+            position: relative;
+            width: 100%;
+        }
+
+        #outputData {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            font-weight: bold;
+            padding-right: 80px;
+            resize: none;
+            height: 340px; 
+            font-size: 16px;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        button.btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #444444;
+            color: white;
+            border: 1px solid #555555;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-copy:hover {
+            background-color: #555555;
+        }
+
+        .calc-box {
+            background-color: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 340px; 
+            box-sizing: border-box;
+        }
+
+        #calc-screen {
+            width: 100%;
+            height: 45px;
+            background-color: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            text-align: right;
+            padding: 5px 10px;
+            font-size: 22px;
+            font-family: monospace;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .calc-btn {
+            background-color: #3a3a3a;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calc-btn:hover {
+            background-color: #4a4a4a;
+        }
+
+        .calc-btn.operator {
+            background-color: #f39c12;
+        }
+
+        .calc-btn.operator:hover {
+            background-color: #e67e22;
+        }
+
+        .calc-btn.clear {
+            background-color: #e74c3c;
+        }
+
+        .calc-btn.clear:hover {
+            background-color: #c0392b;
+        }
+
+        .calc-btn.backspace {
+            background-color: #7f8c8d;
+            font-size: 22px; /* Membuat ukuran panah lebih proporsional */
+        }
+
+        .calc-btn.backspace:hover {
+            background-color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kalkulator Invest</h1>
+
+    <div class="main-layout">
+        <div>
+            <label for="inputData">Data Angka Asli:</label>
+            <textarea id="inputData" rows="15" readonly>45.54.68.86.73.37
+60.06.23.32.12.21
+48.84.26.62.43.34
+56.65.04.40.19.91
+59.95.07.70.46.64
+09.90.15.51.24.42
+30.03.57.75.69.96
+29.92.13.31.79.97
+36.63.08.80.17.71
+89.98.38.83.10.01
+05.50.74.47.25.52
+14.41.49.94.28.82
+18.81.58.85.67.76
+16.61.78.87.39.93
+27.72.35.53.20.02</textarea>
+        </div>
+
+        <div>
+            <div class="grid-inputs">
+                <div>
+                    <label for="hapusAwalan">Awalan</label>
+                    <input type="text" id="hapusAwalan">
+                </div>
+                <div>
+                    <label for="hapusAkhiran">Akhiran</label>
+                    <input type="text" id="hapusAkhiran">
+                </div>
+            </div>
+
+            <label for="hapusSpesifik" style="margin-top: 20px;">Angka Spesifik</label>
+            <input type="text" id="hapusSpesifik">
+
+            <button class="btn-execute" onclick="prosesAngka()">Hasil Akhir</button>
+        </div>
+    </div>
+
+    <div class="bottom-layout">
+        <div>
+            <label style="font-size: 16px; margin-bottom: 10px;">Hasil Akhir</label>
+            <div class="output-container">
+                <textarea id="outputData" readonly></textarea>
+                <button class="btn-copy" onclick="copyHasil()" id="btnCopyText">Copy</button>
+            </div>
+        </div>
+
+        <div>
+            <label style="font-size: 16px; margin-bottom: 10px;">Kalkulator</label>
+            <div class="calc-box">
+                <input type="text" id="calc-screen" readonly value="0">
+                <div class="calc-buttons">
+                    <button class="calc-btn clear" onclick="clearCalc()">C</button>
+                    <button class="calc-btn backspace" onclick="backspaceCalc()">←</button>
+                    <button class="calc-btn operator" onclick="inputCalc('%')">%</button>
+                    <button class="calc-btn operator" onclick="inputCalc('÷')">÷</button>
+                    
+                    <button class="calc-btn" onclick="inputCalc('7')">7</button>
+                    <button class="calc-btn" onclick="inputCalc('8')">8</button>
+                    <button class="calc-btn" onclick="inputCalc('9')">9</button>
+                    <button class="calc-btn operator" onclick="inputCalc('*')">x</button>
+                    
+                    <button class="calc-btn" onclick="inputCalc('4')">4</button>
+                    <button class="calc-btn" onclick="inputCalc('5')">5</button>
+                    <button class="calc-btn" onclick="inputCalc('6')">6</button>
+                    <button class="calc-btn operator" onclick="inputCalc('-')">-</button>
+                    
+                    <button class="calc-btn" onclick="inputCalc('1')">1</button>
+                    <button class="calc-btn" onclick="inputCalc('2')">2</button>
+                    <button class="calc-btn" onclick="inputCalc('3')">3</button>
+                    <button class="calc-btn operator" onclick="inputCalc('+')">+</button>
+                    
+                    <button class="calc-btn" onclick="inputCalc('0')">0</button>
+                    <button class="calc-btn" onclick="inputCalc('.')">.</button>
+                    <button class="calc-btn operator" style="grid-column: span 2; background-color: #2ecc71;" onclick="calculateCalc()">=</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // FILTER DATA ASLI
+    function bersihkanInput(str) {
+        if (!str) return [];
+        return str.split('.').map(item => item.trim()).filter(item => item !== '');
+    }
+
+    function prosesAngka() {
+        const inputStr = document.getElementById('inputData').value;
+        const awalanArr = bersihkanInput(document.getElementById('hapusAwalan').value);
+        const akhiranArr = bersihkanInput(document.getElementById('hapusAkhiran').value);
+        const spesifikArr = bersihkanInput(document.getElementById('hapusSpesifik').value);
+
+        let rawArray = inputStr.replace(/\n/g, '.').split('.');
+        let numArray = rawArray.map(n => n.trim()).filter(n => n !== '');
+
+        if (numArray.length === 0) {
+            document.getElementById('outputData').value = "";
+            return;
+        }
+
+        let hasil = [];
+
+        for (let angka of numArray) {
+            let harusDihapus = false;
+
+            for (let awalan of awalanArr) {
+                if (angka.startsWith(awalan)) {
+                    harusDihapus = true;
+                    break;
+                }
+            }
+
+            if (!harusDihapus) {
+                for (let akhiran of akhiranArr) {
+                    if (angka.endsWith(akhiran)) {
+                        harusDihapus = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!harusDihapus) {
+                if (spesifikArr.includes(angka)) {
+                    harusDihapus = true;
+                }
+            }
+
+            if (!harusDihapus) {
+                hasil.push(angka);
+            }
+        }
+
+        let barisHasil = [];
+        for (let i = 0; i < hasil.length; i += 6) {
+            barisHasil.push(hasil.slice(i, i + 6).join('.'));
+        }
+
+        document.getElementById('outputData').value = barisHasil.join('\n');
+        document.getElementById('btnCopyText').innerText = "Copy";
+    }
+
+    function copyHasil() {
+        const outputTextArea = document.getElementById('outputData');
+        if (!outputTextArea.value) return;
+
+        outputTextArea.select();
+        outputTextArea.setSelectionRange(0, 99999);
+
+        navigator.clipboard.writeText(outputTextArea.value).then(() => {
+            const btnCopy = document.getElementById('btnCopyText');
+            btnCopy.innerText = "Copied!";
+            setTimeout(() => {
+                btnCopy.innerText = "Copy";
+            }, 2000);
+        });
+    }
+
+    // LOGIKA PERHITUNGAN KALKULATOR (SUDAH DI-FIX)
+    let displayExpression = ""; 
+
+    function inputCalc(val) {
+        const screen = document.getElementById('calc-screen');
+        if (screen.value === "0" && !isNaN(val)) {
+            displayExpression = val;
+        } else {
+            displayExpression += val;
+        }
+        screen.value = displayExpression;
+    }
+
+    function clearCalc() {
+        displayExpression = "";
+        document.getElementById('calc-screen').value = "0";
+    }
+
+    function backspaceCalc() {
+        const screen = document.getElementById('calc-screen');
+        displayExpression = displayExpression.toString().slice(0, -1);
+        if (displayExpression === "") {
+            screen.value = "0";
+        } else {
+            screen.value = displayExpression;
+        }
+    }
+
+    function calculateCalc() {
+        const screen = document.getElementById('calc-screen');
+        if (!displayExpression) return;
+        
+        try {
+            let realExpression = displayExpression.replace(/÷/g, '/');
+            
+            // Perbaikan cerdas untuk persen (contoh: 100 - 5% otomatis dihitung 100 - (100 * 5/100))
+            if (realExpression.includes('%')) {
+                // Menemukan format penulisan angka [operator] angka %
+                let regexPersen = /([0-9.]+)\s*([+\-*/])\s*([0-9.]+)%/g;
+                
+                if (regexPersen.test(realExpression)) {
+                    realExpression = realExpression.replace(regexPersen, function(match, basis, operator, persen) {
+                        return basis + operator + "(" + basis + "*" + persen + "/100)";
+                    });
+                } else {
+                    // Jika hanya angka tunggal diberi persen (misal: 5%)
+                    realExpression = realExpression.replace(/([0-9.]+)%/g, "(/100)");
+                }
+            }
+
+            let result = Function('"use strict";return (' + realExpression + ')')();
+            
+            // PAKSA pembulatan menjadi tepat 1 digit di belakang koma (.0) jika hasilnya panjang
+            if (result % 1 !== 0) {
+                result = parseFloat(result.toFixed(1));
+            } else {
+                result = result + ".0"; // Agar tampil konsisten dengan satu angka desimal
+            }
+
+            screen.value = result;
+            displayExpression = parseFloat(result).toString();
+        } catch (error) {
+            screen.value = "Error";
+            displayExpression = "";
+        }
+    }
+</script>
+
+</body>
+</html>
