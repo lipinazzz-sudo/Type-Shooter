@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Invest</title>
     <style>
-        :root {
+                :root {
             --bg-main: #121212;
             --bg-container: #1e1e1e;
             --text-color: #ffffff;
@@ -20,12 +20,12 @@
             color: var(--text-color);
             max-width: 950px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px; /* Mengurangi padding luar di mobile */
         }
 
         .container {
             background-color: var(--bg-container);
-            padding: 30px;
+            padding: 20px; /* Menyesuaikan padding agar pas di layar kecil */
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             border: 1px solid #2a2a2a;
@@ -37,12 +37,15 @@
             border-bottom: 2px solid #333333;
             padding-bottom: 10px;
             margin-bottom: 25px;
+            font-size: 24px; /* Ukuran judul lebih proporsional untuk HP */
         }
 
+        /* --- LAYOUT UTAMA --- */
+        /* Menggunakan flex-direction: column agar otomatis berbaris ke bawah di layar kecil */
         .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         label {
@@ -56,7 +59,7 @@
 
         textarea, input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px; /* Input sedikit lebih tebal agar mudah ditekan di HP */
             border: 1px solid var(--border-color);
             border-radius: 5px;
             box-sizing: border-box;
@@ -68,14 +71,15 @@
 
         #inputData {
             background-color: transparent;
-            border: none;
-            resize: none;
-            overflow: hidden;
-            height: auto;
-            padding: 0;
+            border: 1px solid var(--border-color); /* Menambahkan border tipis agar terlihat batasnya */
+            border-radius: 5px;
+            resize: vertical;
+            height: 180px; /* Tinggi disesuaikan agar tidak memakan layar HP */
+            padding: 10px;
             font-size: 14px;
             letter-spacing: 0.5px;
             line-height: 1.5;
+            overflow-y: auto;
         }
 
         .grid-inputs {
@@ -94,7 +98,7 @@
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
-            margin-top: 25px;
+            margin-top: 20px;
             transition: background-color 0.3s;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -104,12 +108,13 @@
             background-color: #bd2130;
         }
 
+        /* --- LAYOUT BAWAH --- */
         .bottom-layout {
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
+            display: flex;
+            flex-direction: column; /* Memaksa Output & Kalkulator berbaris ke bawah */
             gap: 25px;
         }
 
@@ -124,16 +129,137 @@
             color: #ffffff;
             font-weight: bold;
             padding-right: 80px;
-            resize: none;
-            height: 340px; 
+            resize: vertical;
+            height: 200px; /* Tinggi dioptimalkan agar muat satu layar HP */
             font-size: 16px;
             line-height: 1.6;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         button.btn-copy {
             position: absolute;
-            top: 10px;
+            top: 40px; /* Diturunkan sedikit agar tidak menabrak label atas */
+            right: 10px;
+            background-color: #444444;
+            color: white;
+            border: 1px solid #555555;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-copy:hover {
+            background-color: #555555;
+        }
+
+        /* --- KALKULATOR RESPONSIVE --- */
+        .calc-box {
+            background-color: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 320px; 
+            box-sizing: border-box;
+        }
+
+        #calc-screen {
+            width: 100%;
+            height: 50px;
+            background-color: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            text-align: right;
+            padding: 5px 12px;
+            font-size: 24px;
+            font-family: monospace;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .calc-btn {
+            background-color: #3a3a3a;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px; /* Memastikan tombol cukup besar untuk disentuh jari */
+        }
+
+        .calc-btn:hover {
+            background-color: #4a4a4a;
+        }
+
+        .calc-btn.operator {
+            background-color: #f39c12;
+        }
+
+        .calc-btn.operator:hover {
+            background-color: #e67e22;
+        }
+
+        .calc-btn.clear {
+            background-color: #e74c3c;
+        }
+
+        .calc-btn.clear:hover {
+            background-color: #c0392b;
+        }
+
+        .calc-btn.backspace {
+            background-color: #7f8c8d;
+            font-size: 20px;
+        }
+
+        .calc-btn.backspace:hover {
+            background-color: #95a5a6;
+        }
+
+        /* --- RESPONSIVITAS KHUSUS TABLET/PC (LAYAR BESAR) --- */
+        /* Jika layar perangkat di atas 768px, layout otomatis berubah jadi berdampingan (PC Mode) */
+        @media (min-width: 768px) {
+            .main-layout {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 25px;
+            }
+            .bottom-layout {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 25px;
+            }
+            #inputData {
+                height: 340px;
+            }
+            #outputData {
+                height: 340px;
+            }
+            .calc-box {
+                height: 340px;
+            }
+            button.btn-copy {
+                top: 10px;
+            }
+        }
+
             right: 10px;
             background-color: #444444;
             color: white;
@@ -420,44 +546,49 @@
         }
     }
 
-    function calculateCalc() {
+        function calculateCalc() {
         const screen = document.getElementById('calc-screen');
         if (!displayExpression) return;
         
         try {
+            // 1. Ubah visual pembagian menjadi operator matematika komputer
             let realExpression = displayExpression.replace(/÷/g, '/');
             
-            // Perbaikan cerdas untuk persen (contoh: 100 - 5% otomatis dihitung 100 - (100 * 5/100))
-            if (realExpression.includes('%')) {
-                // Menemukan format penulisan angka [operator] angka %
-                let regexPersen = /([0-9.]+)\s*([+\-*/])\s*([0-9.]+)%/g;
-                
-                if (regexPersen.test(realExpression)) {
-                    realExpression = realExpression.replace(regexPersen, function(match, basis, operator, persen) {
-                        return basis + operator + "(" + basis + "*" + persen + "/100)";
-                    });
-                } else {
-                    // Jika hanya angka tunggal diberi persen (misal: 5%)
-                    realExpression = realExpression.replace(/([0-9.]+)%/g, "(/100)");
-                }
+            // 2. Perbaikan Fitur Persen (Akurat untuk rumus diskon/markup dan persen tunggal)
+            // Pola: angka + operator + angka + % (Contoh: 100 - 5%)
+            let polaPersenHubungan = /([0-9.]+)\s*([+\-*/])\s*([0-9.]+)%/g;
+            
+            if (realExpression.match(polaPersenHubungan)) {
+                realExpression = realExpression.replace(polaPersenHubungan, function(match, basis, operator, persen) {
+                    return basis + operator + "(" + basis + "*" + persen + "/100)";
+                });
+            } else {
+                // Pola: angka + % tunggal atau perkalian persen biasa (Contoh: 5% atau 50 * 10%)
+                realExpression = realExpression.replace(/([0-9.]+)%/g, "($1/100)");
             }
 
+            // 3. Eksekusi perhitungan string secara aman
             let result = Function('"use strict";return (' + realExpression + ')')();
             
-            // PAKSA pembulatan menjadi tepat 1 digit di belakang koma (.0) jika hasilnya panjang
-            if (result % 1 !== 0) {
-                result = parseFloat(result.toFixed(1));
-            } else {
-                result = result + ".0"; // Agar tampil konsisten dengan satu angka desimal
+            if (isNaN(result) || !isFinite(result)) {
+                throw new Error("Invalid Math");
             }
 
-            screen.value = result;
-            displayExpression = parseFloat(result).toString();
+            // 4. Standarisasi format desimal (.0) agar presisi dan tidak merusak kalkulasi lanjutan
+            // Menggunakan perkalian basis 10 untuk menghindari bug floating-point Javascript
+            result = Math.round(result * 10) / 10;
+            
+            // Tampilan visual di layar dipaksa memiliki satu angka di belakang koma (.0)
+            screen.value = result.toFixed(1);
+            
+            // Simpan nilai asli ke memori internal agar bisa dihitung kembali tanpa bug teks
+            displayExpression = result.toString();
         } catch (error) {
             screen.value = "Error";
             displayExpression = "";
         }
     }
+
 </script>
 
 </body>
