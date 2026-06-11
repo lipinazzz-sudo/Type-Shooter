@@ -96,7 +96,6 @@
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
-            margin-top: 20px;
             transition: background-color 0.3s;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -152,7 +151,6 @@
             background-color: #555555;
         }
 
-        /* --- BOX PENCOCOK ANGKA --- */
         .match-box {
             background-color: #252525;
             padding: 15px;
@@ -168,7 +166,6 @@
             gap: 20px;
         }
 
-        /* Tampilan Kolom Berdampingan untuk Hasil */
         .side-by-side-results {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -237,7 +234,10 @@
             <label for="hapusSpesifik" style="margin-top: 20px;">Angka Spesifik</label>
             <input type="text" id="hapusSpesifik">
 
-            <button class="btn-execute" onclick="prosesAngka()">Hasil Akhir</button>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-execute" onclick="prosesAngka()">Hasil Akhir</button>
+                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px;">Ringkas BB</button>
+            </div>
         </div>
     </div>
 
@@ -256,7 +256,7 @@
                 
                 <div class="match-layout">
                     <div class="match-input-side">
-                        <textarea id="inputPembanding" placeholder="Ketik angka buatan Anda di sini..." style="height: 200px; resize: none;"></textarea>
+                        <textarea id="inputPembanding" placeholder="Ketik angka buatan Anda di sini (mendukung format tulisan bb 2d)..." style="height: 200px; resize: none;"></textarea>
                         
                         <button class="btn-execute" onclick="cocokkanData()" style="margin-top: 10px; background-color: #2ecc71; font-size: 14px; padding: 12px; letter-spacing: 0;">Cocokkan Data</button>
                     </div>
@@ -320,32 +320,18 @@
 
         for (let angka of numArray) {
             let harusDihapus = false;
-
             for (let awalan of awalanArr) {
-                if (angka.startsWith(awalan)) {
-                    harusDihapus = true;
-                    break;
-                }
+                if (angka.startsWith(awalan)) { harusDihapus = true; break; }
             }
-
             if (!harusDihapus) {
                 for (let akhiran of akhiranArr) {
-                    if (angka.endsWith(akhiran)) {
-                        harusDihapus = true;
-                        break;
-                    }
+                    if (angka.endsWith(akhiran)) { harusDihapus = true; break; }
                 }
             }
-
             if (!harusDihapus) {
-                if (spesifikArr.includes(angka)) {
-                    harusDihapus = true;
-                }
+                if (spesifikArr.includes(angka)) { harusDihapus = true; }
             }
-
-            if (!harusDihapus) {
-                hasil.push(angka);
-            }
+            if (!harusDihapus) { hasil.push(angka); }
         }
 
         let barisHasil = [];
@@ -355,6 +341,94 @@
 
         document.getElementById('outputData').value = barisHasil.join('\n');
         document.getElementById('btnCopyText').innerText = "Copy";
+    }
+
+    // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2d" KEMBALI JADI ANGKA SATUAN
+    function parseAndExpand(str) {
+        let result = [];
+        let regexBB = /(\d+)\s+bb\s+2d/gi;
+        let match;
+        let processedStr = str;
+        
+        while ((match = regexBB.exec(str)) !== null) {
+            let d = match[1];
+            for(let i=0; i<d.length; i++) {
+                for(let j=0; j<d.length; j++) {
+                    if(i !== j) result.push(d[i]+d[j]);
+                }
+            }
+            processedStr = processedStr.replace(match[0], ' ');
+        }
+        
+        let nums = processedStr.replace(/[\n\s,.]+/g, ' ').split(' ').filter(Boolean);
+        result.push(...nums);
+        return result;
+    }
+
+    // FUNGSI RINGKAS BB (DIPERBARUI)
+    function ringkasBB() {
+        const outputTextArea = document.getElementById('outputData');
+        let val = outputTextArea.value;
+        if (!val) {
+            alert("Silakan proses Hasil Akhir terlebih dahulu.");
+            return;
+        }
+
+        // Buka kembali semua angka ke bentuk satuan agar bersih
+        let angka2D = parseAndExpand(val); 
+        angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
+
+        // Buat semua kombinasi pola angka dari 0-9
+        let digits = '0123456789';
+        let subsets = [];
+        let f = function(prefix, str) {
+            for (let i = 0; i < str.length; i++) {
+                subsets.push(prefix + str[i]);
+                f(prefix + str[i], str.slice(i + 1));
+            }
+        };
+        f('', digits);
+        
+        // HANYA CEK UNTUK KELOMPOK 4 ANGKA DAN 3 ANGKA
+        subsets = subsets.filter(s => s.length === 4 || s.length === 3).sort((a, b) => b.length - a.length);
+
+        let bbGroups = [];
+
+        for (let subset of subsets) {
+            let perms = [];
+            for(let i=0; i<subset.length; i++) {
+                for(let j=0; j<subset.length; j++) {
+                    if(i !== j) perms.push(subset[i]+subset[j]);
+                }
+            }
+            
+            // Periksa apakah seluruh kombinasi angka ada di hasil akhir
+            let isSubsetInArray = perms.every(p => angka2D.includes(p));
+            
+            if (isSubsetInArray && perms.length > 0) {
+                bbGroups.push(subset + " bb 2d");
+                // Hapus angka yang sudah masuk kelompok BB dari list
+                angka2D = angka2D.filter(a => !perms.includes(a));
+            }
+        }
+        
+        // Cetak output ke layar
+        let finalOutput = [];
+        if (bbGroups.length > 0) {
+            finalOutput.push(bbGroups.join('\n'));
+            finalOutput.push('---');
+        }
+
+        let barisAngka = [];
+        for (let i = 0; i < angka2D.length; i += 6) {
+            barisAngka.push(angka2D.slice(i, i + 6).join('.'));
+        }
+
+        if (barisAngka.length > 0) {
+            finalOutput.push(barisAngka.join('\n'));
+        }
+
+        outputTextArea.value = finalOutput.join('\n');
     }
 
     function copyHasil() {
@@ -373,7 +447,7 @@
         });
     }
 
-    // FUNGSI PENCOCOK DATA (GABUNGAN)
+    // FUNGSI PENCOCOK DATA
     function cocokkanData() {
         const hasilProsesStr = document.getElementById('outputData').value;
         const pembandingStr = document.getElementById('inputPembanding').value;
@@ -386,7 +460,6 @@
         const outputTidakCocok = document.getElementById('outputTidakCocok');
         const outputBerlebih = document.getElementById('outputBerlebih');
 
-        // Reset tampilan
         wrapper.style.display = 'flex';
         boxDouble.style.display = 'none';
         pesanCocok.style.display = 'none';
@@ -401,9 +474,8 @@
             return;
         }
 
-        // 1. CEK ANGKA DOUBLE (Hanya menuliskan, tidak merubah isi textbox input)
-        // Ambil input mentah, pecah jadi array dengan spasi/koma/baris baru/titik
-        let rawPembandingArr = pembandingStr.replace(/[\n\s,.]+/g, ' ').split(' ').map(n => n.trim()).filter(Boolean);
+        // Ekspansi angka menggunakan fungsi cerdas yang mengenali format "bb 2d"
+        let rawPembandingArr = parseAndExpand(pembandingStr);
         
         let cekSet = new Set();
         let doubleSet = new Set();
@@ -422,19 +494,16 @@
             outputDouble.value = arrDouble.join(' ');
         }
 
-        // 2. PROSES PENCOCOKAN UTAMA
-        let hasilArr = hasilProsesStr.replace(/[\n\s,.]+/g, ' ').split(' ').map(n => n.trim()).filter(Boolean);
-        // Menggunakan array unik (tanpa double) untuk menghindari error logika pencocokan
+        let hasilArr = parseAndExpand(hasilProsesStr);
         let pembandingUnikArr = Array.from(cekSet); 
 
-        // Cari angka yang berbeda
         let tidakDitemukan = hasilArr.filter(angka => !pembandingUnikArr.includes(angka));
         let angkaBerlebih = pembandingUnikArr.filter(angka => !hasilArr.includes(angka));
 
         if (tidakDitemukan.length === 0 && angkaBerlebih.length === 0) {
             pesanCocok.style.display = 'block';
         } else {
-            gridPerbedaan.style.display = 'grid'; // Memunculkan kotak merah & kuning secara berdampingan
+            gridPerbedaan.style.display = 'grid'; 
             
             if (tidakDitemukan.length > 0) {
                 outputTidakCocok.value = tidakDitemukan.join(' ');
@@ -452,3 +521,4 @@
 </script>
 
 </body>
+</html>
