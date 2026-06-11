@@ -80,9 +80,10 @@
             overflow-y: auto;
         }
 
+        /* GRID UNTUK 3 KOLOM: 1 bagian Awalan, 1 bagian Akhiran, 2 bagian Spesifik */
         .grid-inputs {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 2fr;
             gap: 15px;
         }
 
@@ -201,7 +202,7 @@
 
     <div class="main-layout">
         <div>
-            <label for="inputData">Data Angka Asli:</label>
+            <label for="inputData">Angka Asli:</label>
             <textarea id="inputData" rows="15" readonly>45.54.68.86.73.37
 60.06.23.32.12.21
 48.84.26.62.43.34
@@ -229,14 +230,15 @@
                     <label for="hapusAkhiran">Akhiran</label>
                     <input type="text" id="hapusAkhiran">
                 </div>
+                <div>
+                    <label for="hapusSpesifik">Spesifik</label>
+                    <input type="text" id="hapusSpesifik">
+                </div>
             </div>
 
-            <label for="hapusSpesifik" style="margin-top: 20px;">Angka Spesifik</label>
-            <input type="text" id="hapusSpesifik">
-
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-execute" onclick="prosesAngka()">Hasil Akhir</button>
-                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px;">Ringkas BB</button>
+                <button class="btn-execute" onclick="prosesAngka()">Prosses</button>
+                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px;">BB</button>
             </div>
         </div>
     </div>
@@ -251,14 +253,14 @@
         </div>
 
         <div>
-            <label style="font-size: 16px; margin-bottom: 10px;">Pencocok Angka Mandiri</label>
+            <label style="font-size: 16px; margin-bottom: 10px;">Angka Pembanding</label>
             <div class="match-box">
                 
                 <div class="match-layout">
                     <div class="match-input-side">
-                        <textarea id="inputPembanding" placeholder="Ketik angka buatan Anda di sini (mendukung format tulisan bb 2d)..." style="height: 200px; resize: none;"></textarea>
+                        <textarea id="inputPembanding" style="height: 200px; resize: none;"></textarea>
                         
-                        <button class="btn-execute" onclick="cocokkanData()" style="margin-top: 10px; background-color: #2ecc71; font-size: 14px; padding: 12px; letter-spacing: 0;">Cocokkan Data</button>
+                        <button class="btn-execute" onclick="cocokkanData()" style="margin-top: 10px; background-color: #2ecc71; font-size: 14px; padding: 12px; letter-spacing: 0;">Cocokkan</button>
                     </div>
 
                     <div class="match-result-side">
@@ -266,22 +268,22 @@
                         <div id="wrapperHasilCocok" style="display: none; flex-direction: column; gap: 15px;">
                             
                             <div id="boxDouble" style="display: none;">
-                                <label style="color: #3498db; font-size: 12px; margin-bottom: 5px; display: block;">ℹ Angka Double (Terdeteksi Anda mengetik ganda):</label>
+                                <label style="color: #3498db; font-size: 12px; margin-bottom: 5px; display: block;">Angka Double</label>
                                 <textarea id="outputDouble" readonly style="height: 50px; border: 1px solid #3498db; color: #3498db; resize: none; width: 100%; box-sizing: border-box;"></textarea>
                             </div>
 
                             <div id="pesanCocok" style="display: none; color: #2ecc71; font-weight: bold; text-align: center; margin-top: 10px; font-size: 14px;">
-                                ✔ Semua angka terverifikasi cocok.
+                                ✔ Semua Terverifikasi
                             </div>
 
                             <div id="gridPerbedaan" class="side-by-side-results" style="display: none;">
                                 <div style="display: flex; flex-direction: column;">
-                                    <label style="color: #e74c3c; font-size: 11px; margin-bottom: 5px;">⚠ Tidak Cocok (Hilang di data Anda):</label>
+                                    <label style="color: #e74c3c; font-size: 11px; margin-bottom: 5px;">❌ DARI HASIL ATAS ❌</label>
                                     <textarea id="outputTidakCocok" readonly style="height: 90px; border: 1px solid #e74c3c; color: #e74c3c; resize: none; width: 100%; box-sizing: border-box;"></textarea>
                                 </div>
 
                                 <div style="display: flex; flex-direction: column;">
-                                    <label style="color: #f39c12; font-size: 11px; margin-bottom: 5px;">⚠ Berlebih (Tidak ada di Hasil Akhir):</label>
+                                    <label style="color: #f39c12; font-size: 11px; margin-bottom: 5px;">❌ DARI PEMBANDING ❌</label>
                                     <textarea id="outputBerlebih" readonly style="height: 90px; border: 1px solid #f39c12; color: #f39c12; resize: none; width: 100%; box-sizing: border-box;"></textarea>
                                 </div>
                             </div>
@@ -343,10 +345,10 @@
         document.getElementById('btnCopyText').innerText = "Copy";
     }
 
-    // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2d" KEMBALI JADI ANGKA SATUAN
+    // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2a X" KEMBALI JADI ANGKA SATUAN
     function parseAndExpand(str) {
         let result = [];
-        let regexBB = /(\d+)\s+bb\s+2d/gi;
+        let regexBB = /(\d+)\s+bb\s+(2d|2a\s*x)/gi;
         let match;
         let processedStr = str;
         
@@ -365,7 +367,7 @@
         return result;
     }
 
-    // FUNGSI RINGKAS BB (DIPERBARUI)
+    // FUNGSI RINGKAS BB
     function ringkasBB() {
         const outputTextArea = document.getElementById('outputData');
         let val = outputTextArea.value;
@@ -374,11 +376,9 @@
             return;
         }
 
-        // Buka kembali semua angka ke bentuk satuan agar bersih
         let angka2D = parseAndExpand(val); 
         angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
 
-        // Buat semua kombinasi pola angka dari 0-9
         let digits = '0123456789';
         let subsets = [];
         let f = function(prefix, str) {
@@ -389,12 +389,16 @@
         };
         f('', digits);
         
-        // HANYA CEK UNTUK KELOMPOK 4 ANGKA DAN 3 ANGKA
         subsets = subsets.filter(s => s.length === 4 || s.length === 3).sort((a, b) => b.length - a.length);
 
         let bbGroups = [];
+        let limit4 = 0;
+        let limit3 = 0;
 
         for (let subset of subsets) {
+            if (subset.length === 4 && limit4 >= 1) continue;
+            if (subset.length === 3 && limit3 >= 1) continue;
+
             let perms = [];
             for(let i=0; i<subset.length; i++) {
                 for(let j=0; j<subset.length; j++) {
@@ -402,30 +406,31 @@
                 }
             }
             
-            // Periksa apakah seluruh kombinasi angka ada di hasil akhir
             let isSubsetInArray = perms.every(p => angka2D.includes(p));
             
             if (isSubsetInArray && perms.length > 0) {
-                bbGroups.push(subset + " bb 2d");
-                // Hapus angka yang sudah masuk kelompok BB dari list
+                bbGroups.push(subset + " bb 2a X");
                 angka2D = angka2D.filter(a => !perms.includes(a));
+                
+                if (subset.length === 4) limit4++;
+                if (subset.length === 3) limit3++;
             }
         }
         
-        // Cetak output ke layar
         let finalOutput = [];
-        if (bbGroups.length > 0) {
-            finalOutput.push(bbGroups.join('\n'));
-            finalOutput.push('---');
-        }
-
         let barisAngka = [];
+        
         for (let i = 0; i < angka2D.length; i += 6) {
             barisAngka.push(angka2D.slice(i, i + 6).join('.'));
         }
 
         if (barisAngka.length > 0) {
             finalOutput.push(barisAngka.join('\n'));
+        }
+
+        if (bbGroups.length > 0) {
+            if (finalOutput.length > 0) finalOutput.push('---');
+            finalOutput.push(bbGroups.join('\n'));
         }
 
         outputTextArea.value = finalOutput.join('\n');
@@ -469,12 +474,11 @@
         outputBerlebih.value = '';
 
         if (!hasilProsesStr || !pembandingStr) {
-            alert("Mohon pastikan Anda sudah memproses 'Hasil Akhir' dan mengisi angka di kolom pencocok.");
+            alert("Mohon pastikan Anda sudah memproses 'Hasil Akhir' dan mengisi angka di kolom pembanding.");
             wrapper.style.display = 'none';
             return;
         }
 
-        // Ekspansi angka menggunakan fungsi cerdas yang mengenali format "bb 2d"
         let rawPembandingArr = parseAndExpand(pembandingStr);
         
         let cekSet = new Set();
@@ -521,4 +525,3 @@
 </script>
 
 </body>
-</html>
