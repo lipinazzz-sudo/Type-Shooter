@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Invest</title>
     <style>
-                :root {
+        :root {
             --bg-main: #121212;
             --bg-container: #1e1e1e;
             --text-color: #ffffff;
@@ -20,12 +20,12 @@
             color: var(--text-color);
             max-width: 950px;
             margin: 0 auto;
-            padding: 15px; /* Mengurangi padding luar di mobile */
+            padding: 15px;
         }
 
         .container {
             background-color: var(--bg-container);
-            padding: 20px; /* Menyesuaikan padding agar pas di layar kecil */
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             border: 1px solid #2a2a2a;
@@ -37,11 +37,9 @@
             border-bottom: 2px solid #333333;
             padding-bottom: 10px;
             margin-bottom: 25px;
-            font-size: 24px; /* Ukuran judul lebih proporsional untuk HP */
+            font-size: 24px;
         }
 
-        /* --- LAYOUT UTAMA --- */
-        /* Menggunakan flex-direction: column agar otomatis berbaris ke bawah di layar kecil */
         .main-layout {
             display: flex;
             flex-direction: column;
@@ -59,7 +57,7 @@
 
         textarea, input[type="text"] {
             width: 100%;
-            padding: 12px; /* Input sedikit lebih tebal agar mudah ditekan di HP */
+            padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 5px;
             box-sizing: border-box;
@@ -71,10 +69,10 @@
 
         #inputData {
             background-color: transparent;
-            border: 1px solid var(--border-color); /* Menambahkan border tipis agar terlihat batasnya */
+            border: 1px solid var(--border-color);
             border-radius: 5px;
             resize: vertical;
-            height: 180px; /* Tinggi disesuaikan agar tidak memakan layar HP */
+            height: 180px;
             padding: 10px;
             font-size: 14px;
             letter-spacing: 0.5px;
@@ -108,13 +106,12 @@
             background-color: #bd2130;
         }
 
-        /* --- LAYOUT BAWAH --- */
         .bottom-layout {
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
             display: flex;
-            flex-direction: column; /* Memaksa Output & Kalkulator berbaris ke bawah */
+            flex-direction: column;
             gap: 25px;
         }
 
@@ -130,7 +127,7 @@
             font-weight: bold;
             padding-right: 80px;
             resize: vertical;
-            height: 200px; /* Tinggi dioptimalkan agar muat satu layar HP */
+            height: 200px;
             font-size: 16px;
             line-height: 1.6;
             overflow-y: auto;
@@ -138,7 +135,7 @@
 
         button.btn-copy {
             position: absolute;
-            top: 40px; /* Diturunkan sedikit agar tidak menabrak label atas */
+            top: 40px;
             right: 10px;
             background-color: #444444;
             color: white;
@@ -155,86 +152,29 @@
             background-color: #555555;
         }
 
-        /* --- KALKULATOR RESPONSIVE --- */
-        .calc-box {
+        /* --- BOX PENCOCOK ANGKA --- */
+        .match-box {
             background-color: #252525;
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #333;
+            box-sizing: border-box;
+            min-height: 320px;
+        }
+
+        .match-layout {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: 320px; 
-            box-sizing: border-box;
+            gap: 20px;
         }
 
-        #calc-screen {
-            width: 100%;
-            height: 50px;
-            background-color: #121212;
-            border: 1px solid #444;
-            color: #fff;
-            text-align: right;
-            padding: 5px 12px;
-            font-size: 24px;
-            font-family: monospace;
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-bottom: 12px;
-        }
-
-        .calc-buttons {
+        /* Tampilan Kolom Berdampingan untuk Hasil */
+        .side-by-side-results {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            flex-grow: 1;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .calc-btn {
-            background-color: #3a3a3a;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 45px; /* Memastikan tombol cukup besar untuk disentuh jari */
-        }
-
-        .calc-btn:hover {
-            background-color: #4a4a4a;
-        }
-
-        .calc-btn.operator {
-            background-color: #f39c12;
-        }
-
-        .calc-btn.operator:hover {
-            background-color: #e67e22;
-        }
-
-        .calc-btn.clear {
-            background-color: #e74c3c;
-        }
-
-        .calc-btn.clear:hover {
-            background-color: #c0392b;
-        }
-
-        .calc-btn.backspace {
-            background-color: #7f8c8d;
-            font-size: 20px;
-        }
-
-        .calc-btn.backspace:hover {
-            background-color: #95a5a6;
-        }
-
-        /* --- RESPONSIVITAS KHUSUS TABLET/PC (LAYAR BESAR) --- */
-        /* Jika layar perangkat di atas 768px, layout otomatis berubah jadi berdampingan (PC Mode) */
         @media (min-width: 768px) {
             .main-layout {
                 display: grid;
@@ -243,113 +183,17 @@
             }
             .bottom-layout {
                 display: grid;
-                grid-template-columns: 1fr 1.2fr;
+                grid-template-columns: 1fr 1.3fr;
                 gap: 25px;
             }
-            #inputData {
-                height: 340px;
+            #inputData { height: 340px; }
+            #outputData { height: 340px; }
+            
+            .match-layout {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
             }
-            #outputData {
-                height: 340px;
-            }
-            .calc-box {
-                height: 340px;
-            }
-            button.btn-copy {
-                top: 10px;
-            }
-        }
-
-            right: 10px;
-            background-color: #444444;
-            color: white;
-            border: 1px solid #555555;
-            padding: 5px 10px;
-            font-size: 12px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button.btn-copy:hover {
-            background-color: #555555;
-        }
-
-        .calc-box {
-            background-color: #252525;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 340px; 
-            box-sizing: border-box;
-        }
-
-        #calc-screen {
-            width: 100%;
-            height: 45px;
-            background-color: #121212;
-            border: 1px solid #444;
-            color: #fff;
-            text-align: right;
-            padding: 5px 10px;
-            font-size: 22px;
-            font-family: monospace;
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-bottom: 12px;
-        }
-
-        .calc-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            flex-grow: 1;
-        }
-
-        .calc-btn {
-            background-color: #3a3a3a;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .calc-btn:hover {
-            background-color: #4a4a4a;
-        }
-
-        .calc-btn.operator {
-            background-color: #f39c12;
-        }
-
-        .calc-btn.operator:hover {
-            background-color: #e67e22;
-        }
-
-        .calc-btn.clear {
-            background-color: #e74c3c;
-        }
-
-        .calc-btn.clear:hover {
-            background-color: #c0392b;
-        }
-
-        .calc-btn.backspace {
-            background-color: #7f8c8d;
-            font-size: 22px; /* Membuat ukuran panah lebih proporsional */
-        }
-
-        .calc-btn.backspace:hover {
-            background-color: #95a5a6;
+            button.btn-copy { top: 10px; }
         }
     </style>
 </head>
@@ -407,34 +251,45 @@
         </div>
 
         <div>
-            <label style="font-size: 16px; margin-bottom: 10px;">Kalkulator</label>
-            <div class="calc-box">
-                <input type="text" id="calc-screen" readonly value="0">
-                <div class="calc-buttons">
-                    <button class="calc-btn clear" onclick="clearCalc()">C</button>
-                    <button class="calc-btn backspace" onclick="backspaceCalc()">←</button>
-                    <button class="calc-btn operator" onclick="inputCalc('%')">%</button>
-                    <button class="calc-btn operator" onclick="inputCalc('÷')">÷</button>
-                    
-                    <button class="calc-btn" onclick="inputCalc('7')">7</button>
-                    <button class="calc-btn" onclick="inputCalc('8')">8</button>
-                    <button class="calc-btn" onclick="inputCalc('9')">9</button>
-                    <button class="calc-btn operator" onclick="inputCalc('*')">x</button>
-                    
-                    <button class="calc-btn" onclick="inputCalc('4')">4</button>
-                    <button class="calc-btn" onclick="inputCalc('5')">5</button>
-                    <button class="calc-btn" onclick="inputCalc('6')">6</button>
-                    <button class="calc-btn operator" onclick="inputCalc('-')">-</button>
-                    
-                    <button class="calc-btn" onclick="inputCalc('1')">1</button>
-                    <button class="calc-btn" onclick="inputCalc('2')">2</button>
-                    <button class="calc-btn" onclick="inputCalc('3')">3</button>
-                    <button class="calc-btn operator" onclick="inputCalc('+')">+</button>
-                    
-                    <button class="calc-btn" onclick="inputCalc('0')">0</button>
-                    <button class="calc-btn" onclick="inputCalc('.')">.</button>
-                    <button class="calc-btn operator" style="grid-column: span 2; background-color: #2ecc71;" onclick="calculateCalc()">=</button>
+            <label style="font-size: 16px; margin-bottom: 10px;">Pencocok Angka Mandiri</label>
+            <div class="match-box">
+                
+                <div class="match-layout">
+                    <div class="match-input-side">
+                        <textarea id="inputPembanding" placeholder="Ketik angka buatan Anda di sini..." style="height: 200px; resize: none;"></textarea>
+                        
+                        <button class="btn-execute" onclick="cocokkanData()" style="margin-top: 10px; background-color: #2ecc71; font-size: 14px; padding: 12px; letter-spacing: 0;">Cocokkan Data</button>
+                    </div>
+
+                    <div class="match-result-side">
+                        
+                        <div id="wrapperHasilCocok" style="display: none; flex-direction: column; gap: 15px;">
+                            
+                            <div id="boxDouble" style="display: none;">
+                                <label style="color: #3498db; font-size: 12px; margin-bottom: 5px; display: block;">ℹ Angka Double (Terdeteksi Anda mengetik ganda):</label>
+                                <textarea id="outputDouble" readonly style="height: 50px; border: 1px solid #3498db; color: #3498db; resize: none; width: 100%; box-sizing: border-box;"></textarea>
+                            </div>
+
+                            <div id="pesanCocok" style="display: none; color: #2ecc71; font-weight: bold; text-align: center; margin-top: 10px; font-size: 14px;">
+                                ✔ Semua angka terverifikasi cocok.
+                            </div>
+
+                            <div id="gridPerbedaan" class="side-by-side-results" style="display: none;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <label style="color: #e74c3c; font-size: 11px; margin-bottom: 5px;">⚠ Tidak Cocok (Hilang di data Anda):</label>
+                                    <textarea id="outputTidakCocok" readonly style="height: 90px; border: 1px solid #e74c3c; color: #e74c3c; resize: none; width: 100%; box-sizing: border-box;"></textarea>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column;">
+                                    <label style="color: #f39c12; font-size: 11px; margin-bottom: 5px;">⚠ Berlebih (Tidak ada di Hasil Akhir):</label>
+                                    <textarea id="outputBerlebih" readonly style="height: 90px; border: 1px solid #f39c12; color: #f39c12; resize: none; width: 100%; box-sizing: border-box;"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -518,78 +373,82 @@
         });
     }
 
-    // LOGIKA PERHITUNGAN KALKULATOR (SUDAH DI-FIX)
-    let displayExpression = ""; 
-
-    function inputCalc(val) {
-        const screen = document.getElementById('calc-screen');
-        if (screen.value === "0" && !isNaN(val)) {
-            displayExpression = val;
-        } else {
-            displayExpression += val;
-        }
-        screen.value = displayExpression;
-    }
-
-    function clearCalc() {
-        displayExpression = "";
-        document.getElementById('calc-screen').value = "0";
-    }
-
-    function backspaceCalc() {
-        const screen = document.getElementById('calc-screen');
-        displayExpression = displayExpression.toString().slice(0, -1);
-        if (displayExpression === "") {
-            screen.value = "0";
-        } else {
-            screen.value = displayExpression;
-        }
-    }
-
-        function calculateCalc() {
-        const screen = document.getElementById('calc-screen');
-        if (!displayExpression) return;
+    // FUNGSI PENCOCOK DATA (GABUNGAN)
+    function cocokkanData() {
+        const hasilProsesStr = document.getElementById('outputData').value;
+        const pembandingStr = document.getElementById('inputPembanding').value;
         
-        try {
-            // 1. Ubah visual pembagian menjadi operator matematika komputer
-            let realExpression = displayExpression.replace(/÷/g, '/');
-            
-            // 2. Perbaikan Fitur Persen (Akurat untuk rumus diskon/markup dan persen tunggal)
-            // Pola: angka + operator + angka + % (Contoh: 100 - 5%)
-            let polaPersenHubungan = /([0-9.]+)\s*([+\-*/])\s*([0-9.]+)%/g;
-            
-            if (realExpression.match(polaPersenHubungan)) {
-                realExpression = realExpression.replace(polaPersenHubungan, function(match, basis, operator, persen) {
-                    return basis + operator + "(" + basis + "*" + persen + "/100)";
-                });
+        const wrapper = document.getElementById('wrapperHasilCocok');
+        const boxDouble = document.getElementById('boxDouble');
+        const outputDouble = document.getElementById('outputDouble');
+        const pesanCocok = document.getElementById('pesanCocok');
+        const gridPerbedaan = document.getElementById('gridPerbedaan');
+        const outputTidakCocok = document.getElementById('outputTidakCocok');
+        const outputBerlebih = document.getElementById('outputBerlebih');
+
+        // Reset tampilan
+        wrapper.style.display = 'flex';
+        boxDouble.style.display = 'none';
+        pesanCocok.style.display = 'none';
+        gridPerbedaan.style.display = 'none';
+        outputDouble.value = '';
+        outputTidakCocok.value = '';
+        outputBerlebih.value = '';
+
+        if (!hasilProsesStr || !pembandingStr) {
+            alert("Mohon pastikan Anda sudah memproses 'Hasil Akhir' dan mengisi angka di kolom pencocok.");
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        // 1. CEK ANGKA DOUBLE (Hanya menuliskan, tidak merubah isi textbox input)
+        // Ambil input mentah, pecah jadi array dengan spasi/koma/baris baru/titik
+        let rawPembandingArr = pembandingStr.replace(/[\n\s,.]+/g, ' ').split(' ').map(n => n.trim()).filter(Boolean);
+        
+        let cekSet = new Set();
+        let doubleSet = new Set();
+
+        for (let num of rawPembandingArr) {
+            if (cekSet.has(num)) {
+                doubleSet.add(num);
             } else {
-                // Pola: angka + % tunggal atau perkalian persen biasa (Contoh: 5% atau 50 * 10%)
-                realExpression = realExpression.replace(/([0-9.]+)%/g, "($1/100)");
+                cekSet.add(num);
+            }
+        }
+
+        let arrDouble = Array.from(doubleSet);
+        if (arrDouble.length > 0) {
+            boxDouble.style.display = 'block';
+            outputDouble.value = arrDouble.join(' ');
+        }
+
+        // 2. PROSES PENCOCOKAN UTAMA
+        let hasilArr = hasilProsesStr.replace(/[\n\s,.]+/g, ' ').split(' ').map(n => n.trim()).filter(Boolean);
+        // Menggunakan array unik (tanpa double) untuk menghindari error logika pencocokan
+        let pembandingUnikArr = Array.from(cekSet); 
+
+        // Cari angka yang berbeda
+        let tidakDitemukan = hasilArr.filter(angka => !pembandingUnikArr.includes(angka));
+        let angkaBerlebih = pembandingUnikArr.filter(angka => !hasilArr.includes(angka));
+
+        if (tidakDitemukan.length === 0 && angkaBerlebih.length === 0) {
+            pesanCocok.style.display = 'block';
+        } else {
+            gridPerbedaan.style.display = 'grid'; // Memunculkan kotak merah & kuning secara berdampingan
+            
+            if (tidakDitemukan.length > 0) {
+                outputTidakCocok.value = tidakDitemukan.join(' ');
+            } else {
+                outputTidakCocok.value = "-";
             }
 
-            // 3. Eksekusi perhitungan string secara aman
-            let result = Function('"use strict";return (' + realExpression + ')')();
-            
-            if (isNaN(result) || !isFinite(result)) {
-                throw new Error("Invalid Math");
+            if (angkaBerlebih.length > 0) {
+                outputBerlebih.value = angkaBerlebih.join(' ');
+            } else {
+                outputBerlebih.value = "-";
             }
-
-            // 4. Standarisasi format desimal (.0) agar presisi dan tidak merusak kalkulasi lanjutan
-            // Menggunakan perkalian basis 10 untuk menghindari bug floating-point Javascript
-            result = Math.round(result * 10) / 10;
-            
-            // Tampilan visual di layar dipaksa memiliki satu angka di belakang koma (.0)
-            screen.value = result.toFixed(1);
-            
-            // Simpan nilai asli ke memori internal agar bisa dihitung kembali tanpa bug teks
-            displayExpression = result.toString();
-        } catch (error) {
-            screen.value = "Error";
-            displayExpression = "";
         }
     }
-
 </script>
 
 </body>
-</html>
