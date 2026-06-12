@@ -389,15 +389,14 @@
         };
         f('', digits);
         
-        subsets = subsets.filter(s => s.length === 4 || s.length === 3).sort((a, b) => b.length - a.length);
+subsets = subsets.filter(s => s.length === 4).sort((a, b) => b.length - a.length);
 
-        let bbGroups = [];
-        let limit4 = 0;
-        let limit3 = 0;
+let bbGroups = [];
+let limit4 = 0; // limit3 dihapus karena sudah tidak dipakai
 
-        for (let subset of subsets) {
-            if (subset.length === 4 && limit4 >= 1) continue;
-            if (subset.length === 3 && limit3 >= 1) continue;
+for (let subset of subsets) {
+    // 2. Batasan limit4 diubah dari >= 1 menjadi >= 2 agar bisa memuat hingga 2 BB
+    if (subset.length === 4 && limit4 >= 2) continue;
 
             let perms = [];
             for(let i=0; i<subset.length; i++) {
