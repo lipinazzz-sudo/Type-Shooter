@@ -367,7 +367,7 @@
         return result;
     }
 
-   function ringkasBB() {
+  function ringkasBB() {
     const outputTextArea = document.getElementById('outputData');
     let val = outputTextArea.value;
     if (!val) {
@@ -375,6 +375,7 @@
         return;
     }
 
+    // 1. Ambil semua angka 2D dan pastikan tidak ada duplikat
     let angka2D = parseAndExpand(val); 
     angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
 
@@ -388,44 +389,55 @@
     };
     f('', digits);
     
-    // 1. Filter hanya kombinasi 4 digit angka
+    // Hanya ambil kombinasi 4 digit angka
     subsets = subsets.filter(s => s.length === 4);
 
-    // ========================================================
-    // LOGIKA BARU: PROSES PENGACAKAN (SHUFFLE) SETIAP KLIK
-    // ========================================================
-    for (let i = subsets.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [subsets[i], subsets[j]] = [subsets[j], subsets[i]];
-    }
-    // ========================================================
-
-    let bbGroups = [];
-    let limit4 = 0;
-
-    for (let subset of subsets) {
-        // Batasan maksimal hanya 2 kelompok BB 4-angka
-        if (subset.length === 4 && limit4 >= 2) continue;
-
+    // 2. Kumpulkan SEMUA kandidat BB 4-angka yang angkanya 100% lengkap di daftar
+    let validSubsets = subsets.filter(subset => {
         let perms = [];
-        for(let i=0; i<subset.length; i++) {
-            for(let j=0; j<subset.length; j++) {
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<4; j++) {
+                if(i !== j) perms.push(subset[i]+subset[j]);
+            }
+        }
+        return perms.every(p => angka2D.includes(p));
+    });
+
+    // 3. Acak urutan kandidat BB agar hasil selalu berubah setiap diklik
+    for (let i = validSubsets.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [validSubsets[i], validSubsets[j]] = [validSubsets[j], validSubsets[i]];
+    }
+
+    // 4. Pilih tepat 2 grup BB yang tidak saling bertabrakan angkanya
+    let bbGroups = [];
+    let usedPerms = new Set();
+    
+    for (let subset of validSubsets) {
+        let perms = [];
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<4; j++) {
                 if(i !== j) perms.push(subset[i]+subset[j]);
             }
         }
         
-        let isSubsetInArray = perms.every(p => angka2D.includes(p));
+        // Cek apakah ada angka pasangan yang sudah terpakai oleh grup BB sebelumnya
+        let isOverlap = perms.some(p => usedPerms.has(p));
         
-        if (isSubsetInArray && perms.length > 0) {
+        if (!isOverlap) {
             bbGroups.push(subset + " bb 2a X");
-            angka2D = angka2D.filter(a => !perms.includes(a));
-            limit4++;
+            perms.forEach(p => usedPerms.add(p));
+            // Berhenti secara absolut jika sudah dapat 2 grup BB
+            if (bbGroups.length === 2) break; 
         }
     }
     
+    // 5. Hapus semua angka yang sudah masuk grup BB dari daftar utama
+    angka2D = angka2D.filter(a => !usedPerms.has(a));
+    
+    // 6. Susun ulang sisa angka ke dalam 6 kolom
     let finalOutput = [];
     let barisAngka = [];
-    
     for (let i = 0; i < angka2D.length; i += 6) {
         barisAngka.push(angka2D.slice(i, i + 6).join('.'));
     }
