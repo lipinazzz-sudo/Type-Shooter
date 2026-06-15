@@ -367,73 +367,80 @@
         return result;
     }
 
-    // FUNGSI RINGKAS BB
-    function ringkasBB() {
-        const outputTextArea = document.getElementById('outputData');
-        let val = outputTextArea.value;
-        if (!val) {
-            alert("Silakan proses Hasil Akhir terlebih dahulu.");
-            return;
-        }
-
-        let angka2D = parseAndExpand(val); 
-        angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
-
-        let digits = '0123456789';
-        let subsets = [];
-        let f = function(prefix, str) {
-            for (let i = 0; i < str.length; i++) {
-                subsets.push(prefix + str[i]);
-                f(prefix + str[i], str.slice(i + 1));
-            }
-        };
-        f('', digits);
-        
-subsets = subsets.filter(s => s.length === 4).sort((a, b) => b.length - a.length);
-
-let bbGroups = [];
-let limit4 = 0; // limit3 dihapus karena sudah tidak dipakai
-
-for (let subset of subsets) {
-    // 2. Batasan limit4 diubah dari >= 1 menjadi >= 2 agar bisa memuat hingga 2 BB
-    if (subset.length === 4 && limit4 >= 2) continue;
-
-            let perms = [];
-            for(let i=0; i<subset.length; i++) {
-                for(let j=0; j<subset.length; j++) {
-                    if(i !== j) perms.push(subset[i]+subset[j]);
-                }
-            }
-            
-            let isSubsetInArray = perms.every(p => angka2D.includes(p));
-            
-            if (isSubsetInArray && perms.length > 0) {
-                bbGroups.push(subset + " bb 2a X");
-                angka2D = angka2D.filter(a => !perms.includes(a));
-                
-                if (subset.length === 4) limit4++;
-                if (subset.length === 3) limit3++;
-            }
-        }
-        
-        let finalOutput = [];
-        let barisAngka = [];
-        
-        for (let i = 0; i < angka2D.length; i += 6) {
-            barisAngka.push(angka2D.slice(i, i + 6).join('.'));
-        }
-
-        if (barisAngka.length > 0) {
-            finalOutput.push(barisAngka.join('\n'));
-        }
-
-        if (bbGroups.length > 0) {
-            if (finalOutput.length > 0) finalOutput.push('---');
-            finalOutput.push(bbGroups.join('\n'));
-        }
-
-        outputTextArea.value = finalOutput.join('\n');
+   function ringkasBB() {
+    const outputTextArea = document.getElementById('outputData');
+    let val = outputTextArea.value;
+    if (!val) {
+        alert("Silakan proses Hasil Akhir terlebih dahulu.");
+        return;
     }
+
+    let angka2D = parseAndExpand(val); 
+    angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
+
+    let digits = '0123456789';
+    let subsets = [];
+    let f = function(prefix, str) {
+        for (let i = 0; i < str.length; i++) {
+            subsets.push(prefix + str[i]);
+            f(prefix + str[i], str.slice(i + 1));
+        }
+    };
+    f('', digits);
+    
+    // 1. Filter hanya kombinasi 4 digit angka
+    subsets = subsets.filter(s => s.length === 4);
+
+    // ========================================================
+    // LOGIKA BARU: PROSES PENGACAKAN (SHUFFLE) SETIAP KLIK
+    // ========================================================
+    for (let i = subsets.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [subsets[i], subsets[j]] = [subsets[j], subsets[i]];
+    }
+    // ========================================================
+
+    let bbGroups = [];
+    let limit4 = 0;
+
+    for (let subset of subsets) {
+        // Batasan maksimal hanya 2 kelompok BB 4-angka
+        if (subset.length === 4 && limit4 >= 2) continue;
+
+        let perms = [];
+        for(let i=0; i<subset.length; i++) {
+            for(let j=0; j<subset.length; j++) {
+                if(i !== j) perms.push(subset[i]+subset[j]);
+            }
+        }
+        
+        let isSubsetInArray = perms.every(p => angka2D.includes(p));
+        
+        if (isSubsetInArray && perms.length > 0) {
+            bbGroups.push(subset + " bb 2a X");
+            angka2D = angka2D.filter(a => !perms.includes(a));
+            limit4++;
+        }
+    }
+    
+    let finalOutput = [];
+    let barisAngka = [];
+    
+    for (let i = 0; i < angka2D.length; i += 6) {
+        barisAngka.push(angka2D.slice(i, i + 6).join('.'));
+    }
+
+    if (barisAngka.length > 0) {
+        finalOutput.push(barisAngka.join('\n'));
+    }
+
+    if (bbGroups.length > 0) {
+        if (finalOutput.length > 0) finalOutput.push('---');
+        finalOutput.push(bbGroups.join('\n'));
+    }
+
+    outputTextArea.value = finalOutput.join('\n');
+}
 
     function copyHasil() {
         const outputTextArea = document.getElementById('outputData');
