@@ -264,69 +264,64 @@
         }
     });
 
-    function gameLoop() {
+        function gameLoop() {
         if (!gameActive) return;
         
+        // 1. Bersihkan Layar dengan Background Gelap
         ctx.fillStyle = "#0b0f19";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // GARIS PEMBATAS BARU (Opsional - Penanda batas di atas keyboard)
+        // 2. Garis Pembatas di Atas Keyboard
         ctx.strokeStyle = "rgba(71, 85, 105, 0.5)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, player.y + 20);
         ctx.lineTo(canvas.width, player.y + 20);
         ctx.stroke();
-        // --- DRAW CUSTOM KAPAL (Abu-abu & Aksen Merah) ---
-let cx = player.x;
-let cy = player.y;
-let s = player.size;
 
-// 1. Badan Utama Kapal (Abu-abu)
-ctx.fillStyle = "#475569"; 
-ctx.beginPath();
-ctx.moveTo(cx, cy - s);          // Ujung Depan (Hidung)
-ctx.lineTo(cx - s, cy + s);      // Sayap Kiri
-ctx.lineTo(cx, cy + (s * 0.3));  // Lekukan Belakang Dalam
-ctx.lineTo(cx + s, cy + s);      // Sayap Kanan
-ctx.closePath();
-ctx.fill();
-
-// 2. Aksen Merah Kiri (Ujung Sayap Kiri)
-ctx.fillStyle = "#ef4444";
-ctx.beginPath();
-ctx.moveTo(cx - s, cy + s);
-ctx.lineTo(cx - (s * 0.7), cy + s);
-ctx.lineTo(cx - s, cy + (s * 0.7));
-ctx.closePath();
-ctx.fill();
-
-// 3. Aksen Merah Kanan (Ujung Sayap Kanan)
-ctx.fillStyle = "#ef4444";
-ctx.beginPath();
-ctx.moveTo(cx + s, cy + s);
-ctx.lineTo(cx + (s * 0.7), cy + s);
-ctx.lineTo(cx + s, cy + (s * 0.7));
-ctx.closePath();
-ctx.fill();
-
-// 4. Lampu Pendorong Belakang (Merah Neon)
-ctx.fillStyle = "#ff1e1e";
-ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
-
-
+        // 3. Cetak Score
         ctx.fillStyle = "#475569";
         ctx.font = "bold 40px Courier New";
         ctx.fillText("SCORE: " + score, 20, 50);
 
-        // KAPAL SEKARANG COCOK DENGAN POSISI BARU
-        ctx.fillStyle = "#38bdf8";
+        // 4. DRAW CUSTOM KAPAL (Abu-abu & Aksen Merah)
+        let cx = player.x;
+        let cy = player.y;
+        let s = player.size;
+
+        // Badan Utama Kapal (Abu-abu)
+        ctx.fillStyle = "#475569"; 
         ctx.beginPath();
-        ctx.moveTo(player.x, player.y - player.size);
-        ctx.lineTo(player.x - player.size, player.y + player.size);
-        ctx.lineTo(player.x + player.size, player.y + player.size);
+        ctx.moveTo(cx, cy - s);          // Ujung Depan (Hidung)
+        ctx.lineTo(cx - s, cy + s);      // Sayap Kiri
+        ctx.lineTo(cx, cy + (s * 0.3));  // Lekukan Belakang Dalam
+        ctx.lineTo(cx + s, cy + s);      // Sayap Kanan
+        ctx.closePath();
         ctx.fill();
 
+        // Aksen Merah Kiri (Ujung Sayap Kiri)
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.moveTo(cx - s, cy + s);
+        ctx.lineTo(cx - (s * 0.7), cy + s);
+        ctx.lineTo(cx - s, cy + (s * 0.7));
+        ctx.closePath();
+        ctx.fill();
+
+        // Aksen Merah Kanan (Ujung Sayap Kanan)
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.moveTo(cx + s, cy + s);
+        ctx.lineTo(cx + (s * 0.7), cy + s);
+        ctx.lineTo(cx + s, cy + (s * 0.7));
+        ctx.closePath();
+        ctx.fill();
+
+        // Lampu Pendorong Belakang (Merah Neon)
+        ctx.fillStyle = "#ff1e1e";
+        ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
+
+        // 5. Logika Pergerakan Musuh & Tembakan Laser
         frameCount++;
         if (frameCount % spawnRate === 0) {
             enemies.push(new Enemy());
@@ -341,7 +336,7 @@ ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
         enemies.forEach(en => {
             en.update(); en.draw();
             
-            // JIKA KATA MELEWATI KAPAL (BATAS KEYBOARD), MAKA GAME OVER
+            // Jika kata melewati batas kapal/keyboard, Game Over
             if (en.y > player.y + 15) {
                 gameOver();
             }
@@ -349,6 +344,7 @@ ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
 
         requestAnimationFrame(gameLoop);
     }
+
 
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
