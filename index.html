@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-Shooter</title>
+    <title>ZType Landing Page</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -16,7 +16,6 @@
             display: block; width: 100vw; height: 100vh;
         }
 
-        /* Input tersembunyi untuk memancing keyboard HP keluar */
         #hiddenInput {
             position: absolute; top: -1000px; left: -1000px; opacity: 0;
         }
@@ -46,7 +45,6 @@
         }
         button:hover { background: #0284c7; }
 
-        /* --- SETTING MENU --- */
         .setting-row {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; text-align: left;
@@ -55,7 +53,6 @@
         .setting-row input[type="range"] { width: 130px; }
         .setting-row select { width: 130px; padding: 5px; background: #0f172a; color: white; border: 1px solid #38bdf8;}
 
-        /* Helper Classes */
         .hidden { display: none !important; }
     </style>
 </head>
@@ -113,12 +110,10 @@
     </div>
 
 <script>
-    // --- NAVIGASI RAHASIA ---
     function goToDashboard() {
         window.location.href = 'dashboard.html'; 
     }
 
-    // --- UI LOGIC ---
     const mainMenu = document.getElementById('mainMenu');
     const settingsMenu = document.getElementById('settingsMenu');
     const gameOverMenu = document.getElementById('gameOverMenu');
@@ -136,22 +131,25 @@
         mainMenu.classList.remove('hidden');
     }
 
-    // --- GAME ENGINE LOGIC ---
+    // --- GAME ENGINE ---
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let wordsList = ["KOMPUTER", "SAYA", "ANAK", "BABI", "SAPI", "RAJIN", "PINTAR", "CARI", "UANG", "KAMU", "CINTA", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
+    // PENGATURAN TINGGI KEYBOARD (Ubah angka ini jika posisi kurang pas)
+    const keyboardOffset = 320; 
+
+    let wordsList = ["SAYA", "ANAK", "SAPI", "DAN", "BABI", "JUGA", "MAMA", "PAPA", "KOMPUTER", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
     let enemies = [];
     let lasers = [];
     let score = 0;
     let gameActive = false;
     let activeEnemy = null;
-    let spawnRate = 150;
+    let spawnRate = 120;
     let frameCount = 0;
 
-    // Player Object
-    const player = { x: canvas.width / 2, y: canvas.height - 50, size: 20 };
+    // SEKARANG POSISI Y KAPAL BERADA DI ATAS KEYBOARD OFFSET
+    const player = { x: canvas.width / 2, y: canvas.height - keyboardOffset, size: 20 };
 
     class Enemy {
         constructor() {
@@ -164,11 +162,9 @@
         draw() {
             ctx.font = "20px 'Courier New'";
             let typedWidth = ctx.measureText(this.typed).width;
-            
-            ctx.fillStyle = "#22c55e"; // Hijau untuk yang sudah diketik
+            ctx.fillStyle = "#22c55e"; 
             ctx.fillText(this.typed, this.x, this.y);
-            
-            ctx.fillStyle = "#ffffff"; // Putih untuk sisa kata
+            ctx.fillStyle = "#ffffff"; 
             ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
         }
         update() { this.y += this.speed; }
@@ -176,7 +172,8 @@
 
     class Laser {
         constructor(targetX, targetY) {
-            this.x = player.x; this.y = player.y;
+            this.x = player.x; 
+            this.y = player.y; // Tembakan otomatis keluar dari posisi kapal yang baru
             this.targetX = targetX; this.targetY = targetY;
             this.speed = 15;
         }
@@ -196,11 +193,8 @@
         gameActive = true;
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
-        
-        // Paksa keyboard muncul di HP
         hiddenInput.value = "";
         hiddenInput.focus();
-        
         gameLoop();
     }
 
@@ -208,56 +202,42 @@
         gameActive = false;
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         gameOverMenu.classList.remove('hidden');
-        hiddenInput.blur(); // Sembunyikan keyboard
+        hiddenInput.blur();
     }
 
-    // Memunculkan kembali keyboard jika player menyentuh layar area game
     canvas.addEventListener('click', () => {
         if (gameActive) {
             hiddenInput.focus();
         }
     });
 
-    // --- LOGIKA TRIGGER RAHASIA & KETIKAN ---
     let enterCount = 0;
     let enterTimer = null;
 
-    // Mendeteksi Enter (Rahasia)
     hiddenInput.addEventListener('keydown', (e) => {
         if (!gameActive) return;
 
         if (e.key === 'Enter') {
-            // Hanya berlaku jika tidak ada kata yang sedang diketik
             if (activeEnemy === null) {
                 enterCount++;
-                
                 if (enterCount === 1) {
-                    // Mulai timer 5 detik
-                    enterTimer = setTimeout(() => {
-                        enterCount = 0; // Reset jika lebih dari 5 detik
-                    }, 4000);
+                    enterTimer = setTimeout(() => { enterCount = 0; }, 5000);
                 }
-
                 if (enterCount >= 5) {
                     clearTimeout(enterTimer);
-                    goToDashboard(); // Masuk ke web asli
+                    goToDashboard();
                 }
             }
         }
     });
 
-    // Mendeteksi Huruf (Game) - Menggunakan 'input' lebih stabil untuk keyboard HP
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
-        
         let val = hiddenInput.value;
-        hiddenInput.value = ''; // Langsung bersihkan input
-        
+        hiddenInput.value = ''; 
         if (val.length === 0) return;
 
         let key = val.charAt(val.length - 1).toUpperCase();
-        
-        // Jika pencet huruf, reset hitungan Enter rahasia
         enterCount = 0;
         clearTimeout(enterTimer);
 
@@ -275,7 +255,6 @@
             if (key === nextChar) {
                 activeEnemy.typed += key;
                 lasers.push(new Laser(activeEnemy.x, activeEnemy.y));
-                
                 if (activeEnemy.typed === activeEnemy.word) {
                     score += activeEnemy.word.length * 10;
                     enemies = enemies.filter(en => en !== activeEnemy);
@@ -291,10 +270,19 @@
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // GARIS PEMBATAS BARU (Opsional - Penanda batas di atas keyboard)
+        ctx.strokeStyle = "rgba(71, 85, 105, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, player.y + 20);
+        ctx.lineTo(canvas.width, player.y + 20);
+        ctx.stroke();
+
         ctx.fillStyle = "#475569";
         ctx.font = "bold 40px Courier New";
         ctx.fillText("SCORE: " + score, 20, 50);
 
+        // KAPAL SEKARANG COCOK DENGAN POSISI BARU
         ctx.fillStyle = "#38bdf8";
         ctx.beginPath();
         ctx.moveTo(player.x, player.y - player.size);
@@ -315,7 +303,9 @@
 
         enemies.forEach(en => {
             en.update(); en.draw();
-            if (en.y > canvas.height - 30) {
+            
+            // JIKA KATA MELEWATI KAPAL (BATAS KEYBOARD), MAKA GAME OVER
+            if (en.y > player.y + 15) {
                 gameOver();
             }
         });
@@ -327,7 +317,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         player.x = canvas.width / 2;
-        player.y = canvas.height - 50;
+        player.y = canvas.height - keyboardOffset; // Kapal tetap di atas keyboard saat resize
     });
 </script>
 </body>
