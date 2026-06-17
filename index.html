@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZType Landing Page</title>
+    <title>Type-Shooter</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -64,11 +64,11 @@
 
     <div id="mainMenu" class="ui-layer">
         <div class="menu-box">
-            <h1>Z-TYPE</h1>
-            <p>Ketik kata untuk menghancurkan musuh!</p>
+            <h1>TYPE-SHOOTER</h1>
+            <p>Ketik Untuk Menghancurkan Kata</p>
             <button onclick="startGame()">PLAY GAME</button>
             <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
-            <p class="mobile-hint">Jika bermain di HP, sentuh layar saat bermain untuk memunculkan keyboard.</p>
+            <p class="mobile-hint">Jika bermain di HP, sentuh layar untuk memunculkan keyboard.</p>
         </div>
     </div>
 
@@ -94,7 +94,7 @@
                 </select>
             </div>
 
-            <button onclick="alert('Fitur Scoreboard sedang dalam pengembangan.')">SCOREBOARD</button>
+            <button onclick="alert('Scoreboard sedang dalam pengembangan.')">SCOREBOARD</button>
             
             <button onclick="closeSettings()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
         </div>
@@ -139,7 +139,10 @@
     // PENGATURAN TINGGI KEYBOARD (Ubah angka ini jika posisi kurang pas)
     const keyboardOffset = 330; 
 
-    let wordsList = ["SAYA", "ANAK", "SAPI", "DAN", "BABI", "JUGA", "MAMA", "PAPA", "KOMPUTER", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
+    let wordsList = ["DESA", "PONTIANAK", "KALIMANTAN", "SIANTAN", "GAIA", "KOTA", "RUMAH",
+                     "SAYA", "ANAK", "SAPI", "BABI", "MAMA", "PAPA", "SEKOLAH", "SUKSES", 
+                     "BACA", "TULIS", "BUKU", "LANDAK", "DESKAP", "AYANI", "KWECAP", "SINGKAWANG", "EMAS", "PANAS", 
+                    "DINGIN", "ANAK", "MAIN", "MALL", "SEPEDA", "LAPTOP", "IPAD", "BUBUR", "CEHUNTIAU", "CHOIPAN"];
     let enemies = [];
     let lasers = [];
     let score = 0;
