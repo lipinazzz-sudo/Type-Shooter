@@ -267,7 +267,7 @@
     function gameLoop() {
         if (!gameActive) return;
         
-        ctx.fillStyle = "#0f172a";
+        ctx.fillStyle = "#0b0f19";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // GARIS PEMBATAS BARU (Opsional - Penanda batas di atas keyboard)
@@ -277,6 +277,43 @@
         ctx.moveTo(0, player.y + 20);
         ctx.lineTo(canvas.width, player.y + 20);
         ctx.stroke();
+        // --- DRAW CUSTOM KAPAL (Abu-abu & Aksen Merah) ---
+let cx = player.x;
+let cy = player.y;
+let s = player.size;
+
+// 1. Badan Utama Kapal (Abu-abu)
+ctx.fillStyle = "#475569"; 
+ctx.beginPath();
+ctx.moveTo(cx, cy - s);          // Ujung Depan (Hidung)
+ctx.lineTo(cx - s, cy + s);      // Sayap Kiri
+ctx.lineTo(cx, cy + (s * 0.3));  // Lekukan Belakang Dalam
+ctx.lineTo(cx + s, cy + s);      // Sayap Kanan
+ctx.closePath();
+ctx.fill();
+
+// 2. Aksen Merah Kiri (Ujung Sayap Kiri)
+ctx.fillStyle = "#ef4444";
+ctx.beginPath();
+ctx.moveTo(cx - s, cy + s);
+ctx.lineTo(cx - (s * 0.7), cy + s);
+ctx.lineTo(cx - s, cy + (s * 0.7));
+ctx.closePath();
+ctx.fill();
+
+// 3. Aksen Merah Kanan (Ujung Sayap Kanan)
+ctx.fillStyle = "#ef4444";
+ctx.beginPath();
+ctx.moveTo(cx + s, cy + s);
+ctx.lineTo(cx + (s * 0.7), cy + s);
+ctx.lineTo(cx + s, cy + (s * 0.7));
+ctx.closePath();
+ctx.fill();
+
+// 4. Lampu Pendorong Belakang (Merah Neon)
+ctx.fillStyle = "#ff1e1e";
+ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
+
 
         ctx.fillStyle = "#475569";
         ctx.font = "bold 40px Courier New";
