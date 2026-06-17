@@ -3,555 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Invest</title>
+    <title>ZType Landing Page</title>
     <style>
-        :root {
-            --bg-main: #121212;
-            --bg-container: #1e1e1e;
-            --text-color: #ffffff;
-            --border-color: #333333;
-            --input-bg: #2d2d2d;
-            --button-color: #dc3545;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0f172a; color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
         }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-color);
-            max-width: 950px;
-            margin: 0 auto;
-            padding: 15px;
+        #gameCanvas {
+            display: block; width: 100vw; height: 100vh;
         }
 
-        .container {
-            background-color: var(--bg-container);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 1px solid #2a2a2a;
-            margin-bottom: 30px; /* Jarak untuk web hasil live draw di bawahnya */
+        /* Input tersembunyi untuk memancing keyboard HP keluar */
+        #hiddenInput {
+            position: absolute; top: -1000px; left: -1000px; opacity: 0;
         }
 
-        h1 {
-            color: var(--text-color);
-            text-align: center;
-            border-bottom: 2px solid #333333;
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-            font-size: 24px;
+        /* --- UI OVERLAY --- */
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.7); z-index: 10;
         }
 
-        .main-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .menu-box {
+            background: #1e293b; padding: 40px; border-radius: 10px;
+            border: 2px solid #38bdf8; text-align: center; width: 300px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
         }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            color: var(--text-color);
-            font-size: 14px;
-        }
+        h1 { color: #38bdf8; margin-top: 0; font-size: 32px; letter-spacing: 5px;}
+        h2 { color: #e2e8f0; font-size: 20px;}
+        .mobile-hint { color: #94a3b8; font-size: 12px; margin-top: 15px; }
 
-        textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-family: monospace;
-            font-size: 15px;
-            background-color: var(--input-bg);
-            color: var(--text-color);
+        button {
+            background: #0ea5e9; color: white; border: none;
+            padding: 12px 20px; margin: 10px 0; width: 100%;
+            font-size: 16px; font-weight: bold; cursor: pointer;
+            border-radius: 5px; transition: 0.2s; font-family: inherit;
         }
+        button:hover { background: #0284c7; }
 
-        #inputData {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            resize: vertical;
-            height: 180px;
-            padding: 10px;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            line-height: 1.5;
-            overflow-y: auto;
+        /* --- SETTING MENU --- */
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; text-align: left;
         }
+        .setting-row label { font-size: 14px; font-weight: bold; }
+        .setting-row input[type="range"] { width: 130px; }
+        .setting-row select { width: 130px; padding: 5px; background: #0f172a; color: white; border: 1px solid #38bdf8;}
 
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr 2fr;
-            gap: 15px;
-        }
-
-        button.btn-execute {
-            background-color: var(--button-color);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        button.btn-execute:hover {
-            background-color: #bd2130;
-        }
-
-        .bottom-layout {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .output-container {
-            position: relative;
-            width: 100%;
-        }
-
-        #outputData {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
-            color: #ffffff;
-            font-weight: bold;
-            padding-right: 80px;
-            resize: vertical;
-            height: 200px;
-            font-size: 16px;
-            line-height: 1.6;
-            overflow-y: auto;
-        }
-
-        button.btn-copy {
-            position: absolute;
-            top: 40px;
-            right: 10px;
-            background-color: #444444;
-            color: white;
-            border: 1px solid #555555;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button.btn-copy:hover {
-            background-color: #555555;
-        }
-
-        .match-box {
-            background-color: #252525;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            box-sizing: border-box;
-            min-height: 320px;
-        }
-
-        .match-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .side-by-side-results {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        @media (min-width: 768px) {
-            .main-layout {
-                display: grid;
-                grid-template-columns: 1fr 1.2fr;
-                gap: 25px;
-            }
-            .bottom-layout {
-                display: grid;
-                grid-template-columns: 1fr 1.3fr;
-                gap: 25px;
-            }
-            #inputData { height: 340px; }
-            #outputData { height: 340px; }
-            
-            .match-layout {
-                display: grid;
-                grid-template-columns: 1fr 1.2fr;
-            }
-            button.btn-copy { top: 10px; }
-        }
+        /* Helper Classes */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Kalkulator Invest</h1>
+    <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
 
-    <div class="main-layout">
-        <div>
-            <label for="inputData">Angka Asli:</label>
-            <textarea id="inputData" rows="15" readonly>45.54.68.86.73.37
-60.06.23.32.12.21
-48.84.26.62.43.34
-56.65.04.40.19.91
-59.95.07.70.46.64
-09.90.15.51.24.42
-30.03.57.75.69.96
-29.92.13.31.79.97
-36.63.08.80.17.71
-89.98.38.83.10.01
-05.50.74.47.25.52
-14.41.49.94.28.82
-18.81.58.85.67.76
-16.61.78.87.39.93
-27.72.35.53.20.02</textarea>
-        </div>
-        
-        <div>
-            <div class="grid-inputs">
-                <div>
-                    <label for="hapusAwalan">Awalan</label>
-                    <input type="text" id="hapusAwalan">
-                </div>
-                <div>
-                    <label for="hapusAkhiran">Akhiran</label>
-                    <input type="text" id="hapusAkhiran">
-                </div>
-                <div>
-                    <label for="hapusSpesifik">Spesifik</label>
-                    <input type="text" id="hapusSpesifik">
-                </div>
-            </div>
+    <canvas id="gameCanvas"></canvas>
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-execute" onclick="prosesAngka()">Prosses</button>
-                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px;">BB</button>
-            </div>
+    <div id="mainMenu" class="ui-layer">
+        <div class="menu-box">
+            <h1>Z-TYPE</h1>
+            <p>Ketik kata untuk menghancurkan musuh!</p>
+            <button onclick="startGame()">PLAY GAME</button>
+            <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
+            <p class="mobile-hint">Jika bermain di HP, sentuh layar saat bermain untuk memunculkan keyboard.</p>
         </div>
     </div>
 
-    <div class="bottom-layout">
-        <div>
-            <label style="font-size: 16px; margin-bottom: 10px;">Hasil Akhir</label>
-            <div class="output-container">
-                <textarea id="outputData" readonly></textarea>
-                <button class="btn-copy" onclick="copyHasil()" id="btnCopyText">Copy</button>
+    <div id="settingsMenu" class="ui-layer hidden">
+        <div class="menu-box">
+            <h2>SETTINGS</h2>
+            
+            <div class="setting-row">
+                <label>Volume SFX</label>
+                <input type="range" min="0" max="100" value="80">
             </div>
-        </div>
-
-        <div>
-            <label style="font-size: 16px; margin-bottom: 10px;">Angka Pembanding</label>
-            <div class="match-box">
-                
-                <div class="match-layout">
-                    <div class="match-input-side">
-                        <textarea id="inputPembanding" style="height: 200px; resize: none;"></textarea>
-                        
-                        <button class="btn-execute" onclick="cocokkanData()" style="margin-top: 10px; background-color: #2ecc71; font-size: 14px; padding: 12px; letter-spacing: 0;">Cocokkan</button>
-                    </div>
-
-                    <div class="match-result-side">
-                        
-                        <div id="wrapperHasilCocok" style="display: none; flex-direction: column; gap: 15px;">
-                            
-                            <div id="boxDouble" style="display: none;">
-                                <label style="color: #3498db; font-size: 12px; margin-bottom: 5px; display: block;">Angka Double</label>
-                                <textarea id="outputDouble" readonly style="height: 50px; border: 1px solid #3498db; color: #3498db; resize: none; width: 100%; box-sizing: border-box;"></textarea>
-                            </div>
-
-                            <div id="pesanCocok" style="display: none; color: #2ecc71; font-weight: bold; text-align: center; margin-top: 10px; font-size: 14px;">
-                                ✔ Semua Terverifikasi
-                            </div>
-
-                            <div id="gridPerbedaan" class="side-by-side-results" style="display: none;">
-                                <div style="display: flex; flex-direction: column;">
-                                    <label style="color: #e74c3c; font-size: 11px; margin-bottom: 5px;">❌ DARI HASIL ATAS ❌</label>
-                                    <textarea id="outputTidakCocok" readonly style="height: 90px; border: 1px solid #e74c3c; color: #e74c3c; resize: none; width: 100%; box-sizing: border-box;"></textarea>
-                                </div>
-
-                                <div style="display: flex; flex-direction: column;">
-                                    <label style="color: #f39c12; font-size: 11px; margin-bottom: 5px;">❌ DARI PEMBANDING ❌</label>
-                                    <textarea id="outputBerlebih" readonly style="height: 90px; border: 1px solid #f39c12; color: #f39c12; resize: none; width: 100%; box-sizing: border-box;"></textarea>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
+            
+            <div class="setting-row">
+                <label>Music</label>
+                <input type="range" min="0" max="100" value="50">
             </div>
+            
+            <div class="setting-row">
+                <label>Bahasa</label>
+                <select>
+                    <option>Indonesia</option>
+                    <option>English</option>
+                </select>
+            </div>
+
+            <button onclick="alert('Fitur Scoreboard sedang dalam pengembangan.')">SCOREBOARD</button>
+            
+            <button onclick="closeSettings()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
         </div>
     </div>
-</div>
 
-<div class="container" style="padding: 10px; border: 2px solid #333;">
-    <h2 style="text-align: center; margin-top: 0; color: #fff; font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 10px;">Hasil Pengeluaran HK</h2>
-    
-    <div style="width: 100%; height: 400px; overflow-y: auto; overflow-x: hidden; position: relative; border-radius: 5px; background: white;">
-        <iframe 
-            src="https://keluaran-hk-3003.ishicon2025.com" 
-            style="width: 100%; height: 1000px; border: none;">
-        </iframe>
+    <div id="gameOverMenu" class="ui-layer hidden">
+        <div class="menu-box">
+            <h1 style="color: #ef4444;">GAME OVER</h1>
+            <h2 id="finalScoreText">Score: 0</h2>
+            <button onclick="startGame()">TRY AGAIN</button>
+            <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
+        </div>
     </div>
-</div>
 
 <script>
-    // FILTER DATA ASLI
-    function bersihkanInput(str) {
-        if (!str) return [];
-        return str.split('.').map(item => item.trim()).filter(item => item !== '');
+    // --- NAVIGASI RAHASIA ---
+    function goToDashboard() {
+        window.location.href = 'dashboard.html'; 
     }
 
-    function prosesAngka() {
-        const inputStr = document.getElementById('inputData').value;
-        const awalanArr = bersihkanInput(document.getElementById('hapusAwalan').value);
-        const akhiranArr = bersihkanInput(document.getElementById('hapusAkhiran').value);
-        const spesifikArr = bersihkanInput(document.getElementById('hapusSpesifik').value);
-
-        let rawArray = inputStr.replace(/\n/g, '.').split('.');
-        let numArray = rawArray.map(n => n.trim()).filter(n => n !== '');
-
-        if (numArray.length === 0) {
-            document.getElementById('outputData').value = "";
-            return;
-        }
-
-        let hasil = [];
-
-        for (let angka of numArray) {
-            let harusDihapus = false;
-            for (let awalan of awalanArr) {
-                if (angka.startsWith(awalan)) { harusDihapus = true; break; }
-            }
-            if (!harusDihapus) {
-                for (let akhiran of akhiranArr) {
-                    if (angka.endsWith(akhiran)) { harusDihapus = true; break; }
-                }
-            }
-            if (!harusDihapus) {
-                if (spesifikArr.includes(angka)) { harusDihapus = true; }
-            }
-            if (!harusDihapus) { hasil.push(angka); }
-        }
-
-        let barisHasil = [];
-        for (let i = 0; i < hasil.length; i += 6) {
-            barisHasil.push(hasil.slice(i, i + 6).join('.'));
-        }
-
-        document.getElementById('outputData').value = barisHasil.join('\n');
-        document.getElementById('btnCopyText').innerText = "Copy";
-    }
-
-    // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2a X" KEMBALI JADI ANGKA SATUAN
-    function parseAndExpand(str) {
-        let result = [];
-        let regexBB = /(\d+)\s+bb\s+(2d|2a\s*x)/gi;
-        let match;
-        let processedStr = str;
-        
-        while ((match = regexBB.exec(str)) !== null) {
-            let d = match[1];
-            for(let i=0; i<d.length; i++) {
-                for(let j=0; j<d.length; j++) {
-                    if(i !== j) result.push(d[i]+d[j]);
-                }
-            }
-            processedStr = processedStr.replace(match[0], ' ');
-        }
-        
-        let nums = processedStr.replace(/[\n\s,.]+/g, ' ').split(' ').filter(Boolean);
-        result.push(...nums);
-        return result;
-    }
-
-  function ringkasBB() {
-    const outputTextArea = document.getElementById('outputData');
-    let val = outputTextArea.value;
-    if (!val) {
-        alert("Silakan proses Hasil Akhir terlebih dahulu.");
-        return;
-    }
-
-    // 1. Ambil semua angka 2D dan pastikan tidak ada duplikat
-    let angka2D = parseAndExpand(val); 
-    angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
-
-    let digits = '0123456789';
-    let subsets = [];
-    let f = function(prefix, str) {
-        for (let i = 0; i < str.length; i++) {
-            subsets.push(prefix + str[i]);
-            f(prefix + str[i], str.slice(i + 1));
-        }
-    };
-    f('', digits);
+    // --- UI LOGIC ---
+    const mainMenu = document.getElementById('mainMenu');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const gameOverMenu = document.getElementById('gameOverMenu');
+    const hiddenInput = document.getElementById('hiddenInput');
+    const canvas = document.getElementById('gameCanvas');
     
-    // Hanya ambil kombinasi 4 digit angka
-    subsets = subsets.filter(s => s.length === 4);
+    function openSettings() {
+        mainMenu.classList.add('hidden');
+        gameOverMenu.classList.add('hidden');
+        settingsMenu.classList.remove('hidden');
+    }
+    
+    function closeSettings() {
+        settingsMenu.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+    }
 
-    // 2. Kumpulkan SEMUA kandidat BB 4-angka yang angkanya 100% lengkap di daftar
-    let validSubsets = subsets.filter(subset => {
-        let perms = [];
-        for(let i=0; i<4; i++) {
-            for(let j=0; j<4; j++) {
-                if(i !== j) perms.push(subset[i]+subset[j]);
-            }
+    // --- GAME ENGINE LOGIC ---
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let wordsList = ["KOMPUTER", "SAYA", "ANAK", "BABI"," SAPI" ,"RAJIN", "PINTAR", "CARI", "UANG", "KAMU", "CINTA", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
+    let enemies = [];
+    let lasers = [];
+    let score = 0;
+    let gameActive = false;
+    let activeEnemy = null;
+    let spawnRate = 120;
+    let frameCount = 0;
+
+    // Player Object
+    const player = { x: canvas.width / 2, y: canvas.height - 50, size: 20 };
+
+    class Enemy {
+        constructor() {
+            this.word = wordsList[Math.floor(Math.random() * wordsList.length)];
+            this.typed = "";
+            this.x = Math.random() * (canvas.width - 150) + 50;
+            this.y = -20;
+            this.speed = 0.5 + Math.random() * 0.8;
         }
-        return perms.every(p => angka2D.includes(p));
+        draw() {
+            ctx.font = "20px 'Courier New'";
+            let typedWidth = ctx.measureText(this.typed).width;
+            
+            ctx.fillStyle = "#22c55e"; // Hijau untuk yang sudah diketik
+            ctx.fillText(this.typed, this.x, this.y);
+            
+            ctx.fillStyle = "#ffffff"; // Putih untuk sisa kata
+            ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
+        }
+        update() { this.y += this.speed; }
+    }
+
+    class Laser {
+        constructor(targetX, targetY) {
+            this.x = player.x; this.y = player.y;
+            this.targetX = targetX; this.targetY = targetY;
+            this.speed = 15;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x, this.y - 15);
+            ctx.strokeStyle = "#38bdf8";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        update() { this.y -= this.speed; }
+    }
+
+    function startGame() {
+        enemies = []; lasers = []; score = 0; frameCount = 0; activeEnemy = null;
+        gameActive = true;
+        mainMenu.classList.add('hidden');
+        gameOverMenu.classList.add('hidden');
+        
+        // Paksa keyboard muncul di HP
+        hiddenInput.value = "";
+        hiddenInput.focus();
+        
+        gameLoop();
+    }
+
+    function gameOver() {
+        gameActive = false;
+        document.getElementById('finalScoreText').innerText = "Score: " + score;
+        gameOverMenu.classList.remove('hidden');
+        hiddenInput.blur(); // Sembunyikan keyboard
+    }
+
+    // Memunculkan kembali keyboard jika player menyentuh layar area game
+    canvas.addEventListener('click', () => {
+        if (gameActive) {
+            hiddenInput.focus();
+        }
     });
 
-    // 3. Acak urutan kandidat BB agar hasil selalu berubah setiap diklik
-    for (let i = validSubsets.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [validSubsets[i], validSubsets[j]] = [validSubsets[j], validSubsets[i]];
-    }
+    // --- LOGIKA TRIGGER RAHASIA & KETIKAN ---
+    let enterCount = 0;
+    let enterTimer = null;
 
-    // 4. Pilih tepat 2 grup BB yang tidak saling bertabrakan angkanya
-    let bbGroups = [];
-    let usedPerms = new Set();
-    
-    for (let subset of validSubsets) {
-        let perms = [];
-        for(let i=0; i<4; i++) {
-            for(let j=0; j<4; j++) {
-                if(i !== j) perms.push(subset[i]+subset[j]);
+    // Mendeteksi Enter (Rahasia)
+    hiddenInput.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+
+        if (e.key === 'Enter') {
+            // Hanya berlaku jika tidak ada kata yang sedang diketik
+            if (activeEnemy === null) {
+                enterCount++;
+                
+                if (enterCount === 1) {
+                    // Mulai timer 5 detik
+                    enterTimer = setTimeout(() => {
+                        enterCount = 0; // Reset jika lebih dari 5 detik
+                    }, 5000);
+                }
+
+                if (enterCount >= 5) {
+                    clearTimeout(enterTimer);
+                    goToDashboard(); // Masuk ke web asli
+                }
             }
         }
+    });
+
+    // Mendeteksi Huruf (Game) - Menggunakan 'input' lebih stabil untuk keyboard HP
+    hiddenInput.addEventListener('input', (e) => {
+        if (!gameActive) return;
         
-        // Cek apakah ada angka pasangan yang sudah terpakai oleh grup BB sebelumnya
-        let isOverlap = perms.some(p => usedPerms.has(p));
+        let val = hiddenInput.value;
+        hiddenInput.value = ''; // Langsung bersihkan input
         
-        if (!isOverlap) {
-            bbGroups.push(subset + " bb 2a X");
-            perms.forEach(p => usedPerms.add(p));
-            // Berhenti secara absolut jika sudah dapat 2 grup BB
-            if (bbGroups.length === 2) break; 
-        }
-    }
-    
-    // 5. Hapus semua angka yang sudah masuk grup BB dari daftar utama
-    angka2D = angka2D.filter(a => !usedPerms.has(a));
-    
-    // 6. Susun ulang sisa angka ke dalam 6 kolom
-    let finalOutput = [];
-    let barisAngka = [];
-    for (let i = 0; i < angka2D.length; i += 6) {
-        barisAngka.push(angka2D.slice(i, i + 6).join('.'));
-    }
+        if (val.length === 0) return;
 
-    if (barisAngka.length > 0) {
-        finalOutput.push(barisAngka.join('\n'));
-    }
-
-    if (bbGroups.length > 0) {
-        if (finalOutput.length > 0) finalOutput.push('---');
-        finalOutput.push(bbGroups.join('\n'));
-    }
-
-    outputTextArea.value = finalOutput.join('\n');
-}
-
-    function copyHasil() {
-        const outputTextArea = document.getElementById('outputData');
-        if (!outputTextArea.value) return;
-
-        outputTextArea.select();
-        outputTextArea.setSelectionRange(0, 99999);
-
-        navigator.clipboard.writeText(outputTextArea.value).then(() => {
-            const btnCopy = document.getElementById('btnCopyText');
-            btnCopy.innerText = "Copied!";
-            setTimeout(() => {
-                btnCopy.innerText = "Copy";
-            }, 2000);
-        });
-    }
-
-    // FUNGSI PENCOCOK DATA
-    function cocokkanData() {
-        const hasilProsesStr = document.getElementById('outputData').value;
-        const pembandingStr = document.getElementById('inputPembanding').value;
+        let key = val.charAt(val.length - 1).toUpperCase();
         
-        const wrapper = document.getElementById('wrapperHasilCocok');
-        const boxDouble = document.getElementById('boxDouble');
-        const outputDouble = document.getElementById('outputDouble');
-        const pesanCocok = document.getElementById('pesanCocok');
-        const gridPerbedaan = document.getElementById('gridPerbedaan');
-        const outputTidakCocok = document.getElementById('outputTidakCocok');
-        const outputBerlebih = document.getElementById('outputBerlebih');
+        // Jika pencet huruf, reset hitungan Enter rahasia
+        enterCount = 0;
+        clearTimeout(enterTimer);
 
-        wrapper.style.display = 'flex';
-        boxDouble.style.display = 'none';
-        pesanCocok.style.display = 'none';
-        gridPerbedaan.style.display = 'none';
-        outputDouble.value = '';
-        outputTidakCocok.value = '';
-        outputBerlebih.value = '';
+        if (!/^[A-Z]$/.test(key)) return;
 
-        if (!hasilProsesStr || !pembandingStr) {
-            alert("Mohon pastikan Anda sudah memproses 'Hasil Akhir' dan mengisi angka di kolom pembanding.");
-            wrapper.style.display = 'none';
-            return;
-        }
-
-        let rawPembandingArr = parseAndExpand(pembandingStr);
-        
-        let cekSet = new Set();
-        let doubleSet = new Set();
-
-        for (let num of rawPembandingArr) {
-            if (cekSet.has(num)) {
-                doubleSet.add(num);
-            } else {
-                cekSet.add(num);
+        if (!activeEnemy) {
+            let target = enemies.slice().sort((a,b) => b.y - a.y).find(en => en.word[0] === key);
+            if (target) {
+                activeEnemy = target;
+                activeEnemy.typed += key;
+                lasers.push(new Laser(activeEnemy.x, activeEnemy.y));
             }
-        }
-
-        let arrDouble = Array.from(doubleSet);
-        if (arrDouble.length > 0) {
-            boxDouble.style.display = 'block';
-            outputDouble.value = arrDouble.join(' ');
-        }
-
-        let hasilArr = parseAndExpand(hasilProsesStr);
-        let pembandingUnikArr = Array.from(cekSet); 
-
-        let tidakDitemukan = hasilArr.filter(angka => !pembandingUnikArr.includes(angka));
-        let angkaBerlebih = pembandingUnikArr.filter(angka => !hasilArr.includes(angka));
-
-        if (tidakDitemukan.length === 0 && angkaBerlebih.length === 0) {
-            pesanCocok.style.display = 'block';
         } else {
-            gridPerbedaan.style.display = 'grid'; 
-            
-            if (tidakDitemukan.length > 0) {
-                outputTidakCocok.value = tidakDitemukan.join(' ');
-            } else {
-                outputTidakCocok.value = "-";
-            }
-
-            if (angkaBerlebih.length > 0) {
-                outputBerlebih.value = angkaBerlebih.join(' ');
-            } else {
-                outputBerlebih.value = "-";
+            let nextChar = activeEnemy.word[activeEnemy.typed.length];
+            if (key === nextChar) {
+                activeEnemy.typed += key;
+                lasers.push(new Laser(activeEnemy.x, activeEnemy.y));
+                
+                if (activeEnemy.typed === activeEnemy.word) {
+                    score += activeEnemy.word.length * 10;
+                    enemies = enemies.filter(en => en !== activeEnemy);
+                    activeEnemy = null;
+                }
             }
         }
-    }
-</script>
+    });
 
+    function gameLoop() {
+        if (!gameActive) return;
+        
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#475569";
+        ctx.font = "bold 40px Courier New";
+        ctx.fillText("SCORE: " + score, 20, 50);
+
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - player.size);
+        ctx.lineTo(player.x - player.size, player.y + player.size);
+        ctx.lineTo(player.x + player.size, player.y + player.size);
+        ctx.fill();
+
+        frameCount++;
+        if (frameCount % spawnRate === 0) {
+            enemies.push(new Enemy());
+            if (spawnRate > 40) spawnRate -= 2;
+        }
+
+        lasers.forEach((l, index) => {
+            l.update(); l.draw();
+            if (l.y < 0) lasers.splice(index, 1);
+        });
+
+        enemies.forEach(en => {
+            en.update(); en.draw();
+            if (en.y > canvas.height - 30) {
+                gameOver();
+            }
+        });
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        player.x = canvas.width / 2;
+        player.y = canvas.height - 50;
+    });
+</script>
 </body>
 </html>
