@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZType Landing Page</title>
+    <title>Type-Shooter</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -141,13 +141,13 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let wordsList = ["KOMPUTER", "SAYA", "ANAK", "BABI"," SAPI" ,"RAJIN", "PINTAR", "CARI", "UANG", "KAMU", "CINTA", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
+    let wordsList = ["KOMPUTER", "SAYA", "ANAK", "BABI", "SAPI", "RAJIN", "PINTAR", "CARI", "UANG", "KAMU", "CINTA", "BELAJAR", "SEKOLAH", "KAMPUS", "TEKNOLOGI", "CERDAS", "SUKSES", "INOVASI", "BACA", "TULIS", "INTERNET", "PROGRAM", "SISTEM", "BUKU"];
     let enemies = [];
     let lasers = [];
     let score = 0;
     let gameActive = false;
     let activeEnemy = null;
-    let spawnRate = 120;
+    let spawnRate = 150;
     let frameCount = 0;
 
     // Player Object
@@ -235,7 +235,7 @@
                     // Mulai timer 5 detik
                     enterTimer = setTimeout(() => {
                         enterCount = 0; // Reset jika lebih dari 5 detik
-                    }, 5000);
+                    }, 4000);
                 }
 
                 if (enterCount >= 5) {
