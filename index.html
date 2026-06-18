@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-Shooter Responsive Pro</title>
+    <title>Type-Shooter Ultimate Edition</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -29,12 +29,12 @@
 
         .menu-box {
             background: #1e293b; padding: 40px; border-radius: 10px;
-            border: 2px solid #38bdf8; text-align: center; width: 300px;
+            border: 2px solid #38bdf8; text-align: center; width: 320px;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
         }
 
         h1 { color: #38bdf8; margin-top: 0; font-size: 32px; letter-spacing: 5px;}
-        h2 { color: #e2e8f0; font-size: 20px;}
+        h2 { color: #e2e8f0; font-size: 20px; margin-top: 0;}
         .mobile-hint { color: #94a3b8; font-size: 12px; margin-top: 15px; }
 
         button {
@@ -54,6 +54,24 @@
         .setting-row select { width: 130px; padding: 5px; background: #0f172a; color: white; border: 1px solid #38bdf8;}
 
         .hidden { display: none !important; }
+
+        /* Style Tabel Scoreboard */
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+            text-align: left;
+        }
+        .score-table th {
+            color: #38bdf8;
+            border-bottom: 2px solid #38bdf8;
+            padding: 8px 4px;
+        }
+        .score-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -68,6 +86,7 @@
             <p>Ketik Untuk Menghancurkan Kata</p>
             <button onclick="startGame()">PLAY GAME</button>
             <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
+            <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
             <p class="mobile-hint">Jika bermain di HP/iPad, sentuh layar untuk memunculkan keyboard.</p>
         </div>
     </div>
@@ -78,12 +97,12 @@
             
             <div class="setting-row">
                 <label>Volume SFX</label>
-                <input type="range" min="0" max="100" value="80">
+                <input type="range" id="sfxVolumeSlider" min="0" max="100" value="80" oninput="updateVolume()">
             </div>
             
             <div class="setting-row">
-                <label>Music</label>
-                <input type="range" min="0" max="100" value="50">
+                <label>Music BGM</label>
+                <input type="range" id="musicVolumeSlider" min="0" max="100" value="50" oninput="updateVolume()">
             </div>
             
             <div class="setting-row">
@@ -93,10 +112,17 @@
                     <option>English</option>
                 </select>
             </div>
-
-            <button onclick="alert('Scoreboard sedang dalam pengembangan.')">SCOREBOARD</button>
             
             <button onclick="closeSettings()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
+        </div>
+    </div>
+
+    <div id="scoreboardMenu" class="ui-layer hidden">
+        <div class="menu-box" style="width: 350px;">
+            <h2>TOP 5 HIGH SCORES</h2>
+            <div id="scoreboardContent">
+                </div>
+            <button onclick="closeScoreboard()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
         </div>
     </div>
 
@@ -105,7 +131,8 @@
             <h1 style="color: #ef4444;">GAME OVER</h1>
             <h2 id="finalScoreText">Score: 0</h2>
             <button onclick="startGame()">TRY AGAIN</button>
-            <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
+            <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
+            <button onclick="openMenu Utama()" id="btnBackToMenu" style="background: #475569;">MENU UTAMA</button>
         </div>
     </div>
 
@@ -116,6 +143,7 @@
 
     const mainMenu = document.getElementById('mainMenu');
     const settingsMenu = document.getElementById('settingsMenu');
+    const scoreboardMenu = document.getElementById('scoreboardMenu');
     const gameOverMenu = document.getElementById('gameOverMenu');
     const hiddenInput = document.getElementById('hiddenInput');
     const canvas = document.getElementById('gameCanvas');
@@ -131,6 +159,28 @@
         mainMenu.classList.remove('hidden');
     }
 
+    function openMenuUtama() {
+        gameOverMenu.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+    }
+
+    // --- INTEGRASI AUDIO AUDIO JAVASCRIPT ---
+    const shootSFX = new Audio('https://actions.google.com/sounds/v1/science_fiction/alien_computer_beep.ogg');
+    const explosionSFX = new Audio('https://actions.google.com/sounds/v1/science_fiction/low_frequence_explosion.ogg');
+    const bgMusic = new Audio('https://actions.google.com/sounds/v1/ambiences/ambient_space_pad.ogg');
+    bgMusic.loop = true;
+
+    function updateVolume() {
+        const sfxVol = document.getElementById('sfxVolumeSlider').value / 100;
+        const musicVol = document.getElementById('musicVolumeSlider').value / 100;
+        
+        shootSFX.volume = sfxVol;
+        explosionSFX.volume = sfxVol;
+        bgMusic.volume = musicVol;
+    }
+    // Set volume awal pas muat halaman
+    updateVolume();
+
     // --- GAME ENGINE ---
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -139,7 +189,7 @@
     let wordsList = ["DESA", "PONTIANAK", "KALIMANTAN", "SIANTAN", "GAIA", "KOTA", "RUMAH",
                      "SAYA", "ANAK", "SAPI", "BABI", "MAMA", "PAPA", "SEKOLAH", "SUKSES", 
                      "BACA", "TULIS", "BUKU", "LANDAK", "DESKAP", "AYANI", "KWECAP", "SINGKAWANG", "EMAS", "PANAS", 
-                    "DINGIN", "ANAK", "MAIN", "MALL", "SEPEDA", "LAPTOP", "IPAD", "BUBUR", "CEHUNTIAU", "CHOIPAN"];
+                    "DINGIN", "MAIN", "MALL", "SEPEDA", "LAPTOP", "IPAD", "BUBUR", "CEHUNTIAU", "CHOIPAN"];
     let enemies = [];
     let lasers = [];
     let particles = [];
@@ -150,31 +200,21 @@
     let spawnRate = 130;
     let frameCount = 0;
 
-    // Inisialisasi awal pesawat (posisi akan disesuaikan fungsi updatePlayerPosition)
     const player = { x: canvas.width / 2, y: canvas.height - 100, size: 25 };
 
-    // === PENGATURAN PIN RAHASIA ===
     let kodeAngka = ""; 
-    const PIN_RAHASIA = "0189"; 
+    const PIN_RAHASIA = "2026"; 
 
-    // === ADAPTIVE LAYOUT (DETEKSI DEVICE & ORIENTASI) ===
     function updatePlayerPosition() {
         player.x = canvas.width / 2;
-        
-        // Deteksi apakah user menggunakan perangkat layar sentuh (HP/iPad)
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        // Deteksi mode portrait (tinggi layar lebih besar dari lebar)
         const isPortrait = canvas.height > canvas.width;
 
         if (isTouchDevice && isPortrait) {
-            // Jika bermain di HP/iPad mode Portrait, naikkan posisi pesawat agar tidak tertutup keyboard virtual
             player.y = canvas.height - 340; 
         } else if (isTouchDevice && !isPortrait) {
-            // Jika iPad/HP diputar ke Landscape, keyboard biasanya memakan space lebih sedikit
             player.y = canvas.height - 220;
         } else {
-            // Jika di Komputer / PC / Laptop (Tidak ada keyboard virtual)
-            // Pesawat berada di bagian paling bawah layar dengan jarak aman standar (80px)
             player.y = canvas.height - 80;
         }
     }
@@ -194,7 +234,15 @@
     class Enemy {
         constructor() {
             ctx.font = "bold 22px 'Courier New'";
-            this.word = wordsList[Math.floor(Math.random() * wordsList.length)];
+            
+            // === FILTER CEK KATA SAMA (PENCEGAHAN DUPLIKAT) ===
+            let activeWords = enemies.map(e => e.word);
+            let filteredList = wordsList.filter(w => !activeWords.includes(w));
+            
+            // Proteksi darurat jika semua kata di database sedang tampil (sangat jarang)
+            if(filteredList.length === 0) filteredList = wordsList;
+
+            this.word = filteredList[Math.floor(Math.random() * filteredList.length)];
             this.typed = "";
             
             let wordWidth = ctx.measureText(this.word).width;
@@ -287,6 +335,44 @@
         }
     }
 
+    // === OPERASI SISTEM DATA SCOREBOARD ===
+    function saveHighScore(finalScore) {
+        let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
+        scores.push({ score: finalScore, date: new Date().toLocaleDateString('id-ID') });
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 5); // Ambil Top 5 saja
+        localStorage.setItem('typeShooterScores', JSON.stringify(scores));
+    }
+
+    function showScoreboard() {
+        mainMenu.classList.add('hidden');
+        gameOverMenu.classList.add('hidden');
+        scoreboardMenu.classList.remove('hidden');
+
+        let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
+        let contentDiv = document.getElementById('scoreboardContent');
+
+        if(scores.length === 0) {
+            contentDiv.innerHTML = "<p style='color:#94a3b8; margin: 20px 0;'>Belum ada skor tercatat. Mainkan game sekarang!</p>";
+        } else {
+            let tableHTML = "<table class='score-table'><tr><th>Rank</th><th>Skor</th><th>Tanggal</th></tr>";
+            scores.forEach((item, index) => {
+                tableHTML += `<tr>
+                    <td>#${index + 1}</td>
+                    <td style="color:#4ade80; font-weight:bold;">${item.score}</td>
+                    <td style="color:#94a3b8;">${item.date}</td>
+                </tr>`;
+            });
+            tableHTML += "</table>";
+            contentDiv.innerHTML = tableHTML;
+        }
+    }
+
+    function closeScoreboard() {
+        scoreboardMenu.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+    }
+
     function startGame() {
         enemies = []; lasers = []; particles = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
         updatePlayerPosition();
@@ -296,11 +382,20 @@
         gameOverMenu.classList.add('hidden');
         hiddenInput.value = "";
         hiddenInput.focus();
+        
+        // Putar musik saat game dimulai (kebijakan interaksi browser aman)
+        bgMusic.play().catch(() => {}); 
+        
         gameLoop();
     }
 
     function gameOver() {
         gameActive = false;
+        bgMusic.pause(); // Matikan musik saat kalah
+        bgMusic.currentTime = 0;
+        
+        saveHighScore(score); // Simpan skor secara lokal
+        
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         gameOverMenu.classList.remove('hidden');
         hiddenInput.blur();
@@ -326,6 +421,7 @@
                 kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
             }
             if (kodeAngka === PIN_RAHASIA) {
+                bgMusic.pause();
                 goToDashboard();
                 return; 
             }
@@ -343,6 +439,10 @@
                 targets.sort((a, b) => b.y - a.y); 
                 activeEnemy = targets[0]; 
                 activeEnemy.typed += key;
+                
+                shootSFX.currentTime = 0; // Reset pemicu audio instan
+                shootSFX.play().catch(() => {}); // Putar SFX Tembak
+                
                 let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
                 lasers.push(new Laser(targetX, activeEnemy.y));
             }
@@ -350,11 +450,19 @@
             let nextChar = activeEnemy.word[activeEnemy.typed.length];
             if (key === nextChar) {
                 activeEnemy.typed += key;
+                
+                shootSFX.currentTime = 0;
+                shootSFX.play().catch(() => {});
+                
                 let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
                 lasers.push(new Laser(targetX, activeEnemy.y));
                 
                 if (activeEnemy.typed === activeEnemy.word) {
                     score += activeEnemy.word.length * 10;
+                    
+                    explosionSFX.currentTime = 0;
+                    explosionSFX.play().catch(() => {}); // Putar SFX Meledak
+                    
                     createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length);
                     enemies = enemies.filter(en => en !== activeEnemy);
                     activeEnemy = null;
@@ -369,7 +477,6 @@
         ctx.fillStyle = "#0b0f19";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // --- DRAW BINTANG BERGERAK ---
         ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         stars.forEach(star => {
             ctx.fillRect(star.x, star.y, star.size, star.size);
@@ -380,9 +487,7 @@
             }
         });
 
-        // --- DRAW BATAS DETEKSI GAME OVER (Garis Horizontal) ---
-        // Batas Game Over sekarang otomatis mengikuti posisi garis pertahanan pesawat
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.4)"; // Berubah jadi warna merah transparan sebagai zona bahaya
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.4)"; 
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(0, player.y + 35);
@@ -442,7 +547,6 @@
         ctx.ellipse(cx, cy - s*0.2, s*0.25, s*0.5, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- UPDATE & DRAW PARTIKEL LEDAKAN ---
         particles.forEach((p, index) => {
             p.update();
             p.draw();
@@ -462,7 +566,6 @@
 
         enemies.forEach(en => {
             en.update(); en.draw();
-            // Cek Game Over berdasarkan posisi garis pertahanan pesawat yang adaptif
             if (en.y > player.y + 15) {
                 gameOver();
             }
@@ -474,9 +577,12 @@
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        updatePlayerPosition(); // Hitung ulang posisi pesawat dan garis Game Over saat layar berubah ukuran/orientasi
+        updatePlayerPosition(); 
         initStars(); 
     });
+    
+    // Pemicu inisialisasi awal layar
+    updatePlayerPosition();
 </script>
 </body>
 </html>
