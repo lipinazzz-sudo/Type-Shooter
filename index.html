@@ -136,7 +136,6 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // PENGATURAN TINGGI KEYBOARD 
     const keyboardOffset = 330; 
 
     let wordsList = ["DESA", "PONTIANAK", "KALIMANTAN", "SIANTAN", "GAIA", "KOTA", "RUMAH",
@@ -151,11 +150,11 @@
     let spawnRate = 130;
     let frameCount = 0;
 
-    const player = { x: canvas.width / 2, y: canvas.height - keyboardOffset, size: 20 };
+    const player = { x: canvas.width / 2, y: canvas.height - keyboardOffset, size: 25 };
 
     // === PENGATURAN PIN RAHASIA ===
     let kodeAngka = ""; 
-    const PIN_RAHASIA = "0189"; // <-- Ubah angka ini jika ingin mengganti PIN
+    const PIN_RAHASIA = "0189"; 
 
     class Enemy {
         constructor() {
@@ -166,10 +165,18 @@
             this.speed = 0.5 + Math.random() * 0.8;
         }
         draw() {
-            ctx.font = "20px 'Courier New'";
+            // Font dibuat lebih tebal agar glow terlihat jelas
+            ctx.font = "bold 22px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
-            ctx.fillStyle = "#22c55e"; 
+
+            // 1. Teks yang SEDANG DIKETIK (Hijau Menyala)
+            ctx.fillStyle = "#4ade80"; // Hijau terang
+            ctx.shadowBlur = 15;       // Efek neon/glow
+            ctx.shadowColor = "#22c55e"; 
             ctx.fillText(this.typed, this.x, this.y);
+
+            // 2. Teks yang BELUM DIKETIK (Putih Bersih)
+            ctx.shadowBlur = 0; // Matikan glow agar teks sisa tetap tajam
             ctx.fillStyle = "#ffffff"; 
             ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
         }
@@ -179,24 +186,40 @@
     class Laser {
         constructor(targetX, targetY) {
             this.x = player.x; 
-            this.y = player.y; 
-            this.targetX = targetX; this.targetY = targetY;
-            this.speed = 15;
+            this.y = player.y - (player.size * 1.2); // Laser keluar dari moncong pesawat
+            this.speed = 25; // Kecepatan laser dinaikkan agar lebih responsif
+
+            // Menghitung vektor (arah) agar tembakan miring menuju huruf
+            let dx = targetX - this.x;
+            let dy = targetY - this.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            
+            this.vx = (dx / distance) * this.speed;
+            this.vy = (dy / distance) * this.speed;
         }
         draw() {
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.x, this.y - 15);
-            ctx.strokeStyle = "#38bdf8";
-            ctx.lineWidth = 3;
+            // Garis laser memanjang mengikuti arah geraknya
+            ctx.lineTo(this.x - (this.vx * 0.8), this.y - (this.vy * 0.8));
+            ctx.strokeStyle = "#38bdf8"; 
+            ctx.lineWidth = 4;
+            
+            // Efek glow pada tembakan laser
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#0ea5e9";
             ctx.stroke();
+            ctx.shadowBlur = 0;
         }
-        update() { this.y -= this.speed; }
+        update() { 
+            this.x += this.vx; 
+            this.y += this.vy; 
+        }
     }
 
     function startGame() {
         enemies = []; lasers = []; score = 0; frameCount = 0; activeEnemy = null;
-        kodeAngka = ""; // Reset PIN saat game baru dimulai
+        kodeAngka = ""; 
         gameActive = true;
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
@@ -218,7 +241,6 @@
         }
     });
 
-    // === LOGIKA INPUT KEYBOARD (HURUF & PIN ANGKA) ===
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
@@ -227,38 +249,40 @@
 
         let karakter = val.charAt(val.length - 1);
 
-        // 1. DETEKSI PIN ANGKA RAHASIA
         if (/^[0-9]$/.test(karakter)) {
             kodeAngka += karakter;
-            
             if (kodeAngka.length > PIN_RAHASIA.length) {
                 kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
             }
-            
             if (kodeAngka === PIN_RAHASIA) {
                 goToDashboard();
                 return; 
             }
-            return; // Jika yang diketik angka, lupakan huruf, jangan keluarkan laser
+            return; 
         }
 
-        // 2. LOGIKA GAME NORMAL (HURUF)
         let key = karakter.toUpperCase();
-
         if (!/^[A-Z]$/.test(key)) return;
+
+        // Atur font untuk mengukur posisi tembakan secara akurat
+        ctx.font = "bold 22px 'Courier New'"; 
 
         if (!activeEnemy) {
             let target = enemies.slice().sort((a,b) => b.y - a.y).find(en => en.word[0] === key);
             if (target) {
                 activeEnemy = target;
                 activeEnemy.typed += key;
-                lasers.push(new Laser(activeEnemy.x, activeEnemy.y));
+                // Hitung posisi akurat huruf yang diketik untuk arah laser
+                let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
+                lasers.push(new Laser(targetX, activeEnemy.y));
             }
         } else {
             let nextChar = activeEnemy.word[activeEnemy.typed.length];
             if (key === nextChar) {
                 activeEnemy.typed += key;
-                lasers.push(new Laser(activeEnemy.x, activeEnemy.y));
+                let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
+                lasers.push(new Laser(targetX, activeEnemy.y));
+                
                 if (activeEnemy.typed === activeEnemy.word) {
                     score += activeEnemy.word.length * 10;
                     enemies = enemies.filter(en => en !== activeEnemy);
@@ -277,45 +301,67 @@
         ctx.strokeStyle = "rgba(71, 85, 105, 0.5)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, player.y + 20);
-        ctx.lineTo(canvas.width, player.y + 20);
+        ctx.moveTo(0, player.y + 40);
+        ctx.lineTo(canvas.width, player.y + 40);
         ctx.stroke();
 
         ctx.fillStyle = "#475569";
         ctx.font = "bold 40px Courier New";
         ctx.fillText("SCORE: " + score, 20, 50);
 
+        // === DRAW KAPAL PESAWAT BARU (SCI-FI FIGHTER) ===
         let cx = player.x;
         let cy = player.y;
         let s = player.size;
 
-        ctx.fillStyle = "#475569"; 
+        // 1. Efek Api Pendorong (Thruster Animasi)
+        let thrustGlow = (frameCount % 10 < 5) ? 15 : 25; // Berkedip
+        ctx.fillStyle = "#0ea5e9";
+        ctx.shadowBlur = thrustGlow;
+        ctx.shadowColor = "#38bdf8";
         ctx.beginPath();
-        ctx.moveTo(cx, cy - s);          
-        ctx.lineTo(cx - s, cy + s);      
-        ctx.lineTo(cx, cy + (s * 0.3));  
-        ctx.lineTo(cx + s, cy + s);      
-        ctx.closePath();
+        ctx.moveTo(cx - 8, cy + s - 5);
+        ctx.lineTo(cx + 8, cy + s - 5);
+        ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); // Panjang api berubah
+        ctx.fill();
+        ctx.shadowBlur = 0; // Matikan glow
+
+        // 2. Sayap Bawah Latar (Sayap Lebar)
+        ctx.fillStyle = "#1e293b";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - s*0.2);
+        ctx.lineTo(cx - s*1.4, cy + s);
+        ctx.lineTo(cx + s*1.4, cy + s);
         ctx.fill();
 
-        ctx.fillStyle = "#ef4444";
+        // 3. Badan Utama Pesawat
+        ctx.fillStyle = "#475569";
         ctx.beginPath();
-        ctx.moveTo(cx - s, cy + s);
-        ctx.lineTo(cx - (s * 0.7), cy + s);
-        ctx.lineTo(cx - s, cy + (s * 0.7));
-        ctx.closePath();
+        ctx.moveTo(cx, cy - s*1.3); // Moncong Runcing
+        ctx.lineTo(cx - s*0.8, cy + s - 5);
+        ctx.lineTo(cx, cy + s - 10); // Lekukan belakang
+        ctx.lineTo(cx + s*0.8, cy + s - 5);
         ctx.fill();
 
-        ctx.fillStyle = "#ef4444";
-        ctx.beginPath();
-        ctx.moveTo(cx + s, cy + s);
-        ctx.lineTo(cx + (s * 0.7), cy + s);
-        ctx.lineTo(cx + s, cy + (s * 0.7));
-        ctx.closePath();
+        // 4. Aksen Warna Sayap Kiri dan Kanan (Aksen Biru/Cyan)
+        ctx.fillStyle = "#0ea5e9";
+        ctx.beginPath(); // Kiri
+        ctx.moveTo(cx - s*1.4, cy + s);
+        ctx.lineTo(cx - s*1.1, cy + s*0.5);
+        ctx.lineTo(cx - s*0.8, cy + s - 5);
         ctx.fill();
 
-        ctx.fillStyle = "#ff1e1e";
-        ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
+        ctx.beginPath(); // Kanan
+        ctx.moveTo(cx + s*1.4, cy + s);
+        ctx.lineTo(cx + s*1.1, cy + s*0.5);
+        ctx.lineTo(cx + s*0.8, cy + s - 5);
+        ctx.fill();
+
+        // 5. Kaca Kokpit Pesawat
+        ctx.fillStyle = "#bae6fd";
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - s*0.2, s*0.25, s*0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
 
         frameCount++;
         if (frameCount % spawnRate === 0) {
@@ -325,12 +371,12 @@
 
         lasers.forEach((l, index) => {
             l.update(); l.draw();
-            if (l.y < 0) lasers.splice(index, 1);
+            // Hapus laser jika sudah keluar dari layar atau mencapai target (ke atas)
+            if (l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
         });
 
         enemies.forEach(en => {
             en.update(); en.draw();
-            
             if (en.y > player.y + 15) {
                 gameOver();
             }
