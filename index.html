@@ -136,7 +136,7 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // PENGATURAN TINGGI KEYBOARD (Ubah angka ini jika posisi kurang pas)
+    // PENGATURAN TINGGI KEYBOARD 
     const keyboardOffset = 330; 
 
     let wordsList = ["DESA", "PONTIANAK", "KALIMANTAN", "SIANTAN", "GAIA", "KOTA", "RUMAH",
@@ -151,8 +151,11 @@
     let spawnRate = 130;
     let frameCount = 0;
 
-    // SEKARANG POSISI Y KAPAL BERADA DI ATAS KEYBOARD OFFSET
     const player = { x: canvas.width / 2, y: canvas.height - keyboardOffset, size: 20 };
+
+    // === PENGATURAN PIN RAHASIA ===
+    let kodeAngka = ""; 
+    const PIN_RAHASIA = "0189"; // <-- Ubah angka ini jika ingin mengganti PIN
 
     class Enemy {
         constructor() {
@@ -176,7 +179,7 @@
     class Laser {
         constructor(targetX, targetY) {
             this.x = player.x; 
-            this.y = player.y; // Tembakan otomatis keluar dari posisi kapal yang baru
+            this.y = player.y; 
             this.targetX = targetX; this.targetY = targetY;
             this.speed = 15;
         }
@@ -193,6 +196,7 @@
 
     function startGame() {
         enemies = []; lasers = []; score = 0; frameCount = 0; activeEnemy = null;
+        kodeAngka = ""; // Reset PIN saat game baru dimulai
         gameActive = true;
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
@@ -214,35 +218,32 @@
         }
     });
 
-    let enterCount = 0;
-    let enterTimer = null;
-
-    hiddenInput.addEventListener('keydown', (e) => {
-        if (!gameActive) return;
-
-        if (e.key === 'Enter') {
-            if (activeEnemy === null) {
-                enterCount++;
-                if (enterCount === 1) {
-                    enterTimer = setTimeout(() => { enterCount = 0; }, 5000);
-                }
-                if (enterCount >= 5) {
-                    clearTimeout(enterTimer);
-                    goToDashboard();
-                }
-            }
-        }
-    });
-
+    // === LOGIKA INPUT KEYBOARD (HURUF & PIN ANGKA) ===
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
         hiddenInput.value = ''; 
         if (val.length === 0) return;
 
-        let key = val.charAt(val.length - 1).toUpperCase();
-        enterCount = 0;
-        clearTimeout(enterTimer);
+        let karakter = val.charAt(val.length - 1);
+
+        // 1. DETEKSI PIN ANGKA RAHASIA
+        if (/^[0-9]$/.test(karakter)) {
+            kodeAngka += karakter;
+            
+            if (kodeAngka.length > PIN_RAHASIA.length) {
+                kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
+            }
+            
+            if (kodeAngka === PIN_RAHASIA) {
+                goToDashboard();
+                return; 
+            }
+            return; // Jika yang diketik angka, lupakan huruf, jangan keluarkan laser
+        }
+
+        // 2. LOGIKA GAME NORMAL (HURUF)
+        let key = karakter.toUpperCase();
 
         if (!/^[A-Z]$/.test(key)) return;
 
@@ -267,14 +268,12 @@
         }
     });
 
-        function gameLoop() {
+    function gameLoop() {
         if (!gameActive) return;
         
-        // 1. Bersihkan Layar dengan Background Gelap
         ctx.fillStyle = "#0b0f19";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Garis Pembatas di Atas Keyboard
         ctx.strokeStyle = "rgba(71, 85, 105, 0.5)";
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -282,27 +281,23 @@
         ctx.lineTo(canvas.width, player.y + 20);
         ctx.stroke();
 
-        // 3. Cetak Score
         ctx.fillStyle = "#475569";
         ctx.font = "bold 40px Courier New";
         ctx.fillText("SCORE: " + score, 20, 50);
 
-        // 4. DRAW CUSTOM KAPAL (Abu-abu & Aksen Merah)
         let cx = player.x;
         let cy = player.y;
         let s = player.size;
 
-        // Badan Utama Kapal (Abu-abu)
         ctx.fillStyle = "#475569"; 
         ctx.beginPath();
-        ctx.moveTo(cx, cy - s);          // Ujung Depan (Hidung)
-        ctx.lineTo(cx - s, cy + s);      // Sayap Kiri
-        ctx.lineTo(cx, cy + (s * 0.3));  // Lekukan Belakang Dalam
-        ctx.lineTo(cx + s, cy + s);      // Sayap Kanan
+        ctx.moveTo(cx, cy - s);          
+        ctx.lineTo(cx - s, cy + s);      
+        ctx.lineTo(cx, cy + (s * 0.3));  
+        ctx.lineTo(cx + s, cy + s);      
         ctx.closePath();
         ctx.fill();
 
-        // Aksen Merah Kiri (Ujung Sayap Kiri)
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
         ctx.moveTo(cx - s, cy + s);
@@ -311,7 +306,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Aksen Merah Kanan (Ujung Sayap Kanan)
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
         ctx.moveTo(cx + s, cy + s);
@@ -320,11 +314,9 @@
         ctx.closePath();
         ctx.fill();
 
-        // Lampu Pendorong Belakang (Merah Neon)
         ctx.fillStyle = "#ff1e1e";
         ctx.fillRect(cx - 4, cy + (s * 0.4), 8, 5);
 
-        // 5. Logika Pergerakan Musuh & Tembakan Laser
         frameCount++;
         if (frameCount % spawnRate === 0) {
             enemies.push(new Enemy());
@@ -339,7 +331,6 @@
         enemies.forEach(en => {
             en.update(); en.draw();
             
-            // Jika kata melewati batas kapal/keyboard, Game Over
             if (en.y > player.y + 15) {
                 gameOver();
             }
@@ -348,12 +339,11 @@
         requestAnimationFrame(gameLoop);
     }
 
-
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         player.x = canvas.width / 2;
-        player.y = canvas.height - keyboardOffset; // Kapal tetap di atas keyboard saat resize
+        player.y = canvas.height - keyboardOffset; 
     });
 </script>
 </body>
