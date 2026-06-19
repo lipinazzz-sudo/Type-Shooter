@@ -110,12 +110,14 @@
         <div class="menu-box">
             <h2>SETTINGS</h2>
             <div class="setting-row">
-                <label>Audio & SFX</label>
-                <select id="sfxSelect" onchange="saveOptions()">
-                    <option value="on">Aktif (On)</option>
-                    <option value="off">Mute (Off)</option>
-                </select>
-            </div>
+    <label>Volume BGM</label>
+    <input type="range" id="bgmSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
+</div>
+<div class="setting-row">
+    <label>Volume SFX</label>
+    <input type="range" id="sfxSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
+</div>
+
             <div class="setting-row">
                 <label>Bahasa</label>
                 <select id="langSelect" onchange="saveOptions()">
@@ -198,15 +200,29 @@
     let bgmInterval = null;
     let bgmIndex = 0;
     const bgmNotes = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 82, 98];
+let bgmGainNode = null;
+let sfxGainNode = null;
+let bgmVolume = parseFloat(localStorage.getItem('bgmVolume')) || 0.5;
+let sfxVolume = parseFloat(localStorage.getItem('sfxVolume')) || 0.5;
 
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Buat GainNode untuk BGM dan SFX
+        bgmGainNode = audioCtx.createGain();
+        sfxGainNode = audioCtx.createGain();
+        
+        // Hubungkan ke destination (speaker)
+        bgmGainNode.connect(audioCtx.destination);
+        sfxGainNode.connect(audioCtx.destination);
+        
+        // Atur volume awal
+        bgmGainNode.gain.value = bgmVolume;
+        sfxGainNode.gain.value = sfxVolume;
     }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
 
     function startBGM() {
         if (sfxSetting !== 'on' || bgmInterval) return;
@@ -239,19 +255,26 @@
         } catch(e) {}
     }
 
-    function playLaserSound() {
-        if (sfxSetting !== 'on') return;
-        initAudio();
-        try {
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+// Contoh untuk SFX (Laser)
+function playLaserSound() {
+    if (sfxSetting !== 'on') return;
+    initAudio();
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain(); // Gain lokal untuk envelope (fade out)
+    
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+    
+    // Hubungkan: Oscillator -> Envelope -> SFX Gain (Master) -> Speaker
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    
+    osc.connect(gain);
+    gain.connect(sfxGainNode); // <-- Gunakan sfxGainNode
+    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+}
+
         } catch(e){}
     }
 
@@ -900,6 +923,24 @@
     });
     
     updatePlayerPosition();
+    function updateVolume() {
+    bgmVolume = document.getElementById('bgmSlider').value;
+    sfxVolume = document.getElementById('sfxSlider').value;
+    
+    localStorage.setItem('bgmVolume', bgmVolume);
+    localStorage.setItem('sfxVolume', sfxVolume);
+    
+    if (bgmGainNode) bgmGainNode.gain.value = bgmVolume;
+    if (sfxGainNode) sfxGainNode.gain.value = sfxVolume;
+}
+
+// Inisialisasi posisi slider saat menu terbuka
+function openSettings() {
+    document.getElementById('bgmSlider').value = bgmVolume;
+    document.getElementById('sfxSlider').value = sfxVolume;
+    // ... sisa kode openSettings yang lama
+}
+
 </script>
 </body>
 </html>
