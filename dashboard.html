@@ -261,7 +261,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 5px;">
         <label for="inputData" style="margin: 0;">Angka Asli:</label>
         <button id="btnToggleInput" onclick="toggleInputData()" style="background-color: #24324d; color: #94a3b8; border: 1px solid #334155; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-            👁️ Unhide Angka
+            👁️ Unhide
         </button>
     </div>
     
@@ -319,7 +319,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <label style="margin: 0; font-size: 16px;">Angka Pembanding</label>
                 <button onclick="pastePembanding()" style="background-color: #1e293b; color: #3b82f6; border: 1px solid #24324d; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;">
-                    📋 Paste
+                    PASTE
                 </button>
             </div>
             <div class="match-box">
@@ -368,8 +368,8 @@
 <div class="container" style="padding: 10px; border: 2px solid #333;">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px;">
         <h2 style="margin: 0; color: #fff; font-size: 18px;">KELUARAN</h2>
-        <button onclick="refreshIframe()" style="background-color: #3498db; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;">
-            🔄 Refresh Web
+        <button onclick="refreshIframe()" style="background-color: #1e293b; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;">
+            🔄 Refresh
         </button>
     </div>
     
@@ -645,12 +645,12 @@ function toggleInputData() {
     
     if (inputArea.style.display === 'none') {
         inputArea.style.display = 'block';
-        btnToggle.innerHTML = '🙈 Hide Angka';
+        btnToggle.innerHTML = '🙈 Hide';
         btnToggle.style.backgroundColor = '#3b82f6'; 
         btnToggle.style.color = '#fff';
     } else {
         inputArea.style.display = 'none';
-        btnToggle.innerHTML = '👁️ Unhide Angka';
+        btnToggle.innerHTML = '👁️ Unhide';
         btnToggle.style.backgroundColor = '#24324d'; 
         btnToggle.style.color = '#94a3b8';
     }
