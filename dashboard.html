@@ -298,16 +298,21 @@
 </div>
 
 <div class="container" style="padding: 10px; border: 2px solid #333;">
-    <h2 style="text-align: center; margin-top: 0; color: #fff; font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 10px;">Hasil Pengeluaran HK</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px;">
+        <h2 style="margin: 0; color: #fff; font-size: 18px;">KELUARAN</h2>
+        <button onclick="refreshIframe()" style="background-color: #3498db; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;">
+            🔄 Refresh Web
+        </button>
+    </div>
     
     <div style="width: 100%; height: 400px; overflow-y: auto; overflow-x: hidden; position: relative; border-radius: 5px; background: white;">
         <iframe 
-            src="https://saimai.totbid2025.org" 
+            id="webIframe"
+            src="https://keluaran-hk-3003.ishicon2025.com" 
             style="width: 100%; height: 1000px; border: none;">
         </iframe>
     </div>
 </div>
-
 <script>
     // FILTER DATA ASLI
     function bersihkanInput(str) {
@@ -551,6 +556,17 @@
             }
         }
     }
+    // FUNGSI REFRESH IFRAME + ANTI CACHE (GITHUB)
+function refreshIframe() {
+    const iframe = document.getElementById('webIframe');
+    
+    // Ambil URL dasar (menghilangkan sisa teks anti-cache yang lama jika ada)
+    let urlDasar = iframe.src.split('?')[0];
+    
+    // Tambahkan timestamp waktu unik di belakang URL (Contoh hasil: url?t=1718800000)
+    // Ini memaksa browser mendownload ulang file baru dari GitHub/Hosting tanpa memakai cache lama
+    iframe.src = urlDasar + '?t=' + new Date().getTime();
+}
 </script>
 
 </body>
