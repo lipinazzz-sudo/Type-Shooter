@@ -525,11 +525,104 @@
     // 5. Hapus semua angka yang sudah masuk grup BB dari daftar utama
     angka2D = angka2D.filter(a => !usedPerms.has(a));
     
-    // 6. Susun ulang sisa angka ke dalam 6 kolom
+    // 6. FITUR BARU: MENGELOMPOKKAN ANGKA SISA SECARA BERPASANGAN BOLAK-BALIK
+    let pairs = [];
+    let singles = [];
+    let processed = new Set();
+    
+    for (let i = 0; i < angka2D.length; i++) {
+        let num = angka2D[i];
+        if (processed.has(num)) continue;
+        
+        let rev = num[1] + num[0];
+        
+        // Angka kembar (seperti 11, 22) otomatis masuk kategori single karena tidak ada pasangan baliknya
+        if (num === rev) {
+            singles.push(num);
+            processed.add(num);
+            continue;
+        }
+        
+        let hasReverse = angka2D.includes(rev) && !processed.has(rev);
+        if (hasReverse) {
+            pairs.push([num, rev]);
+            processed.add(num);
+            processed.add(rev);
+        } else {
+            singles.push(num);
+            processed.add(num);
+        }
+    }
+
+    // Masukkan ke dalam bentuk blok terstruktur
+    let blocks = [];
+    for (let p of pairs) {
+        // Acak urutan internal pasangan (bisa besar dulu atau kecil dulu secara random)
+        if (Math.random() > 0.5) p = [p[1], p[0]];
+        blocks.push({ type: 'pair', data: p });
+    }
+    for (let s of singles) {
+        blocks.push({ type: 'single', data: [s] });
+    }
+    
+    // Acak total susunan seluruh blok agar posisi grup menyebar natural
+    for (let i = blocks.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
+    }
+    
+    // Susun kembali ke dalam baris dengan kapasitas max 6 angka tanpa merusak pasangan
+    let finalRows = [];
+    let currentRow = [];
+    
+    for (let i = 0; i < blocks.length; i++) {
+        let b = blocks[i];
+        let spaceLeft = 6 - currentRow.length;
+        
+        if (b.type === 'pair') {
+            if (spaceLeft >= 2) {
+                currentRow.push(...b.data);
+            } else {
+                // Sisa slot di baris tinggal 1, cari angka jomblo/single di antrean depan untuk diselipkan
+                let foundSingleIdx = -1;
+                for (let j = i + 1; j < blocks.length; j++) {
+                    if (blocks[j].type === 'single') {
+                        foundSingleIdx = j;
+                        break;
+                    }
+                }
+                
+                if (foundSingleIdx !== -1) {
+                    let singleBlock = blocks.splice(foundSingleIdx, 1)[0];
+                    currentRow.push(...singleBlock.data);
+                    finalRows.push(currentRow);
+                    currentRow = [];
+                    i--; // Ulangi pengecekan blok pasangan saat ini pada baris yang baru
+                } else {
+                    // Jika benar-benar kehabisan angka single, terpaksa pasangan ini dipecah antar baris
+                    currentRow.push(b.data[0]);
+                    finalRows.push(currentRow);
+                    currentRow = [b.data[1]];
+                }
+            }
+        } else {
+            currentRow.push(...b.data);
+        }
+        
+        if (currentRow.length === 6) {
+            finalRows.push(currentRow);
+            currentRow = [];
+        }
+    }
+    if (currentRow.length > 0) {
+        finalRows.push(currentRow);
+    }
+
+    // Mapping kembali ke format string baris titik (.)
     let finalOutput = [];
     let barisAngka = [];
-    for (let i = 0; i < angka2D.length; i += 6) {
-        barisAngka.push(angka2D.slice(i, i + 6).join('.'));
+    for (let row of finalRows) {
+        barisAngka.push(row.join('.'));
     }
 
     if (barisAngka.length > 0) {
