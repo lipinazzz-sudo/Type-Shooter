@@ -161,6 +161,38 @@
     let activeEnemy = null;
     let spawnRate = 130;
     let frameCount = 0;
+// Tambahkan variabel ini di bagian atas bersama variabel global lainnya (di bawah let frameCount = 0;)
+let gamePausedViaSettings = false;
+
+function openSettings() {
+    // Jika tombol setting dipencet saat game aktif, pause game-nya dulu
+    if (gameActive) {
+        gameActive = false;
+        gamePausedViaSettings = true;
+    } else {
+        gamePausedViaSettings = false;
+    }
+
+    mainMenu.classList.add('hidden');
+    gameOverMenu.classList.add('hidden');
+    
+    // PERBAIKAN: Baris .remove() yang merusak DOM kemarin sudah dibuang!
+    settingsMenu.classList.remove('hidden');
+}
+
+function closeSettings() {
+    settingsMenu.classList.add('hidden');
+    
+    // Jika user membuka setting saat game sedang berjalan, kembalikan ke game
+    if (gamePausedViaSettings) {
+        gameActive = true;
+        hiddenInput.focus();
+        gameLoop(); // Melanjutkan jalannya game
+    } else {
+        // Jika dibuka dari menu awal, kembali ke menu awal
+        mainMenu.classList.remove('hidden');
+    }
+}
 
     // Tambahan untuk efek Screen Shake (Guncangan Layar)
     let shakeTimer = 0;
