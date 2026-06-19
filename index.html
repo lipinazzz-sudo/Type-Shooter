@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-Shooter Z-Type Inspired</title>
+    <title>Type-Shooter: Far And Beyond</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -21,6 +21,20 @@
             position: absolute; top: -1000px; left: -1000px; opacity: 0;
         }
 
+        /* --- UI IN-GAME (TOMBOL PAUSE) --- */
+        .pause-btn {
+            position: absolute; top: 20px; right: 25px;
+            font-size: 20px; color: #38bdf8; cursor: pointer; z-index: 5;
+            background: rgba(15, 23, 42, 0.6); padding: 10px 16px; 
+            border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(4px); transition: 0.2s;
+        }
+        .pause-btn:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
         /* --- UI OVERLAY --- */
         .ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -31,19 +45,20 @@
 
         .menu-box {
             background: #0f172a; padding: 40px; border-radius: 12px;
-            border: 2px solid #38bdf8; text-align: center; width: 320px;
+            border: 2px solid #38bdf8; text-align: center; width: 330px;
             box-shadow: 0 0 30px rgba(56, 189, 248, 0.25);
         }
 
-        h1 { color: #38bdf8; margin-top: 0; font-size: 32px; letter-spacing: 5px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
-        h2 { color: #e2e8f0; font-size: 20px; margin-top: 0;}
+        h1 { color: #38bdf8; margin-top: 0; margin-bottom: 5px; font-size: 32px; letter-spacing: 5px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        h2 { color: #e2e8f0; font-size: 22px; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px;}
         .mobile-hint { color: #64748b; font-size: 12px; margin-top: 15px; line-height: 1.4; }
 
         button {
             background: #0ea5e9; color: white; border: none;
-            padding: 12px 20px; margin: 10px 0; width: 100%;
-            font-size: 16px; font-weight: bold; cursor: pointer;
+            padding: 12px 20px; margin: 8px 0; width: 100%;
+            font-size: 15px; font-weight: bold; cursor: pointer;
             border-radius: 6px; transition: 0.2s; font-family: inherit;
+            letter-spacing: 1px;
         }
         button:hover { background: #0284c7; transform: translateY(-1px); }
 
@@ -51,8 +66,8 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; text-align: left;
         }
-        .setting-row label { font-size: 14px; font-weight: bold; }
-        .setting-row select { width: 130px; padding: 5px; background: #070a13; color: white; border: 1px solid #38bdf8;}
+        .setting-row label { font-size: 14px; font-weight: bold; color: #cbd5e1; }
+        .setting-row select { width: 140px; padding: 6px; background: #070a13; color: white; border: 1px solid #38bdf8; border-radius: 4px;}
 
         .hidden { display: none !important; }
 
@@ -67,16 +82,20 @@
 
     <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
 
+    <div id="pauseBtn" class="pause-btn hidden" onclick="pauseGame()">⏸ PAUSE</div>
+
     <canvas id="gameCanvas"></canvas>
 
     <div id="mainMenu" class="ui-layer">
         <div class="menu-box">
             <h1>TYPE-SHOOTER</h1>
-            <p style="color: #94a3b8; font-size: 14px;">Z-Type Powered Engine</p>
+            <p style="color: #38bdf8; font-size: 15px; margin-bottom: 2px; font-weight: bold; letter-spacing: 3px;">FAR AND BEYOND</p>
+            <p style="color: #64748b; font-size: 11px; margin-top: 0; margin-bottom: 25px; font-style: italic;">Made With Love</p>
+            
             <button onclick="startGame()">PLAY GAME</button>
             <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
             <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
-            <p class="mobile-hint">Sentuh layar saat bermain untuk memunculkan keyboard (khusus HP/iPad).</p>
+            <p class="mobile-hint">Sentuh layar saat bermain untuk memunculkan keyboard virtual.</p>
         </div>
     </div>
 
@@ -84,18 +103,49 @@
         <div class="menu-box">
             <h2>SETTINGS</h2>
             <div class="setting-row">
+                <label>Suara SFX</label>
+                <select id="sfxSelect" onchange="saveOptions()">
+                    <option value="on">Aktif (On)</option>
+                    <option value="off">Mute (Off)</option>
+                </select>
+            </div>
+            <div class="setting-row">
                 <label>Bahasa</label>
-                <select>
-                    <option>Indonesia</option>
-                    <option>English</option>
+                <select id="langSelect" onchange="saveOptions()">
+                    <option value="id">Indonesia</option>
+                    <option value="en">English</option>
                 </select>
             </div>
             <button onclick="closeSettings()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
         </div>
     </div>
 
+    <div id="pauseMenu" class="ui-layer hidden">
+        <div class="menu-box">
+            <h2 style="color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">GAME PAUSED</h2>
+            
+            <div class="setting-row" style="margin-top: 20px;">
+                <label>Suara SFX</label>
+                <select id="pauseSfxSelect" onchange="syncOptions('pause')">
+                    <option value="on">Aktif (On)</option>
+                    <option value="off">Mute (Off)</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <label>Bahasa</label>
+                <select id="pauseLangSelect" onchange="syncOptions('pause')">
+                    <option value="id">Indonesia</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <button onclick="resumeGame()" style="background: #0ea5e9; margin-top: 15px;">RESUME</button>
+            <button onclick="exitToMenu()" style="background: #ef4444;">MENU UTAMA</button>
+        </div>
+    </div>
+
     <div id="scoreboardMenu" class="ui-layer hidden">
-        <div class="menu-box" style="width: 350px;">
+        <div class="menu-box" style="width: 380px;">
             <h2>TOP 5 HIGH SCORES</h2>
             <div id="scoreboardContent"></div>
             <button onclick="closeScoreboard()" style="background: #475569; margin-top: 10px;">KEMBALI</button>
@@ -105,7 +155,9 @@
     <div id="gameOverMenu" class="ui-layer hidden">
         <div class="menu-box">
             <h1 style="color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);">GAME OVER</h1>
-            <h2 id="finalScoreText">Score: 0</h2>
+            <h2 id="finalScoreText" style="margin-bottom: 5px;">Score: 0</h2>
+            <p id="finalWaveText" style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 20px;">Reached: Wave 1</p>
+            
             <button onclick="startGame()">TRY AGAIN</button>
             <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
             <button onclick="openMenuUtama()" style="background: #475569;">MENU UTAMA</button>
@@ -119,20 +171,44 @@
 
     const mainMenu = document.getElementById('mainMenu');
     const settingsMenu = document.getElementById('settingsMenu');
+    const pauseMenu = document.getElementById('pauseMenu');
     const scoreboardMenu = document.getElementById('scoreboardMenu');
     const gameOverMenu = document.getElementById('gameOverMenu');
+    const pauseBtn = document.getElementById('pauseBtn');
     const hiddenInput = document.getElementById('hiddenInput');
     const canvas = document.getElementById('gameCanvas');
     
-    let gamePausedViaSettings = false;
+    // Config global untuk SFX dan Bahasa (Bisa disimpan di LocalStorage)
+    let sfxSetting = localStorage.getItem('sfxSetting') || 'on';
+    let langSetting = localStorage.getItem('langSetting') || 'id';
+
+    // Set nilai awal di UI selektor dokumen
+    document.getElementById('sfxSelect').value = sfxSetting;
+    document.getElementById('langSelect').value = langSetting;
+    document.getElementById('pauseSfxSelect').value = sfxSetting;
+    document.getElementById('pauseLangSelect').value = langSetting;
+
+    function saveOptions() {
+        sfxSetting = document.getElementById('sfxSelect').value;
+        langSetting = document.getElementById('langSelect').value;
+        localStorage.setItem('sfxSetting', sfxSetting);
+        localStorage.setItem('langSetting', langSetting);
+        document.getElementById('pauseSfxSelect').value = sfxSetting;
+        document.getElementById('pauseLangSelect').value = langSetting;
+    }
+
+    function syncOptions(source) {
+        if(source === 'pause') {
+            sfxSetting = document.getElementById('pauseSfxSelect').value;
+            langSetting = document.getElementById('pauseLangSelect').value;
+        }
+        localStorage.setItem('sfxSetting', sfxSetting);
+        localStorage.setItem('langSetting', langSetting);
+        document.getElementById('sfxSelect').value = sfxSetting;
+        document.getElementById('langSelect').value = langSetting;
+    }
 
     function openSettings() {
-        if (gameActive) {
-            gameActive = false;
-            gamePausedViaSettings = true;
-        } else {
-            gamePausedViaSettings = false;
-        }
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
         settingsMenu.classList.remove('hidden');
@@ -140,13 +216,7 @@
     
     function closeSettings() {
         settingsMenu.classList.add('hidden');
-        if (gamePausedViaSettings) {
-            gameActive = true;
-            hiddenInput.focus();
-            gameLoop();
-        } else {
-            mainMenu.classList.remove('hidden');
-        }
+        mainMenu.classList.remove('hidden');
     }
 
     function openMenuUtama() {
@@ -154,12 +224,35 @@
         mainMenu.classList.remove('hidden');
     }
 
+    // --- MANAJEMEN PAUSE SYSTEM ---
+    function pauseGame() {
+        if (!gameActive) return;
+        gameActive = false; 
+        pauseBtn.classList.add('hidden');
+        pauseMenu.classList.remove('hidden');
+        hiddenInput.blur();
+    }
+
+    function resumeGame() {
+        pauseMenu.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        gameActive = true;
+        hiddenInput.focus();
+        gameLoop(); // Jalankan kembali loop animasi game
+    }
+
+    function exitToMenu() {
+        pauseMenu.classList.add('hidden');
+        pauseBtn.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+        enemies = []; lasers = []; particles = []; activeEnemy = null;
+    }
+
     // --- GAME ENGINE ---
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // KOSAKATA MELIMPAH (Gaya Sci-Fi Z-Type)
     const wordsList = [
         "AMAS", "DESA", "KOTA", "GAIA", "MAIN", "SAYA", "ANAK", "MAMA", "PAPA", "BUKU", "MALL", "IPAD",
         "RUMAH", "SAPI", "BABI", "PULSA", "ROKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
@@ -179,13 +272,11 @@
     let activeEnemy = null;
     let frameCount = 0;
 
-    // Mekanik Wave Ala Z-Type
     let currentWave = 1;
     let enemiesLeftToSpawn = 0;
     let waveSpawnTimer = 0;
     let waveClearMessageTimer = 0;
 
-    // Guncangan Layar (Screen Shake)
     let shakeTimer = 0;
     let shakeIntensity = 0;
 
@@ -228,14 +319,12 @@
         constructor(waveNum) {
             ctx.font = "bold 20px 'Courier New'";
             
-            // Menentukan panjang kata berdasarkan tingginya Wave saat ini
             let minLen = waveNum <= 2 ? 4 : (waveNum <= 5 ? 5 : 6);
             let maxLen = waveNum <= 2 ? 6 : (waveNum <= 5 ? 8 : 12);
             
             let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
             if (possibleWords.length === 0) possibleWords = wordsList;
 
-            // Pastikan tidak melahirkan huruf awal yang sama dengan musuh yang sedang aktif di layar
             let currentFirstLetters = enemies.map(e => e.word[0]);
             let filteredList = possibleWords.filter(w => !currentFirstLetters.includes(w[0]));
             if (filteredList.length === 0) filteredList = possibleWords;
@@ -249,14 +338,12 @@
             if (this.x < 30) this.x = 30;
 
             this.y = -30;
-            // Kecepatan stabil berirama, tidak dipercepat secara ekstrem
             this.speed = 0.4 + (Math.random() * 0.3) + (Math.min(waveNum, 10) * 0.05);
         }
         draw() {
             ctx.font = "bold 20px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
 
-            // Reticle Target Pengunci (Z-Type Reticle)
             if (activeEnemy === this) {
                 ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
                 ctx.lineWidth = 1.5;
@@ -269,13 +356,11 @@
                 ctx.fillRect(this.x + this.wordWidth + 10, this.y - 22, 2, 6);
             }
 
-            // Teks yang sukses diketik (Hijau Neon Bersinar)
             ctx.fillStyle = "#4ade80"; 
             ctx.shadowBlur = activeEnemy === this ? 12 : 4;       
             ctx.shadowColor = "#22c55e"; 
             ctx.fillText(this.typed, this.x, this.y);
 
-            // Teks sisa yang belum diketik (Putih Bersih)
             ctx.shadowBlur = 0; 
             ctx.fillStyle = "#ffffff"; 
             ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
@@ -348,23 +433,21 @@
 
     function startWave(waveNum) {
         currentWave = waveNum;
-        enemiesLeftToSpawn = 4 + waveNum * 2; // Jumlah musuh bertambah bertahap tiap wave
+        enemiesLeftToSpawn = 4 + waveNum * 2; 
         waveSpawnTimer = 0;
-        waveClearMessageTimer = 90; // Durasi teks pemberitahuan transisi wave
+        waveClearMessageTimer = 90; 
     }
 
-    // --- PERBAIKAN TOTAL SYSTEM INPUT BUFFER (ANTI-LAG & ANTI-DROP) ---
+    // PROCESSING SYSTEM INPUT BUFFER
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
-        hiddenInput.value = ''; // Mengosongkan buffer penampung
+        hiddenInput.value = ''; 
         if (val.length === 0) return;
 
-        // Loop memproses seluruh urutan karakter tanpa ada yang terlewat!
         for (let i = 0; i < val.length; i++) {
             let karakter = val.charAt(i);
 
-            // Cek kode PIN Rahasia Angka
             if (/^[0-9]$/.test(karakter)) {
                 kodeAngka += karakter;
                 if (kodeAngka.length > PIN_RAHASIA.length) {
@@ -382,11 +465,10 @@
 
             ctx.font = "bold 20px 'Courier New'"; 
 
-            // Jika belum mengunci target kata
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[0] === key);
                 if (targets.length > 0) {
-                    targets.sort((a, b) => b.y - a.y); // Mengunci musuh yang paling bawah/dekat
+                    targets.sort((a, b) => b.y - a.y); 
                     activeEnemy = targets[0]; 
                     activeEnemy.typed += key;
                     
@@ -394,7 +476,6 @@
                     lasers.push(new Laser(targetX, activeEnemy.y));
                 }
             } else {
-                // Jika sudah mengunci target kata, periksa kecocokan huruf selanjutnya
                 let nextChar = activeEnemy.word[activeEnemy.typed.length];
                 if (key === nextChar) {
                     activeEnemy.typed += key;
@@ -404,7 +485,7 @@
                     
                     if (activeEnemy.typed === activeEnemy.word) {
                         score += activeEnemy.word.length * 10;
-                        triggerScreenShake(5, 8); // Efek getar halus khas Z-Type saat hancur
+                        triggerScreenShake(5, 8); 
                         createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length);
                         enemies = enemies.filter(en => en !== activeEnemy);
                         activeEnemy = null;
@@ -414,14 +495,20 @@
         }
     });
 
-    function saveHighScore(finalScore) {
+    // MENYIMPAN SKOR + DATA WAVE TERAKHIR
+    function saveHighScore(finalScore, finalWave) {
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
-        scores.push({ score: finalScore, date: new Date().toLocaleDateString('id-ID') });
+        scores.push({ 
+            score: finalScore, 
+            wave: finalWave,
+            date: new Date().toLocaleDateString('id-ID') 
+        });
         scores.sort((a, b) => b.score - a.score);
         scores = scores.slice(0, 5); 
         localStorage.setItem('typeShooterScores', JSON.stringify(scores));
     }
 
+    // MENAMPILKAN SCOREBOARD DENGAN DATA COLUMN WAVE
     function showScoreboard() {
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
@@ -433,12 +520,15 @@
         if(scores.length === 0) {
             contentDiv.innerHTML = "<p style='color:#64748b; margin: 20px 0;'>Belum ada rekor skor.</p>";
         } else {
-            let tableHTML = "<table class='score-table'><tr><th>Rank</th><th>Skor</th><th>Tanggal</th></tr>";
+            let tableHTML = "<table class='score-table'><tr><th>Rank</th><th>Skor</th><th>Wave</th><th>Tanggal</th></tr>";
             scores.forEach((item, index) => {
+                // Beri fallback 'Wave 1' jika data lama tidak punya properti wave
+                let waveDisplay = item.wave ? "W-" + item.wave : "W-1";
                 tableHTML += `<tr>
                     <td>#${index + 1}</td>
                     <td style="color:#4ade80; font-weight:bold;">${item.score}</td>
-                    <td style="color:#64748b;">${item.date}</td>
+                    <td style="color:#38bdf8; font-weight:bold;">${waveDisplay}</td>
+                    <td style="color:#64748b; font-size:12px;">${item.date}</td>
                 </tr>`;
             });
             tableHTML += "</table>";
@@ -458,8 +548,12 @@
         updatePlayerPosition();
         initStars();
         gameActive = true;
+        
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
+        pauseMenu.classList.add('hidden');
+        pauseBtn.classList.remove('hidden'); // Memunculkan tombol pause saat main
+        
         hiddenInput.value = "";
         hiddenInput.focus();
         
@@ -468,9 +562,14 @@
 
     function gameOver() {
         gameActive = false;
+        pauseBtn.classList.add('hidden'); // Sembunyikan tombol pause
         triggerScreenShake(14, 25);
-        saveHighScore(score); 
+        
+        saveHighScore(score, currentWave); // Simpan skor dan Wave terakhir sekaligus
+        
         document.getElementById('finalScoreText').innerText = "Score: " + score;
+        document.getElementById('finalWaveText').innerText = "Reached: Wave " + currentWave;
+        
         gameOverMenu.classList.remove('hidden');
         hiddenInput.blur();
     }
@@ -487,14 +586,12 @@
         ctx.fillStyle = "#070a13";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Render Screen Shake Koordinat
         ctx.save();
         if (shakeTimer > 0) {
             ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
             shakeTimer--;
         }
 
-        // Render Latar Belakang Bintang Bergerak Lambat
         ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
         stars.forEach(star => {
             ctx.fillRect(star.x, star.y, star.size, star.size);
@@ -504,21 +601,17 @@
             }
         });
 
-        // Garis Batas Pengaman Merah Redup
         ctx.strokeStyle = "rgba(239, 68, 68, 0.3)"; 
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, player.y + 35); ctx.lineTo(canvas.width, player.y + 35); ctx.stroke();
 
-        // Tampilan UI Info Wave & Score Atas (Minimalis Transparan)
         ctx.fillStyle = "rgba(148, 163, 184, 0.15)";
         ctx.font = "bold 24px 'Courier New'";
         ctx.fillText("WAVE: " + currentWave, 25, 45);
         ctx.fillText("SCORE: " + score, 25, 80);
 
-        // --- SISTEM MANAGEMENT WAVE DAN SPAWNING ---
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
             waveSpawnTimer++;
-            // Interval jeda melahirkan musuh yang pas dan tidak bertumpuk berantakan
             let spawnInterval = Math.max(90 - currentWave * 4, 50); 
             if (waveSpawnTimer >= spawnInterval) {
                 enemies.push(new Enemy(currentWave));
@@ -526,11 +619,9 @@
                 waveSpawnTimer = 0;
             }
         } else if (enemies.length === 0 && enemiesLeftToSpawn === 0 && waveClearMessageTimer <= 0) {
-            // Naik ke Wave selanjutnya jika wave ini telah bersih total
             startWave(currentWave + 1);
         }
 
-        // Animasi Teks Transisi Antar Gelombang Wave Clear
         if (waveClearMessageTimer > 0) {
             waveClearMessageTimer--;
             ctx.fillStyle = "#38bdf8";
@@ -538,10 +629,9 @@
             ctx.textAlign = "center";
             ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
             ctx.fillText("INCOMING WAVE " + currentWave, canvas.width / 2, canvas.height / 2.5);
-            ctx.shadowBlur = 0; ctx.textAlign = "left"; // reset alignment
+            ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
-        // --- RENDER JET SHIP & API PENDORONG DINAMIS ---
         let cx = player.x; let cy = player.y; let s = player.size;
         let thrustGlow = 12 + Math.random() * 12; 
         
@@ -551,7 +641,6 @@
         ctx.beginPath(); ctx.moveTo(cx - 2, cy + s - 5); ctx.lineTo(cx + 2, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.35)); ctx.fill();
         ctx.shadowBlur = 0; 
 
-        // Badan Pesawat Tempur Utama
         ctx.fillStyle = "#1e293b";
         ctx.beginPath(); ctx.moveTo(cx, cy - s*0.2); ctx.lineTo(cx - s*1.4, cy + s); ctx.lineTo(cx + s*1.4, cy + s); ctx.fill();
         ctx.fillStyle = "#475569";
@@ -562,25 +651,22 @@
         ctx.fillStyle = "#bae6fd";
         ctx.beginPath(); ctx.ellipse(cx, cy - s*0.2, s*0.25, s*0.5, 0, 0, Math.PI * 2); ctx.fill();
 
-        // Update Partikel Ledakan
         particles.forEach((p, index) => {
             p.update(); p.draw();
             if (p.alpha <= 0) particles.splice(index, 1);
         });
 
-        // Update Pergerakan Proyektil Laser
         lasers.forEach((l, index) => {
             l.update(); l.draw();
             if (l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
         });
 
-        // Update Posisi Meteor Musuh Kata
         enemies.forEach(en => {
             en.update(); en.draw();
             if (en.y > player.y + 15) { gameOver(); }
         });
 
-        ctx.restore(); // Kembalikan koordinat normal dari shake
+        ctx.restore(); 
         frameCount++;
         requestAnimationFrame(gameLoop);
     }
