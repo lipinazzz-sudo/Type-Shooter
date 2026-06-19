@@ -21,18 +21,20 @@
             position: absolute; top: -1000px; left: -1000px; opacity: 0;
         }
 
-        /* --- UI IN-GAME (TOMBOL PAUSE) --- */
+        /* --- UI IN-GAME (TOMBOL PAUSE TRANSPARAN & MINIMALIS) --- */
         .pause-btn {
-            position: absolute; top: 20px; right: 25px;
-            font-size: 20px; color: #38bdf8; cursor: pointer; z-index: 5;
-            background: rgba(15, 23, 42, 0.6); padding: 10px 16px; 
-            border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);
-            backdrop-filter: blur(4px); transition: 0.2s;
+            position: absolute; top: 25px; right: 30px;
+            font-size: 26px; 
+            color: rgba(56, 189, 248, 0.35); /* Sangat transparan agar tidak mengganggu */
+            cursor: pointer; z-index: 5;
+            background: transparent; 
+            padding: 5px;
+            border: none;
+            transition: color 0.2s, text-shadow 0.2s;
         }
         .pause-btn:hover {
-            background: rgba(56, 189, 248, 0.2);
-            border-color: #38bdf8;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+            color: rgba(56, 189, 248, 1); /* Menyala terang saat disentuh/di-hover */
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
         }
 
         /* --- UI OVERLAY --- */
@@ -82,7 +84,7 @@
 
     <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
 
-    <div id="pauseBtn" class="pause-btn hidden" onclick="pauseGame()">⏸ PAUSE</div>
+    <div id="pauseBtn" class="pause-btn hidden" onclick="pauseGame()">⏸</div>
 
     <canvas id="gameCanvas"></canvas>
 
@@ -178,11 +180,9 @@
     const hiddenInput = document.getElementById('hiddenInput');
     const canvas = document.getElementById('gameCanvas');
     
-    // Config global untuk SFX dan Bahasa (Bisa disimpan di LocalStorage)
     let sfxSetting = localStorage.getItem('sfxSetting') || 'on';
     let langSetting = localStorage.getItem('langSetting') || 'id';
 
-    // Set nilai awal di UI selektor dokumen
     document.getElementById('sfxSelect').value = sfxSetting;
     document.getElementById('langSelect').value = langSetting;
     document.getElementById('pauseSfxSelect').value = sfxSetting;
@@ -224,7 +224,6 @@
         mainMenu.classList.remove('hidden');
     }
 
-    // --- MANAJEMEN PAUSE SYSTEM ---
     function pauseGame() {
         if (!gameActive) return;
         gameActive = false; 
@@ -238,7 +237,7 @@
         pauseBtn.classList.remove('hidden');
         gameActive = true;
         hiddenInput.focus();
-        gameLoop(); // Jalankan kembali loop animasi game
+        gameLoop(); 
     }
 
     function exitToMenu() {
@@ -438,7 +437,6 @@
         waveClearMessageTimer = 90; 
     }
 
-    // PROCESSING SYSTEM INPUT BUFFER
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
@@ -495,7 +493,6 @@
         }
     });
 
-    // MENYIMPAN SKOR + DATA WAVE TERAKHIR
     function saveHighScore(finalScore, finalWave) {
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
         scores.push({ 
@@ -508,7 +505,6 @@
         localStorage.setItem('typeShooterScores', JSON.stringify(scores));
     }
 
-    // MENAMPILKAN SCOREBOARD DENGAN DATA COLUMN WAVE
     function showScoreboard() {
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
@@ -522,7 +518,6 @@
         } else {
             let tableHTML = "<table class='score-table'><tr><th>Rank</th><th>Skor</th><th>Wave</th><th>Tanggal</th></tr>";
             scores.forEach((item, index) => {
-                // Beri fallback 'Wave 1' jika data lama tidak punya properti wave
                 let waveDisplay = item.wave ? "W-" + item.wave : "W-1";
                 tableHTML += `<tr>
                     <td>#${index + 1}</td>
@@ -552,7 +547,7 @@
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
         pauseMenu.classList.add('hidden');
-        pauseBtn.classList.remove('hidden'); // Memunculkan tombol pause saat main
+        pauseBtn.classList.remove('hidden'); 
         
         hiddenInput.value = "";
         hiddenInput.focus();
@@ -562,10 +557,10 @@
 
     function gameOver() {
         gameActive = false;
-        pauseBtn.classList.add('hidden'); // Sembunyikan tombol pause
+        pauseBtn.classList.add('hidden'); 
         triggerScreenShake(14, 25);
         
-        saveHighScore(score, currentWave); // Simpan skor dan Wave terakhir sekaligus
+        saveHighScore(score, currentWave); 
         
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = "Reached: Wave " + currentWave;
