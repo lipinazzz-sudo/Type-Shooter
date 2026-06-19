@@ -25,15 +25,13 @@
         .pause-btn {
             position: absolute; top: 25px; right: 30px;
             font-size: 26px; 
-            color: rgba(56, 189, 248, 0.35); /* Sangat transparan agar tidak mengganggu */
+            color: rgba(56, 189, 248, 0.35); 
             cursor: pointer; z-index: 5;
-            background: transparent; 
-            padding: 5px;
-            border: none;
+            background: transparent; padding: 5px; border: none;
             transition: color 0.2s, text-shadow 0.2s;
         }
         .pause-btn:hover {
-            color: rgba(56, 189, 248, 1); /* Menyala terang saat disentuh/di-hover */
+            color: rgba(56, 189, 248, 1); 
             text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
         }
 
@@ -105,7 +103,7 @@
         <div class="menu-box">
             <h2>SETTINGS</h2>
             <div class="setting-row">
-                <label>Suara SFX</label>
+                <label>Audio & SFX</label>
                 <select id="sfxSelect" onchange="saveOptions()">
                     <option value="on">Aktif (On)</option>
                     <option value="off">Mute (Off)</option>
@@ -127,7 +125,7 @@
             <h2 style="color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">GAME PAUSED</h2>
             
             <div class="setting-row" style="margin-top: 20px;">
-                <label>Suara SFX</label>
+                <label>Audio & SFX</label>
                 <select id="pauseSfxSelect" onchange="syncOptions('pause')">
                     <option value="on">Aktif (On)</option>
                     <option value="off">Mute (Off)</option>
@@ -188,6 +186,99 @@
     document.getElementById('pauseSfxSelect').value = sfxSetting;
     document.getElementById('pauseLangSelect').value = langSetting;
 
+    // --- PROCEDURAL AUDIO SYSTEM (WEB AUDIO API) ---
+    let audioCtx = null;
+    let bgmInterval = null;
+    let bgmIndex = 0;
+    const bgmNotes = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 82, 98];
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function startBGM() {
+        if (sfxSetting !== 'on' || bgmInterval) return;
+        initAudio();
+        bgmIndex = 0;
+        bgmInterval = setInterval(() => {
+            if (!gameActive || sfxSetting !== 'on') return;
+            playBGMNote(bgmNotes[bgmIndex % bgmNotes.length]);
+            bgmIndex++;
+        }, 220); 
+    }
+
+    function stopBGM() {
+        if (bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        }
+    }
+
+    function playBGMNote(freq) {
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        } catch(e) {}
+    }
+
+    function playLaserSound() {
+        if (sfxSetting !== 'on') return;
+        initAudio();
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+        } catch(e){}
+    }
+
+    function playExplosionSound(isTank = false) {
+        if (sfxSetting !== 'on') return;
+        initAudio();
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(isTank ? 120 : 180, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        } catch(e){}
+    }
+
+    function playErrorSound() {
+        if (sfxSetting !== 'on') return;
+        initAudio();
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        } catch(e){}
+    }
+
     function saveOptions() {
         sfxSetting = document.getElementById('sfxSelect').value;
         langSetting = document.getElementById('langSelect').value;
@@ -195,6 +286,7 @@
         localStorage.setItem('langSetting', langSetting);
         document.getElementById('pauseSfxSelect').value = sfxSetting;
         document.getElementById('pauseLangSelect').value = langSetting;
+        if(sfxSetting === 'off') stopBGM();
     }
 
     function syncOptions(source) {
@@ -206,6 +298,7 @@
         localStorage.setItem('langSetting', langSetting);
         document.getElementById('sfxSelect').value = sfxSetting;
         document.getElementById('langSelect').value = langSetting;
+        if(sfxSetting === 'off') stopBGM();
     }
 
     function openSettings() {
@@ -224,12 +317,14 @@
         mainMenu.classList.remove('hidden');
     }
 
+    // --- GAME CONTROL ---
     function pauseGame() {
         if (!gameActive) return;
         gameActive = false; 
         pauseBtn.classList.add('hidden');
         pauseMenu.classList.remove('hidden');
         hiddenInput.blur();
+        stopBGM();
     }
 
     function resumeGame() {
@@ -237,6 +332,7 @@
         pauseBtn.classList.remove('hidden');
         gameActive = true;
         hiddenInput.focus();
+        startBGM();
         gameLoop(); 
     }
 
@@ -244,7 +340,8 @@
         pauseMenu.classList.add('hidden');
         pauseBtn.classList.add('hidden');
         mainMenu.classList.remove('hidden');
-        enemies = []; lasers = []; particles = []; activeEnemy = null;
+        stopBGM();
+        enemies = []; lasers = []; particles = []; floatingTexts = []; activeEnemy = null;
     }
 
     // --- GAME ENGINE ---
@@ -266,10 +363,14 @@
     let lasers = [];
     let particles = [];
     let stars = [];
+    let floatingTexts = [];
     let score = 0;
     let gameActive = false;
     let activeEnemy = null;
     let frameCount = 0;
+
+    let comboCount = 0;
+    let maxCombo = 0;
 
     let currentWave = 1;
     let enemiesLeftToSpawn = 0;
@@ -314,13 +415,47 @@
         }
     }
 
+    // --- FLOATING TEXT CLASS ---
+    class FloatingText {
+        constructor(x, y, text, color, isBig = false) {
+            this.x = x; this.y = y; this.text = text; this.color = color;
+            this.alpha = 1; this.speedY = -1.5;
+            this.fontSize = isBig ? "bold 22px 'Courier New'" : "bold 15px 'Courier New'";
+        }
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.fillStyle = this.color;
+            ctx.font = this.fontSize;
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.restore();
+        }
+        update() {
+            this.y += this.speedY;
+            this.alpha -= 0.02;
+        }
+    }
+
+    // --- ENEMY CLASS ---
     class Enemy {
-        constructor(waveNum) {
+        constructor(waveNum, forcedType = null) {
             ctx.font = "bold 20px 'Courier New'";
             
+            if(forcedType) {
+                this.type = forcedType;
+            } else {
+                let rand = Math.random();
+                if (waveNum >= 4 && rand < 0.18) this.type = "tank";
+                else if (waveNum >= 2 && rand > 0.18 && rand < 0.35) this.type = "splitter";
+                else this.type = "normal";
+            }
+
             let minLen = waveNum <= 2 ? 4 : (waveNum <= 5 ? 5 : 6);
             let maxLen = waveNum <= 2 ? 6 : (waveNum <= 5 ? 8 : 12);
             
+            if (this.type === 'tank') { minLen = 8; maxLen = 14; }
+            if (this.type === 'mini') { minLen = 3; maxLen = 4; }
+
             let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
             if (possibleWords.length === 0) possibleWords = wordsList;
 
@@ -335,29 +470,31 @@
             let maxSpawnX = canvas.width - this.wordWidth - 40;
             this.x = Math.random() * (maxSpawnX - 30) + 30;
             if (this.x < 30) this.x = 30;
-
             this.y = -30;
-            this.speed = 0.4 + (Math.random() * 0.3) + (Math.min(waveNum, 10) * 0.05);
+            
+            let baseSpeed = 0.4 + (Math.random() * 0.3) + (Math.min(waveNum, 10) * 0.05);
+            if (this.type === 'tank') this.speed = baseSpeed * 0.55;
+            else if (this.type === 'mini') this.speed = baseSpeed * 1.7;
+            else this.speed = baseSpeed;
+
+            if(this.type === 'tank') this.colorGlow = "#ef4444";
+            else if(this.type === 'splitter') this.colorGlow = "#c084fc";
+            else if(this.type === 'mini') this.colorGlow = "#eab308";
+            else this.colorGlow = "#22c55e"; 
         }
         draw() {
-            ctx.font = "bold 20px 'Courier New'"; 
+            ctx.font = this.type === 'tank' ? "bold 23px 'Courier New'" : "bold 20px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
 
             if (activeEnemy === this) {
                 ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
                 ctx.lineWidth = 1.5;
-                ctx.strokeRect(this.x - 10, this.y - 20, this.wordWidth + 20, 26);
-                
-                ctx.fillStyle = "#38bdf8";
-                ctx.fillRect(this.x - 12, this.y - 22, 6, 2);
-                ctx.fillRect(this.x - 12, this.y - 22, 2, 6);
-                ctx.fillRect(this.x + this.wordWidth + 6, this.y - 22, 6, 2);
-                ctx.fillRect(this.x + this.wordWidth + 10, this.y - 22, 2, 6);
+                ctx.strokeRect(this.x - 10, this.y - 20, this.wordWidth + 20, this.type === 'tank' ? 30 : 26);
             }
 
-            ctx.fillStyle = "#4ade80"; 
-            ctx.shadowBlur = activeEnemy === this ? 12 : 4;       
-            ctx.shadowColor = "#22c55e"; 
+            ctx.fillStyle = this.colorGlow; 
+            ctx.shadowBlur = activeEnemy === this ? 15 : 5;       
+            ctx.shadowColor = this.colorGlow; 
             ctx.fillText(this.typed, this.x, this.y);
 
             ctx.shadowBlur = 0; 
@@ -371,7 +508,7 @@
         constructor(targetX, targetY) {
             this.x = player.x; 
             this.y = player.y - (player.size * 1.2); 
-            this.speed = 32; 
+            this.speed = 35; 
 
             let dx = targetX - this.x;
             let dy = targetY - this.y;
@@ -386,33 +523,28 @@
             ctx.lineTo(this.x - (this.vx * 0.5), this.y - (this.vy * 0.5));
             ctx.strokeStyle = "#38bdf8"; 
             ctx.lineWidth = 4;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "#0ea5e9";
+            ctx.shadowBlur = 10; ctx.shadowColor = "#0ea5e9";
             ctx.stroke();
             ctx.shadowBlur = 0;
         }
-        update() { 
-            this.x += this.vx; 
-            this.y += this.vy; 
-        }
+        update() { this.x += this.vx; this.y += this.vy; }
     }
 
     class Particle {
-        constructor(x, y) {
+        constructor(x, y, themeColor) {
             this.x = x; this.y = y;
             this.size = Math.random() * 3.5 + 1.5;
             let angle = Math.random() * Math.PI * 2;
-            let speed = Math.random() * 4.5 + 1;
+            let speed = Math.random() * 5 + 1;
             this.vx = Math.cos(angle) * speed;
             this.vy = Math.sin(angle) * speed;
             this.alpha = 1;
             this.decay = Math.random() * 0.035 + 0.015;
-            const colors = ["#4ade80", "#38bdf8", "#bae6fd", "#ffffff"];
+            const colors = [themeColor, "#38bdf8", "#ffffff"];
             this.color = colors[Math.floor(Math.random() * colors.length)];
         }
         draw() {
-            ctx.save();
-            ctx.globalAlpha = this.alpha;
+            ctx.save(); ctx.globalAlpha = this.alpha;
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.size, this.size);
             ctx.restore();
@@ -423,10 +555,10 @@
         }
     }
 
-    function createExplosion(x, y, wordLength) {
+    function createExplosion(x, y, wordLength, themeColor) {
         let count = 12 + wordLength * 3;
         for (let i = 0; i < count; i++) {
-            particles.push(new Particle(x + (Math.random() * wordLength * 9), y - 4));
+            particles.push(new Particle(x + (Math.random() * wordLength * 9), y - 4, themeColor));
         }
     }
 
@@ -437,6 +569,7 @@
         waveClearMessageTimer = 90; 
     }
 
+    // --- INPUT PROCESSING ENGINE ---
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
@@ -448,13 +581,8 @@
 
             if (/^[0-9]$/.test(karakter)) {
                 kodeAngka += karakter;
-                if (kodeAngka.length > PIN_RAHASIA.length) {
-                    kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
-                }
-                if (kodeAngka === PIN_RAHASIA) {
-                    goToDashboard();
-                    return; 
-                }
+                if (kodeAngka.length > PIN_RAHASIA.length) kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
+                if (kodeAngka === PIN_RAHASIA) { goToDashboard(); return; }
                 continue; 
             }
 
@@ -464,30 +592,71 @@
             ctx.font = "bold 20px 'Courier New'"; 
 
             if (!activeEnemy) {
-                let targets = enemies.filter(en => en.word[0] === key);
+                let targets = enemies.filter(en => en.word[en.typed.length] === key);
                 if (targets.length > 0) {
                     targets.sort((a, b) => b.y - a.y); 
                     activeEnemy = targets[0]; 
                     activeEnemy.typed += key;
                     
+                    comboCount++;
+                    playLaserSound();
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
                     lasers.push(new Laser(targetX, activeEnemy.y));
+                } else {
+                    comboCount = 0;
+                    playErrorSound();
+                    floatingTexts.push(new FloatingText(canvas.width/2 - 20, player.y - 50, "MISS!", "#ef4444", true));
                 }
             } else {
                 let nextChar = activeEnemy.word[activeEnemy.typed.length];
                 if (key === nextChar) {
                     activeEnemy.typed += key;
+                    comboCount++;
+                    playLaserSound();
                     
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
                     lasers.push(new Laser(targetX, activeEnemy.y));
                     
                     if (activeEnemy.typed === activeEnemy.word) {
-                        score += activeEnemy.word.length * 10;
-                        triggerScreenShake(5, 8); 
-                        createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length);
+                        let multiplier = 1;
+                        if (comboCount >= 25) multiplier = 5;
+                        else if (comboCount >= 18) multiplier = 4;
+                        else if (comboCount >= 10) multiplier = 3;
+                        else if (comboCount >= 5) multiplier = 2;
+
+                        let basePoints = activeEnemy.word.length * 10;
+                        let finalPoints = basePoints * multiplier;
+                        score += finalPoints;
+
+                        triggerScreenShake(activeEnemy.type === 'tank' ? 10 : 5, 8); 
+                        createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length, activeEnemy.colorGlow);
+                        playExplosionSound(activeEnemy.type === 'tank');
+
+                        floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
+
+                        if (activeEnemy.type === 'splitter') {
+                            floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, "SPLIT!", "#c084fc"));
+                            for(let k = 0; k < 2; k++) {
+                                let miniEn = new Enemy(currentWave, 'mini');
+                                miniEn.x = activeEnemy.x + (k === 0 ? -45 : 55);
+                                miniEn.y = Math.max(activeEnemy.y - 15, 10);
+                                if (miniEn.x < 30) miniEn.x = 30;
+                                if (miniEn.x > canvas.width - 120) miniEn.x = canvas.width - 120;
+                                enemies.push(miniEn);
+                            }
+                        }
+
+                        if (comboCount > maxCombo) maxCombo = comboCount;
+
                         enemies = enemies.filter(en => en !== activeEnemy);
                         activeEnemy = null;
                     }
+                } else {
+                    // BUG FIX: Mendeklarasikan typedWidth lokal agar tidak menyebabkan ReferenceError
+                    let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
+                    comboCount = 0;
+                    playErrorSound();
+                    floatingTexts.push(new FloatingText(activeEnemy.x + errorTypedWidth, activeEnemy.y - 20, "BAD!", "#ef4444"));
                 }
             }
         }
@@ -495,11 +664,7 @@
 
     function saveHighScore(finalScore, finalWave) {
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
-        scores.push({ 
-            score: finalScore, 
-            wave: finalWave,
-            date: new Date().toLocaleDateString('id-ID') 
-        });
+        scores.push({ score: finalScore, wave: finalWave, date: new Date().toLocaleDateString('id-ID') });
         scores.sort((a, b) => b.score - a.score);
         scores = scores.slice(0, 5); 
         localStorage.setItem('typeShooterScores', JSON.stringify(scores));
@@ -537,8 +702,8 @@
     }
 
     function startGame() {
-        enemies = []; lasers = []; particles = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
-        shakeTimer = 0;
+        enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
+        comboCount = 0; maxCombo = 0; shakeTimer = 0;
         startWave(1);
         updatePlayerPosition();
         initStars();
@@ -552,13 +717,15 @@
         hiddenInput.value = "";
         hiddenInput.focus();
         
+        startBGM();
         gameLoop();
     }
 
     function gameOver() {
         gameActive = false;
         pauseBtn.classList.add('hidden'); 
-        triggerScreenShake(14, 25);
+        triggerScreenShake(15, 30);
+        stopBGM();
         
         saveHighScore(score, currentWave); 
         
@@ -570,9 +737,7 @@
     }
 
     canvas.addEventListener('click', () => {
-        if (gameActive) {
-            hiddenInput.focus();
-        }
+        if (gameActive) hiddenInput.focus();
     });
 
     function gameLoop() {
@@ -591,12 +756,10 @@
         stars.forEach(star => {
             ctx.fillRect(star.x, star.y, star.size, star.size);
             star.y += star.speed;
-            if (star.y > canvas.height) {
-                star.y = 0; star.x = Math.random() * canvas.width;
-            }
+            if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
         });
 
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.3)"; 
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.25)"; 
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, player.y + 35); ctx.lineTo(canvas.width, player.y + 35); ctx.stroke();
 
@@ -605,9 +768,21 @@
         ctx.fillText("WAVE: " + currentWave, 25, 45);
         ctx.fillText("SCORE: " + score, 25, 80);
 
+        if(comboCount > 0) {
+            let mult = 1;
+            if (comboCount >= 25) mult = 5;
+            else if (comboCount >= 18) mult = 4;
+            else if (comboCount >= 10) mult = 3;
+            else if (comboCount >= 5) mult = 2;
+
+            ctx.fillStyle = mult > 1 ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 163, 184, 0.15)";
+            ctx.font = "bold 20px 'Courier New'";
+            ctx.fillText(`COMBO: ${comboCount} (X${mult})`, 25, 115);
+        }
+
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
             waveSpawnTimer++;
-            let spawnInterval = Math.max(90 - currentWave * 4, 50); 
+            let spawnInterval = Math.max(95 - currentWave * 5, 45); 
             if (waveSpawnTimer >= spawnInterval) {
                 enemies.push(new Enemy(currentWave));
                 enemiesLeftToSpawn--;
@@ -620,8 +795,7 @@
         if (waveClearMessageTimer > 0) {
             waveClearMessageTimer--;
             ctx.fillStyle = "#38bdf8";
-            ctx.font = "bold 32px 'Courier New'";
-            ctx.textAlign = "center";
+            ctx.font = "bold 32px 'Courier New'"; ctx.textAlign = "center";
             ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
             ctx.fillText("INCOMING WAVE " + currentWave, canvas.width / 2, canvas.height / 2.5);
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
@@ -629,26 +803,23 @@
 
         let cx = player.x; let cy = player.y; let s = player.size;
         let thrustGlow = 12 + Math.random() * 12; 
-        
         ctx.fillStyle = "#f97316"; ctx.shadowBlur = thrustGlow; ctx.shadowColor = "#ef4444";
         ctx.beginPath(); ctx.moveTo(cx - 5, cy + s - 5); ctx.lineTo(cx + 5, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); ctx.fill();
-        ctx.fillStyle = "#fef08a"; 
-        ctx.beginPath(); ctx.moveTo(cx - 2, cy + s - 5); ctx.lineTo(cx + 2, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.35)); ctx.fill();
         ctx.shadowBlur = 0; 
-
-        ctx.fillStyle = "#1e293b";
-        ctx.beginPath(); ctx.moveTo(cx, cy - s*0.2); ctx.lineTo(cx - s*1.4, cy + s); ctx.lineTo(cx + s*1.4, cy + s); ctx.fill();
         ctx.fillStyle = "#475569";
         ctx.beginPath(); ctx.moveTo(cx, cy - s*1.3); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.lineTo(cx, cy + s - 10); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
         ctx.fillStyle = "#0ea5e9";
         ctx.beginPath(); ctx.moveTo(cx - s*1.4, cy + s); ctx.lineTo(cx - s*1.1, cy + s*0.5); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.fill();
         ctx.beginPath(); ctx.moveTo(cx + s*1.4, cy + s); ctx.lineTo(cx + s*1.1, cy + s*0.5); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
-        ctx.fillStyle = "#bae6fd";
-        ctx.beginPath(); ctx.ellipse(cx, cy - s*0.2, s*0.25, s*0.5, 0, 0, Math.PI * 2); ctx.fill();
 
         particles.forEach((p, index) => {
             p.update(); p.draw();
             if (p.alpha <= 0) particles.splice(index, 1);
+        });
+
+        floatingTexts.forEach((ft, index) => {
+            ft.update(); ft.draw();
+            if (ft.alpha <= 0) floatingTexts.splice(index, 1);
         });
 
         lasers.forEach((l, index) => {
