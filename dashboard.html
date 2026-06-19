@@ -435,7 +435,7 @@
         document.getElementById('btnCopyText').innerText = "Copy";
     }
 
-    // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2a X" KEMBALI JADI ANGKA SATUAN
+   // FUNGSI UNTUK MEMECAH FORMAT "123 bb 2a X" KEMBALI JADI ANGKA SATUAN
     function parseAndExpand(str) {
         let result = [];
         let regexBB = /(\d+)\s+bb\s+(2d|2a\s*x)/gi;
@@ -453,11 +453,15 @@
         }
         
         let nums = processedStr.replace(/[\n\s,.]+/g, ' ').split(' ').filter(Boolean);
+        
+        // PERBAIKAN: Saring hanya yang benar-benar angka, buang simbol seperti "---"
+        nums = nums.filter(n => /^\d+$/.test(n)); 
+        
         result.push(...nums);
         return result;
     }
 
-  function ringkasBB() {
+function ringkasBB() {
     const outputTextArea = document.getElementById('outputData');
     let val = outputTextArea.value;
     if (!val) {
@@ -465,10 +469,10 @@
         return;
     }
 
-    // 1. Ambil semua angka 2D dan pastikan tidak ada duplikat
     let angka2D = parseAndExpand(val); 
     angka2D = [...new Set(angka2D)].filter(n => /^\d{2}$/.test(n));
 
+    // --- LOGIKA BB (RANDOM DIKEMBALIKAN) ---
     let digits = '0123456789';
     let subsets = [];
     let f = function(prefix, str) {
@@ -478,11 +482,8 @@
         }
     };
     f('', digits);
-    
-    // Hanya ambil kombinasi 4 digit angka
     subsets = subsets.filter(s => s.length === 4);
 
-    // 2. Kumpulkan SEMUA kandidat BB 4-angka yang angkanya 100% lengkap di daftar
     let validSubsets = subsets.filter(subset => {
         let perms = [];
         for(let i=0; i<4; i++) {
@@ -493,13 +494,12 @@
         return perms.every(p => angka2D.includes(p));
     });
 
-    // 3. Acak urutan kandidat BB agar hasil selalu berubah setiap diklik
+    // MENGEMBALIKAN FITUR RANDOM
     for (let i = validSubsets.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [validSubsets[i], validSubsets[j]] = [validSubsets[j], validSubsets[i]];
     }
 
-    // 4. Pilih tepat 2 grup BB yang tidak saling bertabrakan angkanya
     let bbGroups = [];
     let usedPerms = new Set();
     
@@ -510,38 +510,58 @@
                 if(i !== j) perms.push(subset[i]+subset[j]);
             }
         }
-        
-        // Cek apakah ada angka pasangan yang sudah terpakai oleh grup BB sebelumnya
         let isOverlap = perms.some(p => usedPerms.has(p));
-        
         if (!isOverlap) {
             bbGroups.push(subset + " bb 2a X");
             perms.forEach(p => usedPerms.add(p));
-            // Berhenti secara absolut jika sudah dapat 2 grup BB
             if (bbGroups.length === 2) break; 
         }
     }
     
-    // 5. Hapus semua angka yang sudah masuk grup BB dari daftar utama
+    // --- LOGIKA PENGELOMPOKAN PASANGAN (TETAP RAPI) ---
     angka2D = angka2D.filter(a => !usedPerms.has(a));
     
-    // 6. Susun ulang sisa angka ke dalam 6 kolom
-    let finalOutput = [];
+    let grouped = [];
+    let processed = new Set();
+    
+    angka2D.sort(); // Urutkan agar pasangan bertemu
+    
+    angka2D.forEach(num => {
+        if (!processed.has(num)) {
+            let reverse = num[1] + num[0];
+            if (angka2D.includes(reverse) && num !== reverse) {
+                grouped.push(num + "." + reverse);
+                processed.add(num);
+                processed.add(reverse);
+            } else {
+                grouped.push(num);
+                processed.add(num);
+            }
+        }
+    });
+
+    // Susun ke dalam baris (3 grup per baris = 6 angka total)
     let barisAngka = [];
-    for (let i = 0; i < angka2D.length; i += 6) {
-        barisAngka.push(angka2D.slice(i, i + 6).join('.'));
-    }
+    let currentLine = [];
+    grouped.forEach(item => {
+        currentLine.push(item);
+        if (currentLine.length === 3) {
+            barisAngka.push(currentLine.join('.'));
+            currentLine = [];
+        }
+    });
+    if (currentLine.length > 0) barisAngka.push(currentLine.join('.'));
 
-    if (barisAngka.length > 0) {
-        finalOutput.push(barisAngka.join('\n'));
-    }
-
+    // --- HASIL AKHIR ---
+    let finalOutput = [];
+    if (barisAngka.length > 0) finalOutput.push(barisAngka.join('\n'));
     if (bbGroups.length > 0) {
         if (finalOutput.length > 0) finalOutput.push('---');
         finalOutput.push(bbGroups.join('\n'));
     }
 
     outputTextArea.value = finalOutput.join('\n');
+}
 }
 
     function copyHasil() {
