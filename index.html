@@ -808,16 +808,66 @@
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
-        let cx = player.x; let cy = player.y; let s = player.size;
+                let cx = player.x; let cy = player.y; let s = player.size;
+        
+        // 1. Efek Api Thruster (Mesin Belakang)
         let thrustGlow = 12 + Math.random() * 12; 
-        ctx.fillStyle = "#f97316"; ctx.shadowBlur = thrustGlow; ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); ctx.moveTo(cx - 5, cy + s - 5); ctx.lineTo(cx + 5, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); ctx.fill();
+        ctx.fillStyle = "#f97316"; 
+        ctx.shadowBlur = thrustGlow; 
+        ctx.shadowColor = "#ef4444";
+        ctx.beginPath(); 
+        ctx.moveTo(cx - 8, cy + s - 2); 
+        ctx.lineTo(cx + 8, cy + s - 2); 
+        ctx.lineTo(cx, cy + s + (thrustGlow * 1.2)); 
+        ctx.fill();
         ctx.shadowBlur = 0; 
-        ctx.fillStyle = "#475569";
-        ctx.beginPath(); ctx.moveTo(cx, cy - s*1.3); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.lineTo(cx, cy + s - 10); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
-        ctx.fillStyle = "#0ea5e9";
-        ctx.beginPath(); ctx.moveTo(cx - s*1.4, cy + s); ctx.lineTo(cx - s*1.1, cy + s*0.5); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(cx + s*1.4, cy + s); ctx.lineTo(cx + s*1.1, cy + s*0.5); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
+        
+        // 2. Sayap Utama (Biru Medium)
+        ctx.fillStyle = "#3b82f6";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - s*0.5); 
+        ctx.lineTo(cx - s*2.2, cy + s*0.8); // Ujung kiri bawah
+        ctx.lineTo(cx - s*2.2, cy + s*1.1); // Sayap belakang kiri
+        ctx.lineTo(cx - s*0.8, cy + s*0.8); // Lekukan sayap dalam kiri
+        ctx.lineTo(cx, cy + s*1.2);         // Ekor tengah
+        ctx.lineTo(cx + s*0.8, cy + s*0.8); // Lekukan sayap dalam kanan
+        ctx.lineTo(cx + s*2.2, cy + s*1.1); // Sayap belakang kanan
+        ctx.lineTo(cx + s*2.2, cy + s*0.8); // Ujung kanan bawah
+        ctx.fill();
+
+        // 3. Meriam Ujung Sayap (Biru Terang)
+        ctx.fillStyle = "#60a5fa"; 
+        // Meriam Kiri
+        ctx.fillRect(cx - s*2.2, cy + s*0.2, s*0.15, s*0.8);
+        ctx.beginPath(); ctx.moveTo(cx - s*2.125, cy); ctx.lineTo(cx - s*2.2, cy + s*0.2); ctx.lineTo(cx - s*2.05, cy + s*0.2); ctx.fill();
+        // Meriam Kanan
+        ctx.fillRect(cx + s*2.05, cy + s*0.2, s*0.15, s*0.8);
+        ctx.beginPath(); ctx.moveTo(cx + s*2.125, cy); ctx.lineTo(cx + s*2.2, cy + s*0.2); ctx.lineTo(cx + s*2.05, cy + s*0.2); ctx.fill();
+
+        // 4. Badan Utama / Fuselage (Biru Gelap)
+        ctx.fillStyle = "#1e3a8a";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - s*1.6); // Moncong paling depan
+        ctx.lineTo(cx - s*0.6, cy + s*0.5); // Badan kiri
+        ctx.lineTo(cx - s*0.5, cy + s*1.2); // Mesin kiri
+        ctx.lineTo(cx + s*0.5, cy + s*1.2); // Mesin kanan
+        ctx.lineTo(cx + s*0.6, cy + s*0.5); // Badan kanan
+        ctx.fill();
+
+        // 5. Kokpit / Kaca Pesawat (Kuning Emas) - Sesuai referensi
+        ctx.fillStyle = "#facc15"; 
+        // Garis Kaca Depan
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - s*1.2);
+        ctx.lineTo(cx - s*0.15, cy - s*0.2);
+        ctx.lineTo(cx, cy + s*0.1);
+        ctx.lineTo(cx + s*0.15, cy - s*0.2);
+        ctx.fill();
+        // Kaca Oval Utama
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + s*0.4, s*0.25, s*0.35, 0, 0, Math.PI * 2);
+        ctx.fill();
+
 
         particles.forEach((p, index) => {
             p.update(); p.draw();
