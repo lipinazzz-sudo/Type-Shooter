@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Kalkulator Invest</title>
-<style>
+    <style>
         :root {
             --bg-main: #0b0f19;       /* Dark slate biru premium */
             --bg-container: #151f32;  /* Kontainer sedikit lebih terang */
@@ -222,7 +222,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 5px;">
         <label for="inputData" style="margin: 0;">Angka Asli:</label>
         <button id="btnToggleInput" onclick="toggleInputData()" style="background-color: #24324d; color: #94a3b8; border: 1px solid #334155; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-            👁️ Unhide Angka
+            👁️ Unhide
         </button>
     </div>
     
@@ -261,7 +261,8 @@
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn-execute" onclick="prosesAngka()">Prosses</button>
-                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px;">BB</button>
+                <button class="btn-execute" onclick="ringkasBB()" style="background-color: #9b59b6; padding: 14px 10px; max-width: 80px;">BB</button>
+                <button class="btn-execute" onclick="clearAllFields()" style="background-color: #64748b; padding: 14px 10px; max-width: 110px;">🗑️ Clear</button>
             </div>
         </div>
     </div>
@@ -276,7 +277,12 @@
         </div>
 
         <div>
-            <label style="font-size: 16px; margin-bottom: 10px;">Angka Pembanding</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <label style="margin: 0; font-size: 16px;">Angka Pembanding</label>
+                <button onclick="pastePembanding()" style="background-color: #1e293b; color: #3b82f6; border: 1px solid #24324d; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;">
+                    📋 Paste
+                </button>
+            </div>
             <div class="match-box">
                 
                 <div class="match-layout">
@@ -579,7 +585,8 @@
             }
         }
     }
-    // FUNGSI REFRESH IFRAME + ANTI CACHE (GITHUB)
+    
+// FUNGSI REFRESH IFRAME + ANTI CACHE (GITHUB)
 function refreshIframe() {
     const iframe = document.getElementById('webIframe');
     
@@ -590,7 +597,8 @@ function refreshIframe() {
     // Ini memaksa browser mendownload ulang file baru dari GitHub/Hosting tanpa memakai cache lama
     iframe.src = urlDasar + '?t=' + new Date().getTime();
 }
-    // FUNGSI UNTUK REBUT TOGGLE HIDE/UNHIDE ANGKA ASLI
+
+// FUNGSI UNTUK REBUT TOGGLE HIDE/UNHIDE ANGKA ASLI
 function toggleInputData() {
     const inputArea = document.getElementById('inputData');
     const btnToggle = document.getElementById('btnToggleInput');
@@ -598,16 +606,43 @@ function toggleInputData() {
     if (inputArea.style.display === 'none') {
         // Jika sedang sembunyi, maka tampilkan
         inputArea.style.display = 'block';
-        btnToggle.innerHTML = '🙈 Hide Angka';
+        btnToggle.innerHTML = '🙈 Hide';
         btnToggle.style.backgroundColor = '#3b82f6'; // Berubah warna biru saat aktif
         btnToggle.style.color = '#fff';
     } else {
         // Jika sedang tampil, maka sembunyikan
         inputArea.style.display = 'none';
-        btnToggle.innerHTML = '👁️ Unhide Angka';
+        btnToggle.innerHTML = '👁️ Unhide';
         btnToggle.style.backgroundColor = '#24324d'; // Kembali ke warna semula
         btnToggle.style.color = '#94a3b8';
     }
+}
+
+// FUNGSI CLEAR ALL FIELDS (BARU)
+function clearAllFields() {
+    // Kosongkan input teks
+    document.getElementById('hapusAwalan').value = '';
+    document.getElementById('hapusAkhiran').value = '';
+    document.getElementById('hapusSpesifik').value = '';
+    document.getElementById('inputPembanding').value = '';
+    document.getElementById('outputData').value = '';
+    
+    // Sembunyikan pesan hasil
+    document.getElementById('wrapperHasilCocok').style.display = 'none';
+    
+    // Reset tombol copy
+    document.getElementById('btnCopyText').innerText = "Copy";
+}
+
+// FUNGSI PASTE INSTAN (BARU)
+function pastePembanding() {
+    navigator.clipboard.readText()
+    .then(text => {
+        document.getElementById('inputPembanding').value = text;
+    })
+    .catch(err => {
+        alert('Gagal membaca clipboard. Pastikan Anda mengizinkan akses clipboard di browser Anda.');
+    });
 }
 </script>
 
