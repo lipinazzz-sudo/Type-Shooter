@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-Shooter Audio Fixed</title>
+    <title>Type-Shooter Visual Enhanced</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -24,16 +24,17 @@
         .ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(0, 0, 0, 0.7); z-index: 10;
+            background: rgba(15, 23, 42, 0.85); z-index: 10;
+            backdrop-filter: blur(4px);
         }
 
         .menu-box {
-            background: #1e293b; padding: 40px; border-radius: 10px;
+            background: #1e293b; padding: 40px; border-radius: 12px;
             border: 2px solid #38bdf8; text-align: center; width: 320px;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
         }
 
-        h1 { color: #38bdf8; margin-top: 0; font-size: 32px; letter-spacing: 5px;}
+        h1 { color: #38bdf8; margin-top: 0; font-size: 32px; letter-spacing: 5px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6); }
         h2 { color: #e2e8f0; font-size: 20px; margin-top: 0;}
         .mobile-hint { color: #94a3b8; font-size: 12px; margin-top: 15px; }
 
@@ -41,16 +42,16 @@
             background: #0ea5e9; color: white; border: none;
             padding: 12px 20px; margin: 10px 0; width: 100%;
             font-size: 16px; font-weight: bold; cursor: pointer;
-            border-radius: 5px; transition: 0.2s; font-family: inherit;
+            border-radius: 6px; transition: 0.2s; font-family: inherit;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        button:hover { background: #0284c7; }
+        button:hover { background: #0284c7; transform: translateY(-1px); }
 
         .setting-row {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; text-align: left;
         }
         .setting-row label { font-size: 14px; font-weight: bold; }
-        .setting-row input[type="range"] { width: 130px; }
         .setting-row select { width: 130px; padding: 5px; background: #0f172a; color: white; border: 1px solid #38bdf8;}
 
         .hidden { display: none !important; }
@@ -71,7 +72,7 @@
     <div id="mainMenu" class="ui-layer">
         <div class="menu-box">
             <h1>TYPE-SHOOTER</h1>
-            <p>Ketik Untuk Menghancurkan Kata</p>
+            <p style="color: #94a3b8;">Ketik Untuk Menghancurkan Kata</p>
             <button onclick="startGame()">PLAY GAME</button>
             <button onclick="openSettings()" style="background: #475569;">SETTINGS</button>
             <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
@@ -82,16 +83,6 @@
     <div id="settingsMenu" class="ui-layer hidden">
         <div class="menu-box">
             <h2>SETTINGS</h2>
-            
-            <div class="setting-row">
-                <label>Volume SFX</label>
-                <input type="range" id="sfxVolumeSlider" min="0" max="100" value="80" oninput="updateVolume()">
-            </div>
-            
-            <div class="setting-row">
-                <label>Music BGM</label>
-                <input type="range" id="musicVolumeSlider" min="0" max="100" value="40" oninput="updateVolume()">
-            </div>
             
             <div class="setting-row">
                 <label>Bahasa</label>
@@ -115,7 +106,7 @@
 
     <div id="gameOverMenu" class="ui-layer hidden">
         <div class="menu-box">
-            <h1 style="color: #ef4444;">GAME OVER</h1>
+            <h1 style="color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);">GAME OVER</h1>
             <h2 id="finalScoreText">Score: 0</h2>
             <button onclick="startGame()">TRY AGAIN</button>
             <button onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
@@ -138,6 +129,7 @@
     function openSettings() {
         mainMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
+        settingsMenu.remove('hidden');
         settingsMenu.classList.remove('hidden');
     }
     
@@ -150,22 +142,6 @@
         gameOverMenu.classList.add('hidden');
         mainMenu.classList.remove('hidden');
     }
-
-    // --- PERBAIKAN: MENGGUNAKAN FORMAT MP3 (Mendukung iPad/Safari/PC) ---
-    const shootSFX = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
-    const explosionSFX = new Audio('https://www.soundjay.com/buttons/sounds/button-30.mp3');
-    const bgMusic = new Audio('https://www.soundjay.com/free-music/sounds/ambient-background-01.mp3');
-    bgMusic.loop = true;
-
-    function updateVolume() {
-        const sfxVol = document.getElementById('sfxVolumeSlider').value / 100;
-        const musicVol = document.getElementById('musicVolumeSlider').value / 100;
-        
-        shootSFX.volume = sfxVol;
-        explosionSFX.volume = sfxVol;
-        bgMusic.volume = musicVol;
-    }
-    updateVolume();
 
     // --- GAME ENGINE ---
     const ctx = canvas.getContext('2d');
@@ -185,6 +161,15 @@
     let activeEnemy = null;
     let spawnRate = 130;
     let frameCount = 0;
+
+    // Tambahan untuk efek Screen Shake (Guncangan Layar)
+    let shakeTimer = 0;
+    let shakeIntensity = 0;
+
+    function triggerScreenShake(intensity, duration) {
+        shakeIntensity = intensity;
+        shakeTimer = duration;
+    }
 
     const player = { x: canvas.width / 2, y: canvas.height - 100, size: 25 };
 
@@ -227,8 +212,8 @@
             this.word = filteredList[Math.floor(Math.random() * filteredList.length)];
             this.typed = "";
             
-            let wordWidth = ctx.measureText(this.word).width;
-            let maxSpawnX = canvas.width - wordWidth - 30;
+            this.wordWidth = ctx.measureText(this.word).width;
+            let maxSpawnX = canvas.width - this.wordWidth - 30;
             this.x = Math.random() * (maxSpawnX - 20) + 20;
             if (this.x < 20) this.x = 20;
 
@@ -239,11 +224,27 @@
             ctx.font = "bold 22px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
 
+            // Efek target lock-on (Kotak Sensor) jika kata ini sedang diketik
+            if (activeEnemy === this) {
+                ctx.strokeStyle = "rgba(56, 189, 248, 0.5)";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.x - 8, this.y - 22, this.wordWidth + 16, 30);
+                
+                // Pojok siku target indikator
+                ctx.fillStyle = "#38bdf8";
+                ctx.fillRect(this.x - 10, this.y - 24, 6, 2);
+                ctx.fillRect(this.x - 10, this.y - 24, 2, 6);
+                ctx.fillRect(this.x + this.wordWidth + 4, this.y - 24, 6, 2);
+                ctx.fillRect(this.x + this.wordWidth + 8, this.y - 24, 2, 6);
+            }
+
+            // Teks yang sudah diketik (Neon Hijau)
             ctx.fillStyle = "#4ade80"; 
-            ctx.shadowBlur = 15;       
+            ctx.shadowBlur = activeEnemy === this ? 15 : 5;       
             ctx.shadowColor = "#22c55e"; 
             ctx.fillText(this.typed, this.x, this.y);
 
+            // Teks sisa yang belum diketik (Putih Bersih)
             ctx.shadowBlur = 0; 
             ctx.fillStyle = "#ffffff"; 
             ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
@@ -255,7 +256,7 @@
         constructor(targetX, targetY) {
             this.x = player.x; 
             this.y = player.y - (player.size * 1.2); 
-            this.speed = 25; 
+            this.speed = 28; 
 
             let dx = targetX - this.x;
             let dy = targetY - this.y;
@@ -267,10 +268,10 @@
         draw() {
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.x - (this.vx * 0.8), this.y - (this.vy * 0.8));
+            ctx.lineTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
             ctx.strokeStyle = "#38bdf8"; 
             ctx.lineWidth = 4;
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 12;
             ctx.shadowColor = "#0ea5e9";
             ctx.stroke();
             ctx.shadowBlur = 0;
@@ -284,20 +285,23 @@
     class Particle {
         constructor(x, y) {
             this.x = x; this.y = y;
-            this.size = Math.random() * 3 + 2;
+            this.size = Math.random() * 4 + 1.5;
             let angle = Math.random() * Math.PI * 2;
-            let speed = Math.random() * 3 + 1;
+            let speed = Math.random() * 5 + 1.5;
             this.vx = Math.cos(angle) * speed;
             this.vy = Math.sin(angle) * speed;
             this.alpha = 1;
-            this.decay = Math.random() * 0.03 + 0.02;
+            this.decay = Math.random() * 0.04 + 0.02;
+            // Variasi warna ledakan sibernetik
+            const colors = ["#4ade80", "#22c55e", "#38bdf8", "#ffffff"];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
         }
         draw() {
             ctx.save();
             ctx.globalAlpha = this.alpha;
-            ctx.fillStyle = "#4ade80";
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "#22c55e";
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
             ctx.fillRect(this.x, this.y, this.size, this.size);
             ctx.restore();
         }
@@ -308,9 +312,9 @@
     }
 
     function createExplosion(x, y, wordLength) {
-        let count = 10 + wordLength * 2;
+        let count = 15 + wordLength * 3;
         for (let i = 0; i < count; i++) {
-            particles.push(new Particle(x + (Math.random() * wordLength * 10), y));
+            particles.push(new Particle(x + (Math.random() * wordLength * 10), y - 5));
         }
     }
 
@@ -352,13 +356,8 @@
     }
 
     function startGame() {
-        // === PERBAIKAN: iOS/SAFARI AUDIO UNLOCKER ===
-        // Memaksa browser membuka kunci pemutar suara tepat saat tombol PLAY diklik oleh jari user
-        shootSFX.play().then(() => { shootSFX.pause(); shootSFX.currentTime = 0; }).catch(() => {});
-        explosionSFX.play().then(() => { explosionSFX.pause(); explosionSFX.currentTime = 0; }).catch(() => {});
-        bgMusic.play().catch(() => {});
-
         enemies = []; lasers = []; particles = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
+        shakeTimer = 0;
         updatePlayerPosition();
         initStars();
         gameActive = true;
@@ -372,9 +371,7 @@
 
     function gameOver() {
         gameActive = false;
-        bgMusic.pause(); 
-        bgMusic.currentTime = 0;
-        
+        triggerScreenShake(15, 30); // Guncangan dahsyat saat hancur/kalah
         saveHighScore(score); 
         
         document.getElementById('finalScoreText').innerText = "Score: " + score;
@@ -402,7 +399,6 @@
                 kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
             }
             if (kodeAngka === PIN_RAHASIA) {
-                bgMusic.pause();
                 goToDashboard();
                 return; 
             }
@@ -421,10 +417,6 @@
                 activeEnemy = targets[0]; 
                 activeEnemy.typed += key;
                 
-                // Mainkan suara tembak (.mp3)
-                shootSFX.currentTime = 0; 
-                shootSFX.play().catch(() => {}); 
-                
                 let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
                 lasers.push(new Laser(targetX, activeEnemy.y));
             }
@@ -433,19 +425,13 @@
             if (key === nextChar) {
                 activeEnemy.typed += key;
                 
-                shootSFX.currentTime = 0;
-                shootSFX.play().catch(() => {});
-                
                 let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 8;
                 lasers.push(new Laser(targetX, activeEnemy.y));
                 
                 if (activeEnemy.typed === activeEnemy.word) {
                     score += activeEnemy.word.length * 10;
                     
-                    // Mainkan suara ledakan (.mp3)
-                    explosionSFX.currentTime = 0;
-                    explosionSFX.play().catch(() => {}); 
-                    
+                    triggerScreenShake(6, 10); // Guncangan layar saat musuh hancur
                     createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length);
                     enemies = enemies.filter(en => en !== activeEnemy);
                     activeEnemy = null;
@@ -460,6 +446,16 @@
         ctx.fillStyle = "#0b0f19";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // --- SISTEM SCREEN SHAKE (Guncangan Layar) ---
+        ctx.save();
+        if (shakeTimer > 0) {
+            let dx = (Math.random() - 0.5) * shakeIntensity;
+            let dy = (Math.random() - 0.5) * shakeIntensity;
+            ctx.translate(dx, dy);
+            shakeTimer--;
+        }
+
+        // Render Bintang Terbawa Alur Shake
         ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         stars.forEach(star => {
             ctx.fillRect(star.x, star.y, star.size, star.size);
@@ -470,27 +466,36 @@
             }
         });
 
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.4)"; 
+        // Garis Batas Bahaya Merah Neon
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.5)"; 
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(0, player.y + 35);
         ctx.lineTo(canvas.width, player.y + 35);
         ctx.stroke();
 
-        ctx.fillStyle = "#475569";
+        // Teks Skor
+        ctx.fillStyle = "rgba(71, 85, 105, 0.6)";
         ctx.font = "bold 40px Courier New";
         ctx.fillText("SCORE: " + score, 20, 50);
 
-        // --- DRAW SHIP ---
+        // --- DRAW SHIP & ENGINE GLOW ---
         let cx = player.x; let cy = player.y; let s = player.size;
-        let thrustGlow = (frameCount % 10 < 5) ? 15 : 25; 
-        ctx.fillStyle = "#0ea5e9";
+        // Membuat animasi api pendorong berkedip acak (efek realistis)
+        let thrustGlow = 15 + Math.random() * 15; 
+        
+        ctx.fillStyle = "#f97316"; // Lapisan luar api jingga
         ctx.shadowBlur = thrustGlow;
-        ctx.shadowColor = "#38bdf8";
+        ctx.shadowColor = "#ef4444";
         ctx.beginPath();
-        ctx.moveTo(cx - 8, cy + s - 5); ctx.lineTo(cx + 8, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); ctx.fill();
+        ctx.moveTo(cx - 6, cy + s - 5); ctx.lineTo(cx + 6, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.9)); ctx.fill();
+        
+        ctx.fillStyle = "#fef08a"; // Inti api kuning terang
+        ctx.beginPath();
+        ctx.moveTo(cx - 3, cy + s - 5); ctx.lineTo(cx + 3, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.4)); ctx.fill();
         ctx.shadowBlur = 0; 
 
+        // Desain Pesawat Tempur
         ctx.fillStyle = "#1e293b";
         ctx.beginPath(); ctx.moveTo(cx, cy - s*0.2); ctx.lineTo(cx - s*1.4, cy + s); ctx.lineTo(cx + s*1.4, cy + s); ctx.fill();
         ctx.fillStyle = "#475569";
@@ -501,6 +506,7 @@
         ctx.fillStyle = "#bae6fd";
         ctx.beginPath(); ctx.ellipse(cx, cy - s*0.2, s*0.25, s*0.5, 0, 0, Math.PI * 2); ctx.fill();
 
+        // Update Partikel
         particles.forEach((p, index) => {
             p.update(); p.draw();
             if (p.alpha <= 0) particles.splice(index, 1);
@@ -512,16 +518,19 @@
             if (spawnRate > 40) spawnRate -= 2;
         }
 
+        // Update Laser
         lasers.forEach((l, index) => {
             l.update(); l.draw();
             if (l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
         });
 
+        // Update Posisi Musuh
         enemies.forEach(en => {
             en.update(); en.draw();
             if (en.y > player.y + 15) { gameOver(); }
         });
 
+        ctx.restore(); // Mengembalikan koordinat canvas normal dari pengaruh screen shake
         requestAnimationFrame(gameLoop);
     }
 
