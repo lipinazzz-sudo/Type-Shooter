@@ -110,14 +110,12 @@
         <div class="menu-box">
             <h2>SETTINGS</h2>
             <div class="setting-row">
-    <label>Volume BGM</label>
-    <input type="range" id="bgmSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
-</div>
-<div class="setting-row">
-    <label>Volume SFX</label>
-    <input type="range" id="sfxSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
-</div>
-
+                <label>Audio & SFX</label>
+                <select id="sfxSelect" onchange="saveOptions()">
+                    <option value="on">Aktif (On)</option>
+                    <option value="off">Mute (Off)</option>
+                </select>
+            </div>
             <div class="setting-row">
                 <label>Bahasa</label>
                 <select id="langSelect" onchange="saveOptions()">
@@ -200,29 +198,15 @@
     let bgmInterval = null;
     let bgmIndex = 0;
     const bgmNotes = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 82, 98];
-let bgmGainNode = null;
-let sfxGainNode = null;
-let bgmVolume = parseFloat(localStorage.getItem('bgmVolume')) || 0.5;
-let sfxVolume = parseFloat(localStorage.getItem('sfxVolume')) || 0.5;
 
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Buat GainNode untuk BGM dan SFX
-        bgmGainNode = audioCtx.createGain();
-        sfxGainNode = audioCtx.createGain();
-        
-        // Hubungkan ke destination (speaker)
-        bgmGainNode.connect(audioCtx.destination);
-        sfxGainNode.connect(audioCtx.destination);
-        
-        // Atur volume awal
-        bgmGainNode.gain.value = bgmVolume;
-        sfxGainNode.gain.value = sfxVolume;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
     }
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-}
 
     function startBGM() {
         if (sfxSetting !== 'on' || bgmInterval) return;
@@ -255,26 +239,19 @@ function initAudio() {
         } catch(e) {}
     }
 
-// Contoh untuk SFX (Laser)
-function playLaserSound() {
-    if (sfxSetting !== 'on') return;
-    initAudio();
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain(); // Gain lokal untuk envelope (fade out)
-    
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(900, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-    
-    // Hubungkan: Oscillator -> Envelope -> SFX Gain (Master) -> Speaker
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-    
-    osc.connect(gain);
-    gain.connect(sfxGainNode); // <-- Gunakan sfxGainNode
-    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-}
-
+    function playLaserSound() {
+        if (sfxSetting !== 'on') return;
+        initAudio();
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
         } catch(e){}
     }
 
@@ -831,66 +808,16 @@ function playLaserSound() {
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
-                let cx = player.x; let cy = player.y; let s = player.size;
-        
-        // 1. Efek Api Thruster (Mesin Belakang)
+        let cx = player.x; let cy = player.y; let s = player.size;
         let thrustGlow = 12 + Math.random() * 12; 
-        ctx.fillStyle = "#f97316"; 
-        ctx.shadowBlur = thrustGlow; 
-        ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); 
-        ctx.moveTo(cx - 8, cy + s - 2); 
-        ctx.lineTo(cx + 8, cy + s - 2); 
-        ctx.lineTo(cx, cy + s + (thrustGlow * 1.2)); 
-        ctx.fill();
+        ctx.fillStyle = "#f97316"; ctx.shadowBlur = thrustGlow; ctx.shadowColor = "#ef4444";
+        ctx.beginPath(); ctx.moveTo(cx - 5, cy + s - 5); ctx.lineTo(cx + 5, cy + s - 5); ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); ctx.fill();
         ctx.shadowBlur = 0; 
-        
-        // 2. Sayap Utama (Biru Medium)
-        ctx.fillStyle = "#3b82f6";
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - s*0.5); 
-        ctx.lineTo(cx - s*2.2, cy + s*0.8); // Ujung kiri bawah
-        ctx.lineTo(cx - s*2.2, cy + s*1.1); // Sayap belakang kiri
-        ctx.lineTo(cx - s*0.8, cy + s*0.8); // Lekukan sayap dalam kiri
-        ctx.lineTo(cx, cy + s*1.2);         // Ekor tengah
-        ctx.lineTo(cx + s*0.8, cy + s*0.8); // Lekukan sayap dalam kanan
-        ctx.lineTo(cx + s*2.2, cy + s*1.1); // Sayap belakang kanan
-        ctx.lineTo(cx + s*2.2, cy + s*0.8); // Ujung kanan bawah
-        ctx.fill();
-
-        // 3. Meriam Ujung Sayap (Biru Terang)
-        ctx.fillStyle = "#60a5fa"; 
-        // Meriam Kiri
-        ctx.fillRect(cx - s*2.2, cy + s*0.2, s*0.15, s*0.8);
-        ctx.beginPath(); ctx.moveTo(cx - s*2.125, cy); ctx.lineTo(cx - s*2.2, cy + s*0.2); ctx.lineTo(cx - s*2.05, cy + s*0.2); ctx.fill();
-        // Meriam Kanan
-        ctx.fillRect(cx + s*2.05, cy + s*0.2, s*0.15, s*0.8);
-        ctx.beginPath(); ctx.moveTo(cx + s*2.125, cy); ctx.lineTo(cx + s*2.2, cy + s*0.2); ctx.lineTo(cx + s*2.05, cy + s*0.2); ctx.fill();
-
-        // 4. Badan Utama / Fuselage (Biru Gelap)
-        ctx.fillStyle = "#1e3a8a";
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - s*1.6); // Moncong paling depan
-        ctx.lineTo(cx - s*0.6, cy + s*0.5); // Badan kiri
-        ctx.lineTo(cx - s*0.5, cy + s*1.2); // Mesin kiri
-        ctx.lineTo(cx + s*0.5, cy + s*1.2); // Mesin kanan
-        ctx.lineTo(cx + s*0.6, cy + s*0.5); // Badan kanan
-        ctx.fill();
-
-        // 5. Kokpit / Kaca Pesawat (Kuning Emas) - Sesuai referensi
-        ctx.fillStyle = "#facc15"; 
-        // Garis Kaca Depan
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - s*1.2);
-        ctx.lineTo(cx - s*0.15, cy - s*0.2);
-        ctx.lineTo(cx, cy + s*0.1);
-        ctx.lineTo(cx + s*0.15, cy - s*0.2);
-        ctx.fill();
-        // Kaca Oval Utama
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + s*0.4, s*0.25, s*0.35, 0, 0, Math.PI * 2);
-        ctx.fill();
-
+        ctx.fillStyle = "#475569";
+        ctx.beginPath(); ctx.moveTo(cx, cy - s*1.3); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.lineTo(cx, cy + s - 10); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
+        ctx.fillStyle = "#0ea5e9";
+        ctx.beginPath(); ctx.moveTo(cx - s*1.4, cy + s); ctx.lineTo(cx - s*1.1, cy + s*0.5); ctx.lineTo(cx - s*0.8, cy + s - 5); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx + s*1.4, cy + s); ctx.lineTo(cx + s*1.1, cy + s*0.5); ctx.lineTo(cx + s*0.8, cy + s - 5); ctx.fill();
 
         particles.forEach((p, index) => {
             p.update(); p.draw();
@@ -923,24 +850,6 @@ function playLaserSound() {
     });
     
     updatePlayerPosition();
-    function updateVolume() {
-    bgmVolume = document.getElementById('bgmSlider').value;
-    sfxVolume = document.getElementById('sfxSlider').value;
-    
-    localStorage.setItem('bgmVolume', bgmVolume);
-    localStorage.setItem('sfxVolume', sfxVolume);
-    
-    if (bgmGainNode) bgmGainNode.gain.value = bgmVolume;
-    if (sfxGainNode) sfxGainNode.gain.value = sfxVolume;
-}
-
-// Inisialisasi posisi slider saat menu terbuka
-function openSettings() {
-    document.getElementById('bgmSlider').value = bgmVolume;
-    document.getElementById('sfxSlider').value = sfxVolume;
-    // ... sisa kode openSettings yang lama
-}
-
 </script>
 </body>
 </html>
