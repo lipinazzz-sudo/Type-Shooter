@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -30,7 +30,7 @@
         .container {
             background-color: var(--bg-container);
             padding: 25px;
-            border-radius: 12px;       /* Membulat modern */
+            border-radius: 12px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
             margin-bottom: 30px; 
@@ -58,7 +58,7 @@
             display: block;
             margin-top: 10px;
             margin-bottom: 5px;
-            color: #94a3b8;            /* Warna label abu-abu soft agar hirarki visual bagus */
+            color: #94a3b8;
             font-size: 14px;
         }
 
@@ -68,8 +68,9 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;       
             box-sizing: border-box;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace; /* Font angka rapi sejajar */
-            font-size: 14px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            /* FONT SIZE DIUBAH KE 16PX AGAR IOS/IPHONE TIDAK AUTO-ZOOM */
+            font-size: 16px;
             background-color: var(--input-bg);
             color: var(--text-color);
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -88,7 +89,7 @@
             resize: vertical;
             height: 180px;
             padding: 10px;
-            font-size: 14px;
+            font-size: 16px; /* Update anti-zoom */
             letter-spacing: 0.5px;
             line-height: 1.5;
             overflow-y: auto;
@@ -141,7 +142,7 @@
         #outputData {
             background-color: transparent;
             border: 1px solid var(--border-color);
-            color: #34d399;            /* Hasil akhir warna hijau sukses agar kontras */
+            color: #34d399;
             font-weight: bold;
             padding-right: 80px;
             resize: vertical;
@@ -191,6 +192,41 @@
             gap: 15px;
         }
 
+        /* GAYA UNTUK TOMBOL NAVIGASI MELAYANG (FLOATING BUTTONS) */
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9999;
+        }
+
+        .nav-btn {
+            background-color: #1e293b;
+            color: #3b82f6;
+            border: 2px solid #24324d;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+            opacity: 0.8;
+        }
+
+        .nav-btn:hover, .nav-btn:active {
+            opacity: 1;
+            background-color: #3b82f6;
+            color: white;
+            transform: scale(1.05);
+        }
+
         @media (min-width: 768px) {
             .main-layout {
                 display: grid;
@@ -210,6 +246,9 @@
                 grid-template-columns: 1fr 1.2fr;
             }
             button.btn-copy { top: 10px; }
+            
+            /* Sembunyikan tombol navigasi jika di layar besar/PC */
+            .floating-nav { display: none; }
         }
     </style>
 </head>
@@ -222,7 +261,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 5px;">
         <label for="inputData" style="margin: 0;">Angka Asli:</label>
         <button id="btnToggleInput" onclick="toggleInputData()" style="background-color: #24324d; color: #94a3b8; border: 1px solid #334155; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-            👁️ Unhide
+            👁️ Unhide Angka
         </button>
     </div>
     
@@ -342,6 +381,12 @@
         </iframe>
     </div>
 </div>
+
+<div class="floating-nav">
+    <button class="nav-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Ke Atas">⬆️</button>
+    <button class="nav-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Ke Bawah">⬇️</button>
+</div>
+
 <script>
     // FILTER DATA ASLI
     function bersihkanInput(str) {
@@ -589,12 +634,7 @@
 // FUNGSI REFRESH IFRAME + ANTI CACHE (GITHUB)
 function refreshIframe() {
     const iframe = document.getElementById('webIframe');
-    
-    // Ambil URL dasar (menghilangkan sisa teks anti-cache yang lama jika ada)
     let urlDasar = iframe.src.split('?')[0];
-    
-    // Tambahkan timestamp waktu unik di belakang URL (Contoh hasil: url?t=1718800000)
-    // Ini memaksa browser mendownload ulang file baru dari GitHub/Hosting tanpa memakai cache lama
     iframe.src = urlDasar + '?t=' + new Date().getTime();
 }
 
@@ -604,37 +644,30 @@ function toggleInputData() {
     const btnToggle = document.getElementById('btnToggleInput');
     
     if (inputArea.style.display === 'none') {
-        // Jika sedang sembunyi, maka tampilkan
         inputArea.style.display = 'block';
-        btnToggle.innerHTML = '🙈 Hide';
-        btnToggle.style.backgroundColor = '#3b82f6'; // Berubah warna biru saat aktif
+        btnToggle.innerHTML = '🙈 Hide Angka';
+        btnToggle.style.backgroundColor = '#3b82f6'; 
         btnToggle.style.color = '#fff';
     } else {
-        // Jika sedang tampil, maka sembunyikan
         inputArea.style.display = 'none';
-        btnToggle.innerHTML = '👁️ Unhide';
-        btnToggle.style.backgroundColor = '#24324d'; // Kembali ke warna semula
+        btnToggle.innerHTML = '👁️ Unhide Angka';
+        btnToggle.style.backgroundColor = '#24324d'; 
         btnToggle.style.color = '#94a3b8';
     }
 }
 
-// FUNGSI CLEAR ALL FIELDS (BARU)
+// FUNGSI CLEAR ALL FIELDS
 function clearAllFields() {
-    // Kosongkan input teks
     document.getElementById('hapusAwalan').value = '';
     document.getElementById('hapusAkhiran').value = '';
     document.getElementById('hapusSpesifik').value = '';
     document.getElementById('inputPembanding').value = '';
     document.getElementById('outputData').value = '';
-    
-    // Sembunyikan pesan hasil
     document.getElementById('wrapperHasilCocok').style.display = 'none';
-    
-    // Reset tombol copy
     document.getElementById('btnCopyText').innerText = "Copy";
 }
 
-// FUNGSI PASTE INSTAN (BARU)
+// FUNGSI PASTE INSTAN
 function pastePembanding() {
     navigator.clipboard.readText()
     .then(text => {
