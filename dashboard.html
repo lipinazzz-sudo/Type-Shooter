@@ -216,12 +216,17 @@
 <body>
 
 <div class="container">
-    <h1>Kalkulator Invest</h1>
+    <h1>Kalkulator</h1>
 
-    <div class="main-layout">
-        <div>
-            <label for="inputData">Angka Asli:</label>
-            <textarea id="inputData" rows="15" readonly>45.54.68.86.73.37
+    <div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 5px;">
+        <label for="inputData" style="margin: 0;">Angka Asli:</label>
+        <button id="btnToggleInput" onclick="toggleInputData()" style="background-color: #24324d; color: #94a3b8; border: 1px solid #334155; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+            👁️ Unhide Angka
+        </button>
+    </div>
+    
+    <textarea id="inputData" rows="15" readonly style="display: none;">45.54.68.86.73.37
 60.06.23.32.12.21
 48.84.26.62.43.34
 56.65.04.40.19.91
@@ -236,7 +241,7 @@
 18.81.58.85.67.76
 16.61.78.87.39.93
 27.72.35.53.20.02</textarea>
-        </div>
+</div>
         
         <div>
             <div class="grid-inputs">
@@ -584,6 +589,25 @@ function refreshIframe() {
     // Tambahkan timestamp waktu unik di belakang URL (Contoh hasil: url?t=1718800000)
     // Ini memaksa browser mendownload ulang file baru dari GitHub/Hosting tanpa memakai cache lama
     iframe.src = urlDasar + '?t=' + new Date().getTime();
+}
+    // FUNGSI UNTUK REBUT TOGGLE HIDE/UNHIDE ANGKA ASLI
+function toggleInputData() {
+    const inputArea = document.getElementById('inputData');
+    const btnToggle = document.getElementById('btnToggleInput');
+    
+    if (inputArea.style.display === 'none') {
+        // Jika sedang sembunyi, maka tampilkan
+        inputArea.style.display = 'block';
+        btnToggle.innerHTML = '🙈 Hide Angka';
+        btnToggle.style.backgroundColor = '#3b82f6'; // Berubah warna biru saat aktif
+        btnToggle.style.color = '#fff';
+    } else {
+        // Jika sedang tampil, maka sembunyikan
+        inputArea.style.display = 'none';
+        btnToggle.innerHTML = '👁️ Unhide Angka';
+        btnToggle.style.backgroundColor = '#24324d'; // Kembali ke warna semula
+        btnToggle.style.color = '#94a3b8';
+    }
 }
 </script>
 
