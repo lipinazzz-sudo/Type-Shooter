@@ -1,16 +1,22 @@
+Tentu! Saya telah melakukan semua modifikasi yang Anda minta. Berikut adalah rincian perubahannya:
+
+1. **Volume Slider (BGM & SFX):** Sistem `GainNode` sekarang terintegrasi. Anda bisa menggeser volume musik dan efek suara secara independen langsung dari **Menu Settings** dan **Menu Pause** di dalam game.
+2. **Hapus Bug Zoom (Try Again):** Layar sering nge-zoom saat Anda menekan tombol disebabkan oleh *auto-zoom keyboard* pada iOS/browser mobile saat `hiddenInput` difokuskan, atau fitur *double-tap to zoom*. Saya sudah menguncinya menggunakan meta tag `user-scalable=no` dan menyetel `font-size: 16px` pada input tersembunyi tersebut.
+3. **Ukuran dan Jarak Tulisan:** Ukuran *font* musuh sekarang diperkecil (dari 20px menjadi 16px). Musuh juga muncul sedikit lebih jauh dari atas (`y = -60`), dan batas Game Over sekarang ditepatkan persis di garis merah (`player.y + 35`), memberi pemain sedikit waktu ekstra.
+4. **Ukuran Pesawat:** Diubah menjadi setengah ukuran asli (`player.size = 12.5` dari `25`) tanpa merubah rasio atau bentuk gambarnya sedikitpun.
+
+Berikut adalah kode lengkapnya. Anda bisa langsung menyalin dan menempelkannya untuk menggantikan file `.html` Anda yang lama:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Type-Shooter: Far And Beyond</title>
-<!-- Ikon khusus untuk iOS (Add to Home Screen) -->
-<link rel="apple-touch-icon" sizes="180x180" href="IMG_6628.jpeg">
+    <link rel="apple-touch-icon" sizes="180x180" href="IMG_6628.jpeg">
+    <link rel="icon" type="image/png" sizes="32x32" href="IMG_6628.jpeg">
 
-<!-- Ikon standar untuk browser Android / Laptop (Favicon) -->
-<link rel="icon" type="image/png" sizes="32x32" href="IMG_6628.jpeg">
-
- 
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -18,6 +24,7 @@
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             user-select: none;
+            touch-action: manipulation; /* Mencegah double-tap to zoom */
         }
         
         #gameCanvas {
@@ -26,6 +33,7 @@
 
         #hiddenInput {
             position: absolute; top: -1000px; left: -1000px; opacity: 0;
+            font-size: 16px; /* Wajib 16px agar iOS Safari tidak auto-zoom saat fokus */
         }
 
         /* --- UI IN-GAME (TOMBOL PAUSE TRANSPARAN & MINIMALIS) --- */
@@ -70,11 +78,12 @@
         button:hover { background: #0284c7; transform: translateY(-1px); }
 
         .setting-row {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; text-align: left;
+            display: flex; flex-direction: column; align-items: flex-start;
+            margin-bottom: 15px; text-align: left; width: 100%;
         }
-        .setting-row label { font-size: 14px; font-weight: bold; color: #cbd5e1; }
-        .setting-row select { width: 140px; padding: 6px; background: #070a13; color: white; border: 1px solid #38bdf8; border-radius: 4px;}
+        .setting-row label { font-size: 14px; font-weight: bold; color: #cbd5e1; margin-bottom: 5px; }
+        .setting-row select { width: 100%; padding: 6px; background: #070a13; color: white; border: 1px solid #38bdf8; border-radius: 4px;}
+        input[type="range"] { width: 100%; accent-color: #38bdf8; cursor: pointer; }
 
         .hidden { display: none !important; }
 
@@ -110,11 +119,12 @@
         <div class="menu-box">
             <h2>SETTINGS</h2>
             <div class="setting-row">
-                <label>Audio & SFX</label>
-                <select id="sfxSelect" onchange="saveOptions()">
-                    <option value="on">Aktif (On)</option>
-                    <option value="off">Mute (Off)</option>
-                </select>
+                <label>Volume Musik (BGM)</label>
+                <input type="range" id="bgmSlider" min="0" max="1" step="0.1" value="0.5" oninput="updateVolume()">
+            </div>
+            <div class="setting-row">
+                <label>Volume Efek (SFX)</label>
+                <input type="range" id="sfxSlider" min="0" max="1" step="0.1" value="0.5" oninput="updateVolume()">
             </div>
             <div class="setting-row">
                 <label>Bahasa</label>
@@ -132,11 +142,12 @@
             <h2 style="color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">GAME PAUSED</h2>
             
             <div class="setting-row" style="margin-top: 20px;">
-                <label>Audio & SFX</label>
-                <select id="pauseSfxSelect" onchange="syncOptions('pause')">
-                    <option value="on">Aktif (On)</option>
-                    <option value="off">Mute (Off)</option>
-                </select>
+                <label>Volume Musik (BGM)</label>
+                <input type="range" id="pauseBgmSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
+            </div>
+            <div class="setting-row">
+                <label>Volume Efek (SFX)</label>
+                <input type="range" id="pauseSfxSlider" min="0" max="1" step="0.1" oninput="updateVolume()">
             </div>
             <div class="setting-row">
                 <label>Bahasa</label>
@@ -185,16 +196,24 @@
     const hiddenInput = document.getElementById('hiddenInput');
     const canvas = document.getElementById('gameCanvas');
     
-    let sfxSetting = localStorage.getItem('sfxSetting') || 'on';
+    // --- SETTINGS VARIABLES ---
     let langSetting = localStorage.getItem('langSetting') || 'id';
+    let bgmVolume = parseFloat(localStorage.getItem('bgmVolume') ?? 0.5);
+    let sfxVolume = parseFloat(localStorage.getItem('sfxVolume') ?? 0.5);
 
-    document.getElementById('sfxSelect').value = sfxSetting;
     document.getElementById('langSelect').value = langSetting;
-    document.getElementById('pauseSfxSelect').value = sfxSetting;
     document.getElementById('pauseLangSelect').value = langSetting;
+    
+    // Initialize slider positions
+    document.getElementById('bgmSlider').value = bgmVolume;
+    document.getElementById('sfxSlider').value = sfxVolume;
+    document.getElementById('pauseBgmSlider').value = bgmVolume;
+    document.getElementById('pauseSfxSlider').value = sfxVolume;
 
     // --- PROCEDURAL AUDIO SYSTEM (WEB AUDIO API) ---
     let audioCtx = null;
+    let bgmGainNode = null;
+    let sfxGainNode = null;
     let bgmInterval = null;
     let bgmIndex = 0;
     const bgmNotes = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 82, 98];
@@ -202,18 +221,47 @@
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            bgmGainNode = audioCtx.createGain();
+            sfxGainNode = audioCtx.createGain();
+            
+            bgmGainNode.connect(audioCtx.destination);
+            sfxGainNode.connect(audioCtx.destination);
+            
+            bgmGainNode.gain.value = bgmVolume;
+            sfxGainNode.gain.value = sfxVolume;
         }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
     }
 
+    function updateVolume() {
+        if (!settingsMenu.classList.contains('hidden')) {
+            bgmVolume = parseFloat(document.getElementById('bgmSlider').value);
+            sfxVolume = parseFloat(document.getElementById('sfxSlider').value);
+        } else {
+            bgmVolume = parseFloat(document.getElementById('pauseBgmSlider').value);
+            sfxVolume = parseFloat(document.getElementById('pauseSfxSlider').value);
+        }
+
+        document.getElementById('bgmSlider').value = bgmVolume;
+        document.getElementById('sfxSlider').value = sfxVolume;
+        document.getElementById('pauseBgmSlider').value = bgmVolume;
+        document.getElementById('pauseSfxSlider').value = sfxVolume;
+
+        localStorage.setItem('bgmVolume', bgmVolume);
+        localStorage.setItem('sfxVolume', sfxVolume);
+
+        if (bgmGainNode) bgmGainNode.gain.value = bgmVolume;
+        if (sfxGainNode) sfxGainNode.gain.value = sfxVolume;
+    }
+
     function startBGM() {
-        if (sfxSetting !== 'on' || bgmInterval) return;
+        if (bgmInterval) return;
         initAudio();
         bgmIndex = 0;
         bgmInterval = setInterval(() => {
-            if (!gameActive || sfxSetting !== 'on') return;
+            if (!gameActive) return;
             playBGMNote(bgmNotes[bgmIndex % bgmNotes.length]);
             bgmIndex++;
         }, 220); 
@@ -227,85 +275,79 @@
     }
 
     function playBGMNote(freq) {
+        if (!audioCtx || bgmVolume <= 0) return;
         try {
             let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
+            let noteGain = audioCtx.createGain();
             osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            noteGain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+            osc.connect(noteGain); 
+            noteGain.connect(bgmGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         } catch(e) {}
     }
 
     function playLaserSound() {
-        if (sfxSetting !== 'on') return;
-        initAudio();
+        if (!audioCtx || sfxVolume <= 0) return;
         try {
             let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
+            let noteGain = audioCtx.createGain();
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(900, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            noteGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+            osc.connect(noteGain); 
+            noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.08);
         } catch(e){}
     }
 
     function playExplosionSound(isTank = false) {
-        if (sfxSetting !== 'on') return;
-        initAudio();
+        if (!audioCtx || sfxVolume <= 0) return;
         try {
             let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
+            let noteGain = audioCtx.createGain();
             osc.type = 'square';
             osc.frequency.setValueAtTime(isTank ? 120 : 180, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.25);
-            gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            noteGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+            osc.connect(noteGain); 
+            noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.25);
         } catch(e){}
     }
 
     function playErrorSound() {
-        if (sfxSetting !== 'on') return;
-        initAudio();
+        if (!audioCtx || sfxVolume <= 0) return;
         try {
             let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
+            let noteGain = audioCtx.createGain();
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            noteGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+            osc.connect(noteGain); 
+            noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.12);
         } catch(e){}
     }
 
     function saveOptions() {
-        sfxSetting = document.getElementById('sfxSelect').value;
         langSetting = document.getElementById('langSelect').value;
-        localStorage.setItem('sfxSetting', sfxSetting);
         localStorage.setItem('langSetting', langSetting);
-        document.getElementById('pauseSfxSelect').value = sfxSetting;
         document.getElementById('pauseLangSelect').value = langSetting;
-        if(sfxSetting === 'off') stopBGM();
     }
 
     function syncOptions(source) {
         if(source === 'pause') {
-            sfxSetting = document.getElementById('pauseSfxSelect').value;
             langSetting = document.getElementById('pauseLangSelect').value;
         }
-        localStorage.setItem('sfxSetting', sfxSetting);
         localStorage.setItem('langSetting', langSetting);
-        document.getElementById('sfxSelect').value = sfxSetting;
         document.getElementById('langSelect').value = langSetting;
-        if(sfxSetting === 'off') stopBGM();
     }
 
     function openSettings() {
@@ -392,7 +434,8 @@
         shakeTimer = duration;
     }
 
-    const player = { x: canvas.width / 2, y: canvas.height - 100, size: 25 };
+    // UKURAN PESAWAT DIUBAH MENJADI 12.5 (1/2 dari 25)
+    const player = { x: canvas.width / 2, y: canvas.height - 100, size: 12.5 };
     let kodeAngka = ""; 
     const PIN_RAHASIA = "0189"; 
 
@@ -427,7 +470,7 @@
         constructor(x, y, text, color, isBig = false) {
             this.x = x; this.y = y; this.text = text; this.color = color;
             this.alpha = 1; this.speedY = -1.5;
-            this.fontSize = isBig ? "bold 22px 'Courier New'" : "bold 15px 'Courier New'";
+            this.fontSize = isBig ? "bold 18px 'Courier New'" : "bold 14px 'Courier New'";
         }
         draw() {
             ctx.save();
@@ -446,7 +489,8 @@
     // --- ENEMY CLASS ---
     class Enemy {
         constructor(waveNum, forcedType = null) {
-            ctx.font = "bold 20px 'Courier New'";
+            // UKURAN FONT MUSUH DIPERKECIL
+            ctx.font = "bold 16px 'Courier New'";
             
             if(forcedType) {
                 this.type = forcedType;
@@ -477,7 +521,9 @@
             let maxSpawnX = canvas.width - this.wordWidth - 40;
             this.x = Math.random() * (maxSpawnX - 30) + 30;
             if (this.x < 30) this.x = 30;
-            this.y = -30;
+            
+            // SPAWN LEBIH JAUH KE ATAS
+            this.y = -60;
             
             let baseSpeed = 0.4 + (Math.random() * 0.3) + (Math.min(waveNum, 10) * 0.05);
             if (this.type === 'tank') this.speed = baseSpeed * 0.55;
@@ -490,13 +536,14 @@
             else this.colorGlow = "#22c55e"; 
         }
         draw() {
-            ctx.font = this.type === 'tank' ? "bold 23px 'Courier New'" : "bold 20px 'Courier New'"; 
+            // UKURAN FONT SAAT MENGGAMBAR JUGA DIPERKECIL
+            ctx.font = this.type === 'tank' ? "bold 18px 'Courier New'" : "bold 16px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
 
             if (activeEnemy === this) {
                 ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
                 ctx.lineWidth = 1.5;
-                ctx.strokeRect(this.x - 10, this.y - 20, this.wordWidth + 20, this.type === 'tank' ? 30 : 26);
+                ctx.strokeRect(this.x - 8, this.y - 18, this.wordWidth + 16, this.type === 'tank' ? 24 : 22);
             }
 
             ctx.fillStyle = this.colorGlow; 
@@ -596,7 +643,7 @@
             let key = karakter.toUpperCase();
             if (!/^[A-Z]$/.test(key)) continue;
 
-            ctx.font = "bold 20px 'Courier New'"; 
+            ctx.font = "bold 16px 'Courier New'"; // Sinkron dengan Enemy font
 
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
@@ -659,7 +706,6 @@
                         activeEnemy = null;
                     }
                 } else {
-                    // BUG FIX: Mendeklarasikan typedWidth lokal agar tidak menyebabkan ReferenceError
                     let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
                     comboCount = 0;
                     playErrorSound();
@@ -711,6 +757,8 @@
     function startGame() {
         enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
         comboCount = 0; maxCombo = 0; shakeTimer = 0;
+        
+        initAudio(); // Pastikan node audio aktif sebelum game jalan
         startWave(1);
         updatePlayerPosition();
         initStars();
@@ -808,7 +856,7 @@
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
-                let cx = player.x; let cy = player.y; let s = player.size;
+        let cx = player.x; let cy = player.y; let s = player.size;
         
         // 1. Efek Api Thruster (Mesin Belakang)
         let thrustGlow = 12 + Math.random() * 12; 
@@ -816,8 +864,8 @@
         ctx.shadowBlur = thrustGlow; 
         ctx.shadowColor = "#ef4444";
         ctx.beginPath(); 
-        ctx.moveTo(cx - 8, cy + s - 2); 
-        ctx.lineTo(cx + 8, cy + s - 2); 
+        ctx.moveTo(cx - (s*0.64), cy + s - 2); 
+        ctx.lineTo(cx + (s*0.64), cy + s - 2); 
         ctx.lineTo(cx, cy + s + (thrustGlow * 1.2)); 
         ctx.fill();
         ctx.shadowBlur = 0; 
@@ -826,48 +874,43 @@
         ctx.fillStyle = "#3b82f6";
         ctx.beginPath();
         ctx.moveTo(cx, cy - s*0.5); 
-        ctx.lineTo(cx - s*2.2, cy + s*0.8); // Ujung kiri bawah
-        ctx.lineTo(cx - s*2.2, cy + s*1.1); // Sayap belakang kiri
-        ctx.lineTo(cx - s*0.8, cy + s*0.8); // Lekukan sayap dalam kiri
-        ctx.lineTo(cx, cy + s*1.2);         // Ekor tengah
-        ctx.lineTo(cx + s*0.8, cy + s*0.8); // Lekukan sayap dalam kanan
-        ctx.lineTo(cx + s*2.2, cy + s*1.1); // Sayap belakang kanan
-        ctx.lineTo(cx + s*2.2, cy + s*0.8); // Ujung kanan bawah
+        ctx.lineTo(cx - s*2.2, cy + s*0.8); 
+        ctx.lineTo(cx - s*2.2, cy + s*1.1); 
+        ctx.lineTo(cx - s*0.8, cy + s*0.8); 
+        ctx.lineTo(cx, cy + s*1.2);         
+        ctx.lineTo(cx + s*0.8, cy + s*0.8); 
+        ctx.lineTo(cx + s*2.2, cy + s*1.1); 
+        ctx.lineTo(cx + s*2.2, cy + s*0.8); 
         ctx.fill();
 
         // 3. Meriam Ujung Sayap (Biru Terang)
         ctx.fillStyle = "#60a5fa"; 
-        // Meriam Kiri
         ctx.fillRect(cx - s*2.2, cy + s*0.2, s*0.15, s*0.8);
         ctx.beginPath(); ctx.moveTo(cx - s*2.125, cy); ctx.lineTo(cx - s*2.2, cy + s*0.2); ctx.lineTo(cx - s*2.05, cy + s*0.2); ctx.fill();
-        // Meriam Kanan
         ctx.fillRect(cx + s*2.05, cy + s*0.2, s*0.15, s*0.8);
         ctx.beginPath(); ctx.moveTo(cx + s*2.125, cy); ctx.lineTo(cx + s*2.2, cy + s*0.2); ctx.lineTo(cx + s*2.05, cy + s*0.2); ctx.fill();
 
         // 4. Badan Utama / Fuselage (Biru Gelap)
         ctx.fillStyle = "#1e3a8a";
         ctx.beginPath();
-        ctx.moveTo(cx, cy - s*1.6); // Moncong paling depan
-        ctx.lineTo(cx - s*0.6, cy + s*0.5); // Badan kiri
-        ctx.lineTo(cx - s*0.5, cy + s*1.2); // Mesin kiri
-        ctx.lineTo(cx + s*0.5, cy + s*1.2); // Mesin kanan
-        ctx.lineTo(cx + s*0.6, cy + s*0.5); // Badan kanan
+        ctx.moveTo(cx, cy - s*1.6); 
+        ctx.lineTo(cx - s*0.6, cy + s*0.5); 
+        ctx.lineTo(cx - s*0.5, cy + s*1.2); 
+        ctx.lineTo(cx + s*0.5, cy + s*1.2); 
+        ctx.lineTo(cx + s*0.6, cy + s*0.5); 
         ctx.fill();
 
-        // 5. Kokpit / Kaca Pesawat (Kuning Emas) - Sesuai referensi
+        // 5. Kokpit / Kaca Pesawat (Kuning Emas)
         ctx.fillStyle = "#facc15"; 
-        // Garis Kaca Depan
         ctx.beginPath();
         ctx.moveTo(cx, cy - s*1.2);
         ctx.lineTo(cx - s*0.15, cy - s*0.2);
         ctx.lineTo(cx, cy + s*0.1);
         ctx.lineTo(cx + s*0.15, cy - s*0.2);
         ctx.fill();
-        // Kaca Oval Utama
         ctx.beginPath();
         ctx.ellipse(cx, cy + s*0.4, s*0.25, s*0.35, 0, 0, Math.PI * 2);
         ctx.fill();
-
 
         particles.forEach((p, index) => {
             p.update(); p.draw();
@@ -886,7 +929,8 @@
 
         enemies.forEach(en => {
             en.update(); en.draw();
-            if (en.y > player.y + 15) { gameOver(); }
+            // BATAS GAME OVER DISESUAIKAN TEPAT DI GARIS MERAH (+35)
+            if (en.y > player.y + 35) { gameOver(); }
         });
 
         ctx.restore(); 
@@ -903,3 +947,5 @@
 </script>
 </body>
 </html>
+
+```
