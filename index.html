@@ -266,7 +266,6 @@
             let noteGain = audioCtx.createGain();
             osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            // GAIN NAIK JADI 0.4 (AWALNYA 0.1) AGAR SUARA JAUH LEBIH BESAR
             noteGain.gain.setValueAtTime(0.4, audioCtx.currentTime); 
             noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
             osc.connect(noteGain); 
@@ -283,7 +282,6 @@
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(900, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-            // GAIN NAIK JADI 0.3
             noteGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
             osc.connect(noteGain); 
@@ -300,7 +298,6 @@
             osc.type = 'square';
             osc.frequency.setValueAtTime(isTank ? 120 : 180, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.25);
-            // GAIN NAIK JADI 0.5
             noteGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
             noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
             osc.connect(noteGain); 
@@ -316,7 +313,6 @@
             let noteGain = audioCtx.createGain();
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-            // GAIN NAIK JADI 0.4
             noteGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
             noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
             osc.connect(noteGain); 
@@ -407,6 +403,8 @@
 
     let comboCount = 0;
     let maxCombo = 0;
+    let comboPulse = 0; // Tambahan untuk animasi denyut teks combo
+    let muzzleFlashAlpha = 0; // Tambahan untuk kilatan tembakan
 
     let currentWave = 1;
     let enemiesLeftToSpawn = 0;
@@ -430,7 +428,6 @@
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         const isPortrait = canvas.height > canvas.width;
 
-        // POSISI Y DITURUNKAN SEDIKIT (Angka pengurangan diperkecil)
         if (isTouchDevice && isPortrait) {
             player.y = canvas.height - 300; 
         } else if (isTouchDevice && !isPortrait) {
@@ -440,14 +437,22 @@
         }
     }
 
+    // UPDATE: Bintang berlapis (Parallax)
     function initStars() {
         stars = [];
-        for (let i = 0; i < 70; i++) {
+        for (let i = 0; i < 90; i++) {
+            let layer = Math.random();
+            let size, speed, alpha;
+            if (layer < 0.5) { size = 0.8; speed = 0.2; alpha = 0.3; } // Lapis belakang (redup, lambat)
+            else if (layer < 0.8) { size = 1.5; speed = 0.7; alpha = 0.6; } // Lapis tengah
+            else { size = 2.5; speed = 1.8; alpha = 1.0; } // Lapis depan (terang, cepat)
+            
             stars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.random() * 2,
-                speed: 0.3 + Math.random() * 1.2
+                size: size,
+                speed: speed,
+                alpha: alpha
             });
         }
     }
@@ -634,7 +639,10 @@
                     activeEnemy.typed += key;
                     
                     comboCount++;
+                    comboPulse = 8; // Memicu animasi denyut
+                    muzzleFlashAlpha = 1.0; // Memicu kilatan menembak
                     playLaserSound();
+
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
                     lasers.push(new Laser(targetX, activeEnemy.y));
                 } else {
@@ -647,6 +655,8 @@
                 if (key === nextChar) {
                     activeEnemy.typed += key;
                     comboCount++;
+                    comboPulse = 8; // Memicu animasi denyut
+                    muzzleFlashAlpha = 1.0; // Memicu kilatan menembak
                     playLaserSound();
                     
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
@@ -737,7 +747,7 @@
 
     function startGame() {
         enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
-        comboCount = 0; maxCombo = 0; shakeTimer = 0;
+        comboCount = 0; maxCombo = 0; shakeTimer = 0; muzzleFlashAlpha = 0; comboPulse = 0;
         
         initAudio(); 
         startWave(1);
@@ -788,23 +798,42 @@
             shakeTimer--;
         }
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+        // UPDATE: Render Bintang Parallax
         stars.forEach(star => {
+            ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
             ctx.fillRect(star.x, star.y, star.size, star.size);
             star.y += star.speed;
             if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
         });
 
-        // JARAK GARIS DIPERDEKAT (+22 px dari posisi pesawat)
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.25)"; 
+        // UPDATE: Garis Batas Responsif (Semakin dekat musuh, semakin menyala merah)
+        let closestDistance = canvas.height;
+        enemies.forEach(en => {
+            let dist = (player.y + 22) - en.y;
+            if (dist > 0 && dist < closestDistance) closestDistance = dist;
+        });
+
+        let lineAlpha = 0.25;
+        let lineShadow = 0;
+        if (closestDistance < 150) {
+            let dangerFactor = 1 - (closestDistance / 150); // 0 sampai 1
+            lineAlpha = 0.25 + (0.65 * dangerFactor); 
+            lineShadow = 15 * dangerFactor;
+        }
+
+        ctx.strokeStyle = `rgba(239, 68, 68, ${lineAlpha})`; 
         ctx.lineWidth = 2;
+        ctx.shadowBlur = lineShadow;
+        ctx.shadowColor = "#ef4444";
         ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke();
+        ctx.shadowBlur = 0; // Reset shadow
 
         ctx.fillStyle = "rgba(148, 163, 184, 0.15)";
         ctx.font = "bold 24px 'Courier New'";
         ctx.fillText("WAVE: " + currentWave, 25, 45);
         ctx.fillText("SCORE: " + score, 25, 80);
 
+        // UPDATE: Animasi Denyut Combo Text
         if(comboCount > 0) {
             let mult = 1;
             if (comboCount >= 25) mult = 5;
@@ -812,8 +841,12 @@
             else if (comboCount >= 10) mult = 3;
             else if (comboCount >= 5) mult = 2;
 
+            if (comboPulse > 0) comboPulse -= 0.5; // Mengurangi perlahan ukuran pulsa
+            if (comboPulse < 0) comboPulse = 0;
+
             ctx.fillStyle = mult > 1 ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 163, 184, 0.15)";
-            ctx.font = "bold 20px 'Courier New'";
+            let currentFontSize = 20 + comboPulse; 
+            ctx.font = `bold ${currentFontSize}px 'Courier New'`;
             ctx.fillText(`COMBO: ${comboCount} (X${mult})`, 25, 115);
         }
 
@@ -840,7 +873,7 @@
 
         let cx = player.x; let cy = player.y; let s = player.size;
         
-        // 1. Efek Api Thruster (DIPERKECIL: glow berkurang & panjangnya dikurangi)
+        // Api Thruster
         let thrustGlow = 5 + Math.random() * 8; 
         ctx.fillStyle = "#f97316"; 
         ctx.shadowBlur = thrustGlow; 
@@ -848,11 +881,11 @@
         ctx.beginPath(); 
         ctx.moveTo(cx - (s*0.64), cy + s - 2); 
         ctx.lineTo(cx + (s*0.64), cy + s - 2); 
-        ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); // Panjang ekor dikurangi
+        ctx.lineTo(cx, cy + s + (thrustGlow * 0.8)); 
         ctx.fill();
         ctx.shadowBlur = 0; 
         
-        // 2. Sayap Utama (Biru Medium)
+        // Sayap Utama
         ctx.fillStyle = "#3b82f6";
         ctx.beginPath();
         ctx.moveTo(cx, cy - s*0.5); 
@@ -865,14 +898,24 @@
         ctx.lineTo(cx + s*2.2, cy + s*0.8); 
         ctx.fill();
 
-        // 3. Meriam Ujung Sayap (Biru Terang)
+        // Meriam Ujung Sayap
         ctx.fillStyle = "#60a5fa"; 
         ctx.fillRect(cx - s*2.2, cy + s*0.2, s*0.15, s*0.8);
         ctx.beginPath(); ctx.moveTo(cx - s*2.125, cy); ctx.lineTo(cx - s*2.2, cy + s*0.2); ctx.lineTo(cx - s*2.05, cy + s*0.2); ctx.fill();
         ctx.fillRect(cx + s*2.05, cy + s*0.2, s*0.15, s*0.8);
         ctx.beginPath(); ctx.moveTo(cx + s*2.125, cy); ctx.lineTo(cx + s*2.2, cy + s*0.2); ctx.lineTo(cx + s*2.05, cy + s*0.2); ctx.fill();
 
-        // 4. Badan Utama / Fuselage (Biru Gelap)
+        // UPDATE: Kilatan Menembak (Muzzle Flash) di ujung meriam
+        if (muzzleFlashAlpha > 0) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${muzzleFlashAlpha})`;
+            ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
+            ctx.beginPath(); ctx.arc(cx - s*2.125, cy, s*0.5, 0, Math.PI * 2); ctx.fill(); // Meriam kiri
+            ctx.beginPath(); ctx.arc(cx + s*2.125, cy, s*0.5, 0, Math.PI * 2); ctx.fill(); // Meriam kanan
+            ctx.shadowBlur = 0;
+            muzzleFlashAlpha -= 0.15; // Kilatan menghilang cepat
+        }
+
+        // Badan Utama
         ctx.fillStyle = "#1e3a8a";
         ctx.beginPath();
         ctx.moveTo(cx, cy - s*1.6); 
@@ -882,7 +925,7 @@
         ctx.lineTo(cx + s*0.6, cy + s*0.5); 
         ctx.fill();
 
-        // 5. Kokpit / Kaca Pesawat (Kuning Emas)
+        // Kokpit
         ctx.fillStyle = "#facc15"; 
         ctx.beginPath();
         ctx.moveTo(cx, cy - s*1.2);
@@ -911,7 +954,6 @@
 
         enemies.forEach(en => {
             en.update(); en.draw();
-            // LOGIKA TABRAKAN JUGA DIPERDEKAT (+22 px)
             if (en.y > player.y + 22) { gameOver(); }
         });
 
