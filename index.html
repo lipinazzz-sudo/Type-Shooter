@@ -381,14 +381,23 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // UPDATE: Kosakata diganti dengan Bahasa Indonesia normal (2-8 huruf) 
+    // + kata-kata kustom dari Anda sebelumnya yang memenuhi syarat (2-8 huruf).
     const wordsList = [
         "AMAS", "DESA", "KOTA", "GAIA", "MAIN", "SAYA", "ANAK", "MAMA", "PAPA", "BUKU", "MALL", "IPAD",
         "RUMAH", "SAPI", "BABI", "PULSA", "ROKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
-        "SIANTAN", "PONTIANAK", "KALIMANTAN", "SINGKAWANG", "SEKOLAH", "SUKSES", "LANDAK", "DESKAP", "AYANI", 
-        "KWECAP", "BUBUR", "CHOIPAN", "KOSMOS", "NEBULA", "METEOR", "GALAXY", "ORBITAL", "PLASMA", "MATRIX",
-        "SATELIT", "KAPSUL", "GRAVITY", "ANDROID", "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE",
-        "COMPILER", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL", "TERMINAL", "FUTURISTIC", "CYBERPUNK",
-        "CEHUNTIAU", "ASTEROID", "SUPERNOVA", "TELEPORT", "WARPDRIVE", "BLACKHOLE", "STARSHIP", "ASTRONAUT"
+        "SIANTAN", "SEKOLAH", "SUKSES", "LANDAK", "DESKAP", "AYANI", "KWECAP", "BUBUR", "CHOIPAN", "KOSMOS", 
+        "NEBULA", "METEOR", "GALAXY", "ORBITAL", "PLASMA", "MATRIX", "SATELIT", "KAPSUL", "GRAVITY", "ANDROID", 
+        "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL", 
+        "TERMINAL", "CEHUNTIAU", "ASTEROID", "TELEPORT", "STARSHIP", "AKU", "DIA", "AIR", "API", "BISA", 
+        "MAJU", "BARU", "LAMA", "HARI", "SORE", "PAGI", "MEJA", "KACA", "JALAN", "MAKAN", "MINUM", "TIDUR", 
+        "DUDUK", "BACA", "TULIS", "MOBIL", "MOTOR", "CEPAT", "KUNING", "MERAH", "HITAM", "PUTIH", "HIJAU", 
+        "TERBANG", "LARI", "JAUH", "DEKAT", "TINGGI", "RENDAH", "BESAR", "KECIL", "POHON", "BUNGA", "HEWAN", 
+        "KUCING", "ANJING", "BURUNG", "IKAN", "AYAM", "BEBEK", "KUDA", "BELAJAR", "BEKERJA", "BERMAIN", 
+        "KANTOR", "PASAR", "TOKO", "SEPATU", "BAJU", "CELANA", "TOPI", "PINTU", "LAMPU", "GELAP", "TERANG", 
+        "HUJAN", "PANAS", "DINGIN", "ANGIN", "AWAN", "BINTANG", "BULAN", "SURYA", "BUMI", "LAUT", "GUNUNG", 
+        "HUTAN", "SUNGAI", "DANAU", "PANTAI", "PASIR", "BATU", "KAYU", "BESI", "EMAS", "PERAK", "TOLONG", 
+        "MAAF", "SILAKAN", "PERMISI", "KEMBALI", "PULANG", "KOSONG"
     ];
 
     let enemies = [];
@@ -483,11 +492,11 @@
                 else this.type = "normal";
             }
 
-            let minLen = waveNum <= 2 ? 4 : (waveNum <= 5 ? 5 : 6);
-            let maxLen = waveNum <= 2 ? 6 : (waveNum <= 5 ? 8 : 12);
-            
-            if (this.type === 'tank') { minLen = 8; maxLen = 14; }
-            if (this.type === 'mini') { minLen = 3; maxLen = 4; }
+            // UPDATE: Aturan Panjang Kata (2-8 Huruf)
+            let minLen, maxLen;
+            if (this.type === 'tank') { minLen = 6; maxLen = 8; }
+            else if (this.type === 'mini') { minLen = 2; maxLen = 4; }
+            else { minLen = 2; maxLen = 5; } // Putih & Ungu
 
             let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
             if (possibleWords.length === 0) possibleWords = wordsList;
@@ -506,16 +515,28 @@
             
             this.y = -60;
             
-            let baseSpeed = 0.4 + (Math.random() * 0.3) + (Math.min(waveNum, 10) * 0.05);
-            if (this.type === 'tank') this.speed = baseSpeed * 0.55;
-            else if (this.type === 'mini') this.speed = baseSpeed * 1.7;
-            else this.speed = baseSpeed;
+            // UPDATE: Escalation Wave Speed Multiplier (1-3 normal, 4-7 cepat, 8-10 max cepat, 11+ konstan)
+            let waveSpeedMultiplier = 1.0;
+            if (waveNum >= 4 && waveNum <= 7) waveSpeedMultiplier = 1.4;
+            else if (waveNum >= 8 && waveNum <= 10) waveSpeedMultiplier = 1.8;
+            else if (waveNum >= 11) waveSpeedMultiplier = 2.2;
 
-            // UPDATE: Warna Neon sesuai saran Anda untuk kata yang belum diketik
-            if(this.type === 'tank') this.colorGlow = "#ef4444"; // Merah Neon (Susah/Panjang)
-            else if(this.type === 'splitter') this.colorGlow = "#c084fc"; // Ungu Neon (Membelah)
-            else if(this.type === 'mini') this.colorGlow = "#eab308"; // Kuning Neon (Kecil/Cepat)
-            else this.colorGlow = "#ffffff"; // Putih (Normal)
+            let baseSpeed = 0.4 + (Math.random() * 0.3);
+
+            // UPDATE: Hierarki Kecepatan Warna sesuai instruksi
+            if (this.type === 'tank') {
+                this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; // Merah (Paling Lambat)
+                this.colorGlow = "#ef4444"; 
+            } else if (this.type === 'splitter') {
+                this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; // Ungu (Lebih lambat dari putih, lebih cepat dari merah)
+                this.colorGlow = "#c084fc"; 
+            } else if (this.type === 'mini') {
+                this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; // Kuning (Hasil belahan, lumayan cepat)
+                this.colorGlow = "#eab308"; 
+            } else {
+                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; // Putih (Normal)
+                this.colorGlow = "#ffffff"; 
+            }
         }
 
         draw() {
@@ -528,18 +549,16 @@
                 ctx.strokeRect(this.x - 8, this.y - 18, this.wordWidth + 16, this.type === 'tank' ? 24 : 22);
             }
 
-            // UPDATE: Huruf yang SUDAH DIKETIK menjadi warna Abu-abu redup (indikator telah "mati")
             ctx.fillStyle = "#64748b"; 
             ctx.shadowBlur = 0;       
             ctx.fillText(this.typed, this.x, this.y);
 
-            // UPDATE: Huruf yang BELUM DIKETIK bersinar terang dengan warna neon khusus
             ctx.shadowBlur = activeEnemy === this ? 15 : 8; 
             ctx.shadowColor = this.colorGlow; 
             ctx.fillStyle = this.colorGlow; 
             ctx.fillText(this.word.substring(this.typed.length), this.x + typedWidth, this.y);
             
-            ctx.shadowBlur = 0; // Reset
+            ctx.shadowBlur = 0; 
         }
         update() { this.y += this.speed; }
     }
@@ -678,14 +697,24 @@
 
                         floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
 
+                        // UPDATE: Algoritma Anti-Overlap untuk Splitter (Membelah jadi 2 atau 3 secara rata)
                         if (activeEnemy.type === 'splitter') {
-                            floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, "SPLIT!", "#c084fc"));
-                            for(let k = 0; k < 2; k++) {
+                            let splitCount = Math.random() > 0.5 ? 2 : 3;
+                            floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
+                            
+                            let segmentWidth = canvas.width / splitCount;
+                            
+                            for(let k = 0; k < splitCount; k++) {
                                 let miniEn = new Enemy(currentWave, 'mini');
-                                miniEn.x = activeEnemy.x + (k === 0 ? -45 : 55);
-                                miniEn.y = Math.max(activeEnemy.y - 15, 10);
-                                if (miniEn.x < 30) miniEn.x = 30;
-                                if (miniEn.x > canvas.width - 120) miniEn.x = canvas.width - 120;
+                                
+                                // Membagi kordinat X ke dalam blok layar agar musuh sejajar dan tidak menumpuk
+                                let minX = (segmentWidth * k) + 15;
+                                let maxX = (segmentWidth * (k + 1)) - miniEn.wordWidth - 15;
+                                if (maxX < minX) maxX = minX; // Fallback untuk layar super sempit
+                                
+                                miniEn.x = minX + (Math.random() * (maxX - minX));
+                                miniEn.y = Math.max(activeEnemy.y - 10 - (Math.random() * 25), 10);
+                                
                                 enemies.push(miniEn);
                             }
                         }
@@ -797,14 +826,13 @@
             shakeTimer--;
         }
 
-        // UPDATE: Bintang Parallax dengan efek Warp Speed saat pindah Wave
         stars.forEach(star => {
             ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
             let isWarping = waveClearMessageTimer > 0;
             let currentSpeed = isWarping ? star.baseSpeed * 8 : star.baseSpeed;
             
             if (isWarping) {
-                ctx.fillRect(star.x, star.y, star.size, star.size * 6); // Bintang memanjang
+                ctx.fillRect(star.x, star.y, star.size, star.size * 6); 
             } else {
                 ctx.fillRect(star.x, star.y, star.size, star.size);
             }
