@@ -19,6 +19,17 @@
         
         #gameCanvas {
             display: block; width: 100vw; height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* TWEAK VISUAL: Efek Retro CRT & Scanline */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none; z-index: 2;
         }
 
         #hiddenInput {
@@ -83,6 +94,8 @@
     </style>
 </head>
 <body>
+
+    <div class="scanlines"></div>
 
     <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
 
@@ -381,8 +394,6 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // UPDATE: Kosakata diganti dengan Bahasa Indonesia normal (2-8 huruf) 
-    // + kata-kata kustom dari Anda sebelumnya yang memenuhi syarat (2-8 huruf).
     const wordsList = [
         "AMAS", "DESA", "KOTA", "GAIA", "MAIN", "SAYA", "ANAK", "MAMA", "PAPA", "BUKU", "MALL", "IPAD",
         "RUMAH", "SAPI", "BABI", "PULSA", "ROKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
@@ -409,6 +420,11 @@
     let gameActive = false;
     let activeEnemy = null;
     let frameCount = 0;
+
+    // TWEAK GAMEPLAY: Sistem HP/Nyawa
+    const maxHP = 3;
+    let playerHP = maxHP;
+    let flashRedFrames = 0;
 
     let comboCount = 0;
     let maxCombo = 0;
@@ -448,6 +464,7 @@
 
     function initStars() {
         stars = [];
+        const starColors = ["#ffffff", "#e2e8f0", "#bfdbfe", "#fed7aa"]; // TWEAK VISUAL: Warna rasi bintang dinamis
         for (let i = 0; i < 90; i++) {
             let layer = Math.random();
             let size, speed, alpha;
@@ -455,7 +472,14 @@
             else if (layer < 0.8) { size = 1.5; speed = 0.7; alpha = 0.6; } 
             else { size = 2.5; speed = 1.8; alpha = 1.0; } 
             
-            stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: size, baseSpeed: speed, alpha: alpha });
+            stars.push({ 
+                x: Math.random() * canvas.width, 
+                y: Math.random() * canvas.height, 
+                size: size, 
+                baseSpeed: speed, 
+                alpha: alpha,
+                color: starColors[Math.floor(Math.random() * starColors.length)]
+            });
         }
     }
 
@@ -487,16 +511,17 @@
                 this.type = forcedType;
             } else {
                 let rand = Math.random();
-                if (waveNum >= 4 && rand < 0.18) this.type = "tank";
-                else if (waveNum >= 2 && rand > 0.18 && rand < 0.35) this.type = "splitter";
+                // TWEAK GAMEPLAY: Tambahan Musuh EMP (Clear Screen)
+                if (waveNum >= 3 && rand < 0.08) this.type = "emp"; 
+                else if (waveNum >= 4 && rand >= 0.08 && rand < 0.20) this.type = "tank";
+                else if (waveNum >= 2 && rand >= 0.20 && rand < 0.35) this.type = "splitter";
                 else this.type = "normal";
             }
 
-            // UPDATE: Aturan Panjang Kata (2-8 Huruf)
             let minLen, maxLen;
             if (this.type === 'tank') { minLen = 6; maxLen = 8; }
             else if (this.type === 'mini') { minLen = 2; maxLen = 4; }
-            else { minLen = 2; maxLen = 5; } // Putih & Ungu
+            else { minLen = 2; maxLen = 5; }
 
             let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
             if (possibleWords.length === 0) possibleWords = wordsList;
@@ -515,7 +540,6 @@
             
             this.y = -60;
             
-            // UPDATE: Escalation Wave Speed Multiplier (1-3 normal, 4-7 cepat, 8-10 max cepat, 11+ konstan)
             let waveSpeedMultiplier = 1.0;
             if (waveNum >= 4 && waveNum <= 7) waveSpeedMultiplier = 1.4;
             else if (waveNum >= 8 && waveNum <= 10) waveSpeedMultiplier = 1.8;
@@ -523,18 +547,20 @@
 
             let baseSpeed = 0.4 + (Math.random() * 0.3);
 
-            // UPDATE: Hierarki Kecepatan Warna sesuai instruksi
             if (this.type === 'tank') {
-                this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; // Merah (Paling Lambat)
+                this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
                 this.colorGlow = "#ef4444"; 
             } else if (this.type === 'splitter') {
-                this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; // Ungu (Lebih lambat dari putih, lebih cepat dari merah)
+                this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; 
                 this.colorGlow = "#c084fc"; 
+            } else if (this.type === 'emp') {
+                this.speed = (baseSpeed * 1.2) * waveSpeedMultiplier; 
+                this.colorGlow = "#06b6d4"; // Cyan
             } else if (this.type === 'mini') {
-                this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; // Kuning (Hasil belahan, lumayan cepat)
+                this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; 
                 this.colorGlow = "#eab308"; 
             } else {
-                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; // Putih (Normal)
+                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; 
                 this.colorGlow = "#ffffff"; 
             }
         }
@@ -697,7 +723,23 @@
 
                         floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
 
-                        // UPDATE: Algoritma Anti-Overlap untuk Splitter (Membelah jadi 2 atau 3 secara rata)
+                        // TWEAK GAMEPLAY: EMP Bomb effect
+                        if (activeEnemy.type === 'emp') {
+                            triggerScreenShake(20, 20);
+                            floatingTexts.push(new FloatingText(canvas.width/2 - 50, canvas.height/2, "EMP DETONATED!", "#06b6d4", true));
+                            
+                            enemies.forEach(e => {
+                                if(e !== activeEnemy) {
+                                    score += (e.word.length * 5); // Half points for auto-kill
+                                    createExplosion(e.x, e.y, e.word.length, e.colorGlow);
+                                }
+                            });
+                            enemies = []; 
+                            activeEnemy = null;
+                            if(comboCount > maxCombo) maxCombo = comboCount;
+                            return; 
+                        }
+
                         if (activeEnemy.type === 'splitter') {
                             let splitCount = Math.random() > 0.5 ? 2 : 3;
                             floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
@@ -706,11 +748,9 @@
                             
                             for(let k = 0; k < splitCount; k++) {
                                 let miniEn = new Enemy(currentWave, 'mini');
-                                
-                                // Membagi kordinat X ke dalam blok layar agar musuh sejajar dan tidak menumpuk
                                 let minX = (segmentWidth * k) + 15;
                                 let maxX = (segmentWidth * (k + 1)) - miniEn.wordWidth - 15;
-                                if (maxX < minX) maxX = minX; // Fallback untuk layar super sempit
+                                if (maxX < minX) maxX = minX; 
                                 
                                 miniEn.x = minX + (Math.random() * (maxX - minX));
                                 miniEn.y = Math.max(activeEnemy.y - 10 - (Math.random() * 25), 10);
@@ -776,6 +816,8 @@
     function startGame() {
         enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
         comboCount = 0; maxCombo = 0; shakeTimer = 0; muzzleFlashAlpha = 0; comboPulse = 0;
+        playerHP = maxHP; // Reset HP
+        flashRedFrames = 0;
         
         initAudio(); 
         startWave(1);
@@ -798,7 +840,7 @@
     function gameOver() {
         gameActive = false;
         pauseBtn.classList.add('hidden'); 
-        triggerScreenShake(15, 30);
+        triggerScreenShake(20, 40);
         stopBGM();
         
         saveHighScore(score, currentWave); 
@@ -806,7 +848,9 @@
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = "Reached: Wave " + currentWave;
         
-        gameOverMenu.classList.remove('hidden');
+        setTimeout(() => {
+            gameOverMenu.classList.remove('hidden');
+        }, 1000); // Sedikit delay agar efek hancur terlihat
         hiddenInput.blur();
     }
 
@@ -815,10 +859,27 @@
     });
 
     function gameLoop() {
-        if (!gameActive) return;
+        if (!gameActive) {
+            // Biarkan partikel terakhir selesai meskipun mati
+            ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.update(); p.draw();
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+            if (!gameActive && gameOverMenu.classList.contains('hidden')) requestAnimationFrame(gameLoop);
+            return;
+        }
         
         ctx.fillStyle = "#070a13";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Flash layar merah jika kena damage
+        if (flashRedFrames > 0) {
+            ctx.fillStyle = `rgba(239, 68, 68, ${flashRedFrames * 0.02})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            flashRedFrames--;
+        }
 
         ctx.save();
         if (shakeTimer > 0) {
@@ -827,7 +888,9 @@
         }
 
         stars.forEach(star => {
-            ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+            // TWEAK VISUAL: Warna Bintang
+            ctx.fillStyle = star.color;
+            ctx.globalAlpha = star.alpha;
             let isWarping = waveClearMessageTimer > 0;
             let currentSpeed = isWarping ? star.baseSpeed * 8 : star.baseSpeed;
             
@@ -840,6 +903,7 @@
             star.y += currentSpeed;
             if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
         });
+        ctx.globalAlpha = 1.0;
 
         let closestDistance = canvas.height;
         enemies.forEach(en => {
@@ -866,6 +930,27 @@
         ctx.font = "bold 24px 'Courier New'";
         ctx.fillText("WAVE: " + currentWave, 25, 45);
         ctx.fillText("SCORE: " + score, 25, 80);
+
+        // TWEAK VISUAL: Menggambar Indikator Nyawa (HP) di Kanan Atas
+        for (let i = 0; i < maxHP; i++) {
+            let hpX = canvas.width - 35 - (i * 25);
+            let hpY = 30;
+            ctx.beginPath();
+            ctx.moveTo(hpX, hpY);
+            ctx.lineTo(hpX - 8, hpY - 10); ctx.lineTo(hpX + 8, hpY - 10);
+            ctx.closePath();
+            
+            if (i < playerHP) {
+                ctx.fillStyle = "#10b981"; // Hijau jika masih ada
+                ctx.shadowBlur = 10; ctx.shadowColor = "#10b981";
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.strokeStyle = "#475569"; // Abu-abu jika hilang
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
 
         if(comboCount > 0) {
             let mult = 1;
@@ -904,9 +989,13 @@
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
-        let cx = player.x; let cy = player.y; let s = player.size;
+        let cx = player.x; 
+        // TWEAK VISUAL: Kapal melayang dinamis (Hovering)
+        let floatOffsetY = Math.sin(frameCount * 0.05) * 6;
+        let cy = player.y + floatOffsetY; 
+        let s = player.size;
         
-        let thrustGlow = 5 + Math.random() * 8; 
+        let thrustGlow = 5 + Math.random() * 8 + (floatOffsetY * 0.5); 
         ctx.fillStyle = "#f97316"; 
         ctx.shadowBlur = thrustGlow; 
         ctx.shadowColor = "#ef4444";
@@ -979,10 +1068,31 @@
             if (l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
         });
 
-        enemies.forEach(en => {
-            en.update(); en.draw();
-            if (en.y > player.y + 22) { gameOver(); }
-        });
+        // TWEAK GAMEPLAY: Loop mundur untuk menghapus musuh yang terlewat secara aman
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let en = enemies[i];
+            en.update(); 
+            en.draw();
+            
+            if (en.y > player.y + 22) { 
+                playerHP--;
+                flashRedFrames = 15;
+                triggerScreenShake(15, 10);
+                playErrorSound();
+                enemies.splice(i, 1); // Buang musuh yang lewat
+
+                if (activeEnemy === en) {
+                    activeEnemy = null;
+                    comboCount = 0;
+                    hiddenInput.value = "";
+                }
+                
+                if (playerHP <= 0) {
+                    createExplosion(player.x, player.y, 8, "#ef4444"); // Ledakan kapal
+                    gameOver();
+                }
+            }
+        }
 
         ctx.restore(); 
         frameCount++;
