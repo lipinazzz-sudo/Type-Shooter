@@ -182,8 +182,7 @@
             <button onclick="openMenuUtama()" style="background: #475569;">MENU UTAMA</button>
         </div>
     </div>
-<script>
-    function goToDashboard() {
+<script>    function goToDashboard() {
         window.location.href = 'dashboard.html'; 
     }
 
@@ -275,7 +274,6 @@
         } catch(e) {}
     }
 
-    // ADAPTIVE AUDIO PITCH: Memodulasi frekuensi agar lebih organik
     function playLaserSound() {
         if (!audioCtx || sfxVolume <= 0) return;
         try {
@@ -364,7 +362,6 @@
         "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL"
     ];
     
-    // KATA-KATA KHUSUS BOSS: Premium & Eksklusif
     const bossWordsList = ["AESTHETICS", "RENAISSANCE", "SUSTAINABILITY", "ARCHITECTURE", "EXCLUSIVITY"];
 
     let enemies = []; let lasers = []; let particles = []; let stars = []; let floatingTexts = [];
@@ -377,11 +374,8 @@
     let shakeTimer = 0; let shakeIntensity = 0;
     function triggerScreenShake(intensity, duration) { shakeIntensity = intensity; shakeTimer = duration; }
 
-    // VARIABEL SISTEM BARU
-    let hitStopFrames = 0;       // Freeze Frame
-    let currentZoom = 1;         // Combo Zoom
-    let shipRecoilY = 0;         // Taktil Recoil
-    let totalKeysTyped = 0;      // Tracking Akurasi
+    let shipRecoilY = 0;         
+    let totalKeysTyped = 0;      
     let correctKeysTyped = 0;    
     let accuracyPenaltyTimer = 0; 
 
@@ -433,10 +427,9 @@
                 else this.type = "normal";
             }
 
-            // BOSS WAVE MECHANISM: Setup kata dan properti eksklusif Boss
             if (this.type === 'boss') {
                 this.word = bossWordsList[Math.floor(Math.random() * bossWordsList.length)];
-                this.colorGlow = "#fbbf24"; // Premium Gold
+                this.colorGlow = "#fbbf24"; 
             } else {
                 let minLen, maxLen;
                 if (this.type === 'tank') { minLen = 6; maxLen = 8; }
@@ -472,7 +465,7 @@
             else if (waveNum >= 11) waveSpeedMultiplier = 2.2;
 
             let baseSpeed = 0.4 + (Math.random() * 0.3);
-            if (this.type === 'boss') this.speed = (baseSpeed * 0.35) * waveSpeedMultiplier; // Boss lambat tapi kata panjang
+            if (this.type === 'boss') this.speed = (baseSpeed * 0.35) * waveSpeedMultiplier; 
             else if (this.type === 'tank') this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
             else if (this.type === 'splitter') this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; 
             else if (this.type === 'emp') this.speed = (baseSpeed * 1.2) * waveSpeedMultiplier; 
@@ -485,11 +478,10 @@
             let renderX = this.x; let renderY = this.y;
 
             if (this.shakeFrames > 0) {
-                renderX += (Math.random() - 0.5) * 5; renderY += (Math.random() - 0.5) * 5;
+                renderX += (Math.random() - 0.5) * 4; renderY += (Math.random() - 0.5) * 4;
                 this.shakeFrames--;
             }
 
-            // Visual Khusus Boss: Cincin Neon
             if (this.type === 'boss') {
                 ctx.beginPath();
                 ctx.arc(renderX + this.wordWidth/2, renderY - 6, 25 + Math.sin(frameCount*0.1)*3, 0, Math.PI*2);
@@ -518,7 +510,6 @@
         }
         
         update() { 
-            // PENALTY ACCURACY: Mempercepat laju musuh jika akurasi buruk
             let accuracyMultiplier = (accuracyPenaltyTimer > 0) ? 1.5 : 1.0;
             this.y += (this.speed * accuracyMultiplier); 
         }
@@ -527,7 +518,8 @@
     class Laser {
         constructor(targetX, targetY) {
             this.x = player.x; this.y = player.y - (player.size * 1.2); 
-            this.speed = 35; this.targetY = targetY; this.hit = false;
+            this.speed = 45; // Ditingkatkan agar visual laser lebih snappy
+            this.targetY = targetY; this.hit = false;
             let dx = targetX - this.x; let dy = targetY - this.y;
             let distance = Math.sqrt(dx * dx + dy * dy);
             this.vx = (dx / distance) * this.speed; this.vy = (dy / distance) * this.speed;
@@ -575,129 +567,139 @@
         waveSpawnTimer = 0;
         waveClearMessageTimer = 90; 
         
-        // Cek Boss Wave
         if (waveNum % 5 === 0) {
-            enemiesLeftToSpawn = 1; // Hanya spawn 1 Boss
+            enemiesLeftToSpawn = 1; 
         } else {
             enemiesLeftToSpawn = 4 + waveNum * 2; 
         }
     }
 
+    // --- ZERO-LATENCY INPUT PIPELINE ---
+    // Logika mengetik dipisahkan agar bisa dipanggil secara instan tanpa delay DOM
+    function processKeystroke(karakter) {
+        if (/^[0-9]$/.test(karakter)) {
+            kodeAngka += karakter;
+            if (kodeAngka.length > PIN_RAHASIA.length) kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
+            if (kodeAngka === PIN_RAHASIA) { goToDashboard(); return; }
+            return; 
+        }
+
+        let key = karakter.toUpperCase();
+        if (!/^[A-Z]$/.test(key)) return;
+
+        totalKeysTyped++; 
+        ctx.font = "bold 16px 'Courier New'";
+
+        if (!activeEnemy) {
+            let targets = enemies.filter(en => en.word[en.typed.length] === key);
+            if (targets.length > 0) {
+                targets.sort((a, b) => b.y - a.y); 
+                activeEnemy = targets[0]; 
+                activeEnemy.typed += key;
+                activeEnemy.shakeFrames = 4; // Diperhalus
+                
+                correctKeysTyped++;
+                comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
+                shipRecoilY = 10; 
+                playLaserSound();
+
+                let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
+                lasers.push(new Laser(targetX, activeEnemy.y));
+            } else {
+                comboCount = 0; playErrorSound();
+                floatingTexts.push(new FloatingText(canvas.width/2 - 20, player.y - 50, "MISS!", "#ef4444", true));
+            }
+        } else {
+            let nextChar = activeEnemy.word[activeEnemy.typed.length];
+            if (key === nextChar) {
+                activeEnemy.typed += key;
+                activeEnemy.shakeFrames = 4; // Diperhalus
+                
+                correctKeysTyped++;
+                comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
+                shipRecoilY = 10; 
+                playLaserSound();
+                
+                let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
+                lasers.push(new Laser(targetX, activeEnemy.y));
+                
+                if (activeEnemy.typed === activeEnemy.word) {
+                    let multiplier = 1;
+                    if (comboCount >= 25) multiplier = 5; else if (comboCount >= 18) multiplier = 4;
+                    else if (comboCount >= 10) multiplier = 3; else if (comboCount >= 5) multiplier = 2;
+
+                    let basePoints = activeEnemy.word.length * 10;
+                    if(activeEnemy.type === 'boss') basePoints *= 5; 
+                    
+                    let finalPoints = basePoints * multiplier;
+                    score += finalPoints;
+
+                    triggerScreenShake(activeEnemy.type === 'tank' || activeEnemy.type === 'boss' ? 8 : 4, 6); 
+                    createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length, activeEnemy.colorGlow);
+                    playExplosionSound(activeEnemy.type === 'tank' || activeEnemy.type === 'boss');
+
+                    floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
+
+                    if (activeEnemy.type === 'emp') {
+                        triggerScreenShake(12, 15);
+                        floatingTexts.push(new FloatingText(canvas.width/2 - 50, canvas.height/2, "EMP DETONATED!", "#06b6d4", true));
+                        enemies.forEach(e => {
+                            if(e !== activeEnemy) { score += (e.word.length * 5); createExplosion(e.x, e.y, e.word.length, e.colorGlow); }
+                        });
+                        enemies = []; activeEnemy = null;
+                        if(comboCount > maxCombo) maxCombo = comboCount;
+                        return; 
+                    }
+
+                    if (activeEnemy.type === 'splitter') {
+                        let splitCount = Math.random() > 0.5 ? 2 : 3;
+                        floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
+                        let segmentWidth = canvas.width / splitCount;
+                        for(let k = 0; k < splitCount; k++) {
+                            let miniEn = new Enemy(currentWave, 'mini');
+                            let minX = (segmentWidth * k) + 15;
+                            let maxX = (segmentWidth * (k + 1)) - miniEn.wordWidth - 15;
+                            if (maxX < minX) maxX = minX; 
+                            miniEn.x = minX + (Math.random() * (maxX - minX));
+                            miniEn.y = Math.max(activeEnemy.y - 10 - (Math.random() * 25), 10);
+                            enemies.push(miniEn);
+                        }
+                    }
+
+                    if (comboCount > maxCombo) maxCombo = comboCount;
+                    enemies = enemies.filter(en => en !== activeEnemy); activeEnemy = null;
+                }
+            } else {
+                let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
+                comboCount = 0; playErrorSound();
+                floatingTexts.push(new FloatingText(activeEnemy.x + errorTypedWidth, activeEnemy.y - 20, "BAD!", "#ef4444"));
+            }
+        }
+    }
+
+    // Menerima input dari perangkat mobile (Virtual Keyboard)
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value; hiddenInput.value = ''; 
         if (val.length === 0) return;
-
         for (let i = 0; i < val.length; i++) {
-            let karakter = val.charAt(i);
-            if (/^[0-9]$/.test(karakter)) {
-                kodeAngka += karakter;
-                if (kodeAngka.length > PIN_RAHASIA.length) kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
-                if (kodeAngka === PIN_RAHASIA) { goToDashboard(); return; }
-                continue; 
-            }
-
-            let key = karakter.toUpperCase();
-            if (!/^[A-Z]$/.test(key)) continue;
-
-            totalKeysTyped++; // Tracking untuk penalti akurasi
-
-            ctx.font = "bold 16px 'Courier New'";
-
-            if (!activeEnemy) {
-                let targets = enemies.filter(en => en.word[en.typed.length] === key);
-                if (targets.length > 0) {
-                    targets.sort((a, b) => b.y - a.y); 
-                    activeEnemy = targets[0]; 
-                    activeEnemy.typed += key;
-                    activeEnemy.shakeFrames = 6; 
-                    
-                    correctKeysTyped++;
-                    comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
-                    shipRecoilY = 12; // KINETIC FEEDBACK: Kapal mundur saat menembak
-                    playLaserSound();
-
-                    let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
-                    lasers.push(new Laser(targetX, activeEnemy.y));
-                } else {
-                    comboCount = 0; playErrorSound();
-                    floatingTexts.push(new FloatingText(canvas.width/2 - 20, player.y - 50, "MISS!", "#ef4444", true));
-                }
-            } else {
-                let nextChar = activeEnemy.word[activeEnemy.typed.length];
-                if (key === nextChar) {
-                    activeEnemy.typed += key;
-                    activeEnemy.shakeFrames = 6; 
-                    
-                    correctKeysTyped++;
-                    comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
-                    shipRecoilY = 12; // KINETIC FEEDBACK
-                    playLaserSound();
-                    
-                    let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
-                    lasers.push(new Laser(targetX, activeEnemy.y));
-                    
-                    if (activeEnemy.typed === activeEnemy.word) {
-                        let multiplier = 1;
-                        if (comboCount >= 25) multiplier = 5; else if (comboCount >= 18) multiplier = 4;
-                        else if (comboCount >= 10) multiplier = 3; else if (comboCount >= 5) multiplier = 2;
-
-                        let basePoints = activeEnemy.word.length * 10;
-                        if(activeEnemy.type === 'boss') basePoints *= 5; // Bonus Boss
-                        
-                        let finalPoints = basePoints * multiplier;
-                        score += finalPoints;
-
-                        // DYNAMIC HIT-STOP: Layar membeku sesaat untuk memberi bobot kehancuran
-                        hitStopFrames = (activeEnemy.type === 'boss' || activeEnemy.type === 'tank') ? 8 : 2;
-
-                        triggerScreenShake(activeEnemy.type === 'tank' || activeEnemy.type === 'boss' ? 12 : 5, 8); 
-                        createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length, activeEnemy.colorGlow);
-                        playExplosionSound(activeEnemy.type === 'tank' || activeEnemy.type === 'boss');
-
-                        floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
-
-                        if (activeEnemy.type === 'emp') {
-                            triggerScreenShake(20, 20);
-                            floatingTexts.push(new FloatingText(canvas.width/2 - 50, canvas.height/2, "EMP DETONATED!", "#06b6d4", true));
-                            enemies.forEach(e => {
-                                if(e !== activeEnemy) { score += (e.word.length * 5); createExplosion(e.x, e.y, e.word.length, e.colorGlow); }
-                            });
-                            enemies = []; activeEnemy = null;
-                            if(comboCount > maxCombo) maxCombo = comboCount;
-                            return; 
-                        }
-
-                        if (activeEnemy.type === 'splitter') {
-                            let splitCount = Math.random() > 0.5 ? 2 : 3;
-                            floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
-                            let segmentWidth = canvas.width / splitCount;
-                            for(let k = 0; k < splitCount; k++) {
-                                let miniEn = new Enemy(currentWave, 'mini');
-                                let minX = (segmentWidth * k) + 15;
-                                let maxX = (segmentWidth * (k + 1)) - miniEn.wordWidth - 15;
-                                if (maxX < minX) maxX = minX; 
-                                miniEn.x = minX + (Math.random() * (maxX - minX));
-                                miniEn.y = Math.max(activeEnemy.y - 10 - (Math.random() * 25), 10);
-                                enemies.push(miniEn);
-                            }
-                        }
-
-                        if (comboCount > maxCombo) maxCombo = comboCount;
-                        enemies = enemies.filter(en => en !== activeEnemy); activeEnemy = null;
-                    }
-                } else {
-                    let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
-                    comboCount = 0; playErrorSound();
-                    floatingTexts.push(new FloatingText(activeEnemy.x + errorTypedWidth, activeEnemy.y - 20, "BAD!", "#ef4444"));
-                }
-            }
+            processKeystroke(val.charAt(i));
         }
     });
 
-    // STICKY INPUT FOCUS: Otomatis mengunci kursor agar pemain tidak kehilangan kontrol
+    // Menerima input instan dari Desktop (Physical Keyboard) untuk akurasi mutlak
     document.addEventListener('keydown', (e) => {
-        if (gameActive && document.activeElement !== hiddenInput) hiddenInput.focus();
+        if (!gameActive) return;
+        if (e.ctrlKey || e.altKey || e.metaKey) return; 
+        
+        // Memastikan kursor tetap fokus agar mobile keyboard tidak menutup
+        if (document.activeElement !== hiddenInput) hiddenInput.focus();
+
+        if (e.key.length === 1) {
+            processKeystroke(e.key);
+            // Mencegah hiddenInput memproses ulang huruf yang sama
+            hiddenInput.value = ''; 
+        }
     });
 
     function saveHighScore(finalScore, finalWave) {
@@ -727,7 +729,7 @@
     function startGame() {
         enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
         comboCount = 0; maxCombo = 0; shakeTimer = 0; muzzleFlashAlpha = 0; comboPulse = 0;
-        playerHP = maxHP; flashRedFrames = 0; totalKeysTyped = 0; correctKeysTyped = 0; accuracyPenaltyTimer = 0; hitStopFrames = 0;
+        playerHP = maxHP; flashRedFrames = 0; totalKeysTyped = 0; correctKeysTyped = 0; accuracyPenaltyTimer = 0;
         
         initAudio(); startWave(1); updatePlayerPosition(); initStars(); gameActive = true;
         
@@ -737,7 +739,7 @@
     }
 
     function gameOver() {
-        gameActive = false; pauseBtn.classList.add('hidden'); triggerScreenShake(20, 40); stopBGM();
+        gameActive = false; pauseBtn.classList.add('hidden'); triggerScreenShake(15, 30); stopBGM();
         saveHighScore(score, currentWave); 
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = "Reached: Wave " + currentWave;
@@ -755,32 +757,16 @@
             return;
         }
 
-        // TRIGGER HIT-STOP: Menghentikan logika sejenak untuk efek dramatis
-        if (hitStopFrames > 0) {
-            hitStopFrames--;
-            requestAnimationFrame(gameLoop);
-            return; 
-        }
-        
         ctx.fillStyle = "#070a13"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // LOGIKA PENALTI AKURASI
         if (totalKeysTyped > 15) {
             if ((correctKeysTyped / totalKeysTyped) < 0.6) {
-                accuracyPenaltyTimer = 180; // Penalti 3 detik
+                accuracyPenaltyTimer = 180; 
                 totalKeysTyped = 0; correctKeysTyped = 0; 
             }
         }
 
-        // COMBO-BASED SCREEN ZOOM
-        let targetZoom = 1 + Math.min(comboCount * 0.005, 0.12);
-        currentZoom += (targetZoom - currentZoom) * 0.08; 
-        
         ctx.save();
-        // Geser ke tengah layar, aplikasikan zoom, lalu geser kembali
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.scale(currentZoom, currentZoom);
-        ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
         if (shakeTimer > 0) {
             ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
@@ -868,8 +854,8 @@
 
         let cx = player.x; 
         
-        // INTERPOLASI RECOIL: Menghaluskan kembalinya posisi kapal setelah menembak
-        shipRecoilY += (0 - shipRecoilY) * 0.15;
+        // Easing Recoil yang lebih smooth (Glide)
+        shipRecoilY += (0 - shipRecoilY) * 0.25;
         let floatOffsetY = Math.sin(frameCount * 0.05) * 6;
         let cy = player.y + floatOffsetY + shipRecoilY; 
         
@@ -925,18 +911,19 @@
         for (let i = enemies.length - 1; i >= 0; i--) {
             let en = enemies[i]; en.update(); en.draw();
             if (en.y > player.y + 22) { 
-                playerHP--; flashRedFrames = 15; triggerScreenShake(15, 10); playErrorSound(); enemies.splice(i, 1); 
+                playerHP--; flashRedFrames = 15; triggerScreenShake(12, 10); playErrorSound(); enemies.splice(i, 1); 
                 if (activeEnemy === en) { activeEnemy = null; comboCount = 0; hiddenInput.value = ""; }
                 if (playerHP <= 0) { createExplosion(player.x, player.y, 8, "#ef4444"); gameOver(); }
             }
         }
 
-        ctx.restore(); // Akhir dari sistem Combo Zoom
+        ctx.restore(); 
         frameCount++; requestAnimationFrame(gameLoop);
     }
 
     window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updatePlayerPosition(); initStars(); });
     updatePlayerPosition();
+
 </script>
 </body>
 </html>
