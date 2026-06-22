@@ -23,7 +23,7 @@
             z-index: 1;
         }
 
-        /* EFREK RETRO CRT & SCANLINE */
+        /* EFEK RETRO CRT & SCANLINE */
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
@@ -278,7 +278,7 @@
     let sfxGainNode = null;
     let bgmInterval = null;
     let bgmIndex = 0;
-    const bgmNotes = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 82, 98];
+    const musicalScale = [110, 130, 146, 165, 196, 220, 261, 293, 330];
 
     function initAudio() {
         if (!audioCtx) {
@@ -318,52 +318,38 @@
         if (sfxGainNode) sfxGainNode.gain.value = sfxVolume;
     }
 
-// 1. Ganti kumpulan nada statis dengan "Tangga Nada" (Scale) yang harmonis (misal: A Minor Pentatonic)
-const musicalScale = [110, 130, 146, 165, 196, 220, 261, 293, 330];
+    function startBGM() {
+        if (bgmInterval) return;
+        initAudio();
+        bgmIndex = 0;
 
-function startBGM() {
-    if (bgmInterval) return;
-    initAudio();
-    bgmIndex = 0;
-    // Fungsi internal untuk menjalankan detak musik (agar temponya bisa dinamis)
-    function tickBGM() {
-        if (!gameActive) {
-            // Jika game dipause, cek lagi nanti tanpa membunuh interval
-            bgmInterval = setTimeout(tickBGM, 220);
-            return;
+        function tickBGM() {
+            if (!gameActive) {
+                bgmInterval = setTimeout(tickBGM, 220);
+                return;
+            }
+
+            let randomIdx = Math.floor(Math.random() * musicalScale.length);
+            let targetFrequency = musicalScale[randomIdx];
+            let wavePitchShift = (currentWave - 1) * 12; 
+            
+            playBGMNote(targetFrequency + wavePitchShift);
+            bgmIndex++;
+
+            let currentTempo = Math.max(110, 230 - (currentWave * 10));
+            bgmInterval = setTimeout(tickBGM, currentTempo);
         }
 
-        // A. Pilih nada secara acak (Random) dari tangga nada yang tersedia
-        let randomIdx = Math.floor(Math.random() * musicalScale.length);
-        let targetFrequency = musicalScale[randomIdx];
-
-        // B. Efek Intensitas: Naikkan pitch (nada) sedikit demi sedikit setiap Wave naik
-        // Membuat suasana game terasa makin tegang di wave tinggi
-        let wavePitchShift = (currentWave - 1) * 12; 
-        
-        // Mainkan nadanya
-        playBGMNote(targetFrequency + wavePitchShift);
-        bgmIndex++;
-
-        // C. Efek Tempo Dinamis: Musik makin cepat setiap Wave bertambah!
-        // Base tempo adalah 230ms, berkurang 10ms setiap wave (maksimal batas kecepatan 110ms)
-        let currentTempo = Math.max(110, 230 - (currentWave * 10));
-
-        // Panggil detak musik selanjutnya
-        bgmInterval = setTimeout(tickBGM, currentTempo);
+        bgmInterval = setTimeout(tickBGM, 220);
     }
 
-    // Jalankan detak musik pertama kali
-    bgmInterval = setTimeout(tickBGM, 220);
-}
-
-// 2. Karena kita mengubah setInterval menjadi setTimeout, sesuaikan fungsi stopBGM() Anda menjadi seperti ini:
-function stopBGM() {
-    if (bgmInterval) {
-        clearTimeout(bgmInterval);
-        bgmInterval = null;
+    function stopBGM() {
+        if (bgmInterval) {
+            clearTimeout(bgmInterval);
+            bgmInterval = null;
+        }
     }
-}
+
     function playBGMNote(freq) {
         if (!audioCtx || bgmVolume <= 0) return;
         try {
@@ -473,6 +459,7 @@ function stopBGM() {
         gameActive = true;
         hiddenInput.focus();
         startBGM();
+        cancelAnimationFrame(loopId);
         gameLoop(); 
     }
 
@@ -514,6 +501,7 @@ function stopBGM() {
     let gameActive = false;
     let activeEnemy = null;
     let frameCount = 0;
+    let loopId = null;
 
     const maxHP = 3;
     let playerHP = maxHP;
@@ -965,6 +953,7 @@ function stopBGM() {
         hiddenInput.focus();
         
         startBGM();
+        cancelAnimationFrame(loopId);
         gameLoop();
     }
 
@@ -998,7 +987,9 @@ function stopBGM() {
                 p.update(); p.draw();
                 if (p.alpha <= 0) particles.splice(index, 1);
             });
-            if (!gameActive && gameOverMenu.classList.contains('hidden')) requestAnimationFrame(gameLoop);
+            if (!gameActive && gameOverMenu.classList.contains('hidden')) {
+                loopId = requestAnimationFrame(gameLoop);
+            }
             return;
         }
         
@@ -1256,7 +1247,7 @@ function stopBGM() {
 
         ctx.restore(); 
         frameCount++;
-        requestAnimationFrame(gameLoop);
+        loopId = requestAnimationFrame(gameLoop);
     }
 
     window.addEventListener('resize', () => {
