@@ -182,7 +182,6 @@
             <button onclick="openMenuUtama()" style="background: #475569;">MENU UTAMA</button>
         </div>
     </div>
-
 <script>
     function goToDashboard() {
         window.location.href = 'dashboard.html'; 
@@ -221,16 +220,12 @@
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             bgmGainNode = audioCtx.createGain();
             sfxGainNode = audioCtx.createGain();
-            
             bgmGainNode.connect(audioCtx.destination);
             sfxGainNode.connect(audioCtx.destination);
-            
             bgmGainNode.gain.value = bgmVolume;
             sfxGainNode.gain.value = sfxVolume;
         }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function updateVolume() {
@@ -241,15 +236,12 @@
             bgmVolume = parseFloat(document.getElementById('pauseBgmSlider').value);
             sfxVolume = parseFloat(document.getElementById('pauseSfxSlider').value);
         }
-
         document.getElementById('bgmSlider').value = bgmVolume;
         document.getElementById('sfxSlider').value = sfxVolume;
         document.getElementById('pauseBgmSlider').value = bgmVolume;
         document.getElementById('pauseSfxSlider').value = sfxVolume;
-
         localStorage.setItem('bgmVolume', bgmVolume);
         localStorage.setItem('sfxVolume', sfxVolume);
-
         if (bgmGainNode) bgmGainNode.gain.value = bgmVolume;
         if (sfxGainNode) sfxGainNode.gain.value = sfxVolume;
     }
@@ -266,10 +258,7 @@
     }
 
     function stopBGM() {
-        if (bgmInterval) {
-            clearInterval(bgmInterval);
-            bgmInterval = null;
-        }
+        if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
     }
 
     function playBGMNote(freq) {
@@ -281,24 +270,24 @@
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             noteGain.gain.setValueAtTime(0.4, audioCtx.currentTime); 
             noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-            osc.connect(noteGain); 
-            noteGain.connect(bgmGainNode);
+            osc.connect(noteGain); noteGain.connect(bgmGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         } catch(e) {}
     }
 
+    // ADAPTIVE AUDIO PITCH: Memodulasi frekuensi agar lebih organik
     function playLaserSound() {
         if (!audioCtx || sfxVolume <= 0) return;
         try {
+            let pitchMod = 0.9 + (Math.random() * 0.2); 
             let osc = audioCtx.createOscillator();
             let noteGain = audioCtx.createGain();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+            osc.frequency.setValueAtTime(900 * pitchMod, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200 * pitchMod, audioCtx.currentTime + 0.08);
             noteGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-            osc.connect(noteGain); 
-            noteGain.connect(sfxGainNode);
+            osc.connect(noteGain); noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.08);
         } catch(e){}
     }
@@ -306,15 +295,16 @@
     function playExplosionSound(isTank = false) {
         if (!audioCtx || sfxVolume <= 0) return;
         try {
+            let pitchMod = 0.8 + (Math.random() * 0.4);
+            let baseFreq = isTank ? 120 : 180;
             let osc = audioCtx.createOscillator();
             let noteGain = audioCtx.createGain();
             osc.type = 'square';
-            osc.frequency.setValueAtTime(isTank ? 120 : 180, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(baseFreq * pitchMod, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.25);
             noteGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
             noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-            osc.connect(noteGain); 
-            noteGain.connect(sfxGainNode);
+            osc.connect(noteGain); noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.25);
         } catch(e){}
     }
@@ -328,8 +318,7 @@
             osc.frequency.setValueAtTime(120, audioCtx.currentTime);
             noteGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
             noteGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-            osc.connect(noteGain); 
-            noteGain.connect(sfxGainNode);
+            osc.connect(noteGain); noteGain.connect(sfxGainNode);
             osc.start(); osc.stop(audioCtx.currentTime + 0.12);
         } catch(e){}
     }
@@ -339,127 +328,70 @@
         localStorage.setItem('langSetting', langSetting);
         document.getElementById('pauseLangSelect').value = langSetting;
     }
-
     function syncOptions(source) {
-        if(source === 'pause') {
-            langSetting = document.getElementById('pauseLangSelect').value;
-        }
+        if(source === 'pause') langSetting = document.getElementById('pauseLangSelect').value;
         localStorage.setItem('langSetting', langSetting);
         document.getElementById('langSelect').value = langSetting;
     }
 
-    function openSettings() {
-        mainMenu.classList.add('hidden');
-        gameOverMenu.classList.add('hidden');
-        settingsMenu.classList.remove('hidden');
-    }
-    
-    function closeSettings() {
-        settingsMenu.classList.add('hidden');
-        mainMenu.classList.remove('hidden');
-    }
-
-    function openMenuUtama() {
-        gameOverMenu.classList.add('hidden');
-        mainMenu.classList.remove('hidden');
-    }
+    function openSettings() { mainMenu.classList.add('hidden'); gameOverMenu.classList.add('hidden'); settingsMenu.classList.remove('hidden'); }
+    function closeSettings() { settingsMenu.classList.add('hidden'); mainMenu.classList.remove('hidden'); }
+    function openMenuUtama() { gameOverMenu.classList.add('hidden'); mainMenu.classList.remove('hidden'); }
 
     function pauseGame() {
         if (!gameActive) return;
         gameActive = false; 
-        pauseBtn.classList.add('hidden');
-        pauseMenu.classList.remove('hidden');
-        hiddenInput.blur();
-        stopBGM();
+        pauseBtn.classList.add('hidden'); pauseMenu.classList.remove('hidden');
+        hiddenInput.blur(); stopBGM();
     }
-
     function resumeGame() {
-        pauseMenu.classList.add('hidden');
-        pauseBtn.classList.remove('hidden');
-        gameActive = true;
-        hiddenInput.focus();
-        startBGM();
-        gameLoop(); 
+        pauseMenu.classList.add('hidden'); pauseBtn.classList.remove('hidden');
+        gameActive = true; hiddenInput.focus();
+        startBGM(); gameLoop(); 
     }
-
     function exitToMenu() {
-        pauseMenu.classList.add('hidden');
-        pauseBtn.classList.add('hidden');
-        mainMenu.classList.remove('hidden');
-        stopBGM();
-        enemies = []; lasers = []; particles = []; floatingTexts = []; activeEnemy = null;
+        pauseMenu.classList.add('hidden'); pauseBtn.classList.add('hidden'); mainMenu.classList.remove('hidden');
+        stopBGM(); enemies = []; lasers = []; particles = []; floatingTexts = []; activeEnemy = null;
     }
 
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
     const wordsList = [
         "AMAS", "DESA", "KOTA", "GAIA", "MAIN", "SAYA", "ANAK", "MAMA", "PAPA", "BUKU", "MALL", "IPAD",
         "RUMAH", "SAPI", "BABI", "PULSA", "ROKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
-        "SIANTAN", "SEKOLAH", "SUKSES", "LANDAK", "DESKAP", "AYANI", "KWECAP", "BUBUR", "CHOIPAN", "KOSMOS", 
-        "NEBULA", "METEOR", "GALAXY", "ORBITAL", "PLASMA", "MATRIX", "SATELIT", "KAPSUL", "GRAVITY", "ANDROID", 
-        "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL", 
-        "TERMINAL", "CEHUNTIAU", "ASTEROID", "TELEPORT", "STARSHIP", "AKU", "DIA", "AIR", "API", "BISA", 
-        "MAJU", "BARU", "LAMA", "HARI", "SORE", "PAGI", "MEJA", "KACA", "JALAN", "MAKAN", "MINUM", "TIDUR", 
-        "DUDUK", "BACA", "TULIS", "MOBIL", "MOTOR", "CEPAT", "KUNING", "MERAH", "HITAM", "PUTIH", "HIJAU", 
-        "TERBANG", "LARI", "JAUH", "DEKAT", "TINGGI", "RENDAH", "BESAR", "KECIL", "POHON", "BUNGA", "HEWAN", 
-        "KUCING", "ANJING", "BURUNG", "IKAN", "AYAM", "BEBEK", "KUDA", "BELAJAR", "BEKERJA", "BERMAIN", 
-        "KANTOR", "PASAR", "TOKO", "SEPATU", "BAJU", "CELANA", "TOPI", "PINTU", "LAMPU", "GELAP", "TERANG", 
-        "HUJAN", "PANAS", "DINGIN", "ANGIN", "AWAN", "BINTANG", "BULAN", "SURYA", "BUMI", "LAUT", "GUNUNG", 
-        "HUTAN", "SUNGAI", "DANAU", "PANTAI", "PASIR", "BATU", "KAYU", "BESI", "EMAS", "PERAK", "TOLONG", 
-        "MAAF", "SILAKAN", "PERMISI", "KEMBALI", "PULANG", "KOSONG"
+        "KOSMOS", "NEBULA", "METEOR", "GALAXY", "ORBITAL", "PLASMA", "MATRIX", "SATELIT", "GRAVITY", "ANDROID", 
+        "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL"
     ];
+    
+    // KATA-KATA KHUSUS BOSS: Premium & Eksklusif
+    const bossWordsList = ["AESTHETICS", "RENAISSANCE", "SUSTAINABILITY", "ARCHITECTURE", "EXCLUSIVITY"];
 
-    let enemies = [];
-    let lasers = [];
-    let particles = [];
-    let stars = [];
-    let floatingTexts = [];
-    let score = 0;
-    let gameActive = false;
-    let activeEnemy = null;
-    let frameCount = 0;
+    let enemies = []; let lasers = []; let particles = []; let stars = []; let floatingTexts = [];
+    let score = 0; let gameActive = false; let activeEnemy = null; let frameCount = 0;
 
-    // TWEAK GAMEPLAY: Sistem HP/Nyawa
-    const maxHP = 3;
-    let playerHP = maxHP;
-    let flashRedFrames = 0;
+    const maxHP = 3; let playerHP = maxHP; let flashRedFrames = 0;
+    let comboCount = 0; let maxCombo = 0; let comboPulse = 0; let muzzleFlashAlpha = 0; 
+    let currentWave = 1; let enemiesLeftToSpawn = 0; let waveSpawnTimer = 0; let waveClearMessageTimer = 0;
 
-    let comboCount = 0;
-    let maxCombo = 0;
-    let comboPulse = 0; 
-    let muzzleFlashAlpha = 0; 
+    let shakeTimer = 0; let shakeIntensity = 0;
+    function triggerScreenShake(intensity, duration) { shakeIntensity = intensity; shakeTimer = duration; }
 
-    let currentWave = 1;
-    let enemiesLeftToSpawn = 0;
-    let waveSpawnTimer = 0;
-    let waveClearMessageTimer = 0;
-
-    let shakeTimer = 0;
-    let shakeIntensity = 0;
-
-    function triggerScreenShake(intensity, duration) {
-        shakeIntensity = intensity;
-        shakeTimer = duration;
-    }
+    // VARIABEL SISTEM BARU
+    let hitStopFrames = 0;       // Freeze Frame
+    let currentZoom = 1;         // Combo Zoom
+    let shipRecoilY = 0;         // Taktil Recoil
+    let totalKeysTyped = 0;      // Tracking Akurasi
+    let correctKeysTyped = 0;    
+    let accuracyPenaltyTimer = 0; 
 
     const player = { x: canvas.width / 2, y: canvas.height - 100, size: 12.5 };
-    let kodeAngka = ""; 
-    const PIN_RAHASIA = "0189"; 
+    let kodeAngka = ""; const PIN_RAHASIA = "0189"; 
 
     function updatePlayerPosition() {
         player.x = canvas.width / 2;
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        const isPortrait = canvas.height > canvas.width;
-
-        if (isTouchDevice && isPortrait) {
-            player.y = canvas.height - 300; 
-        } else if (isTouchDevice && !isPortrait) {
-            player.y = canvas.height - 180;
-        } else {
-            player.y = canvas.height - 50;
-        }
+        player.y = (isTouchDevice && canvas.height > canvas.width) ? canvas.height - 300 : (isTouchDevice ? canvas.height - 180 : canvas.height - 50);
     }
 
     function initStars() {
@@ -471,15 +403,7 @@
             if (layer < 0.5) { size = 0.8; speed = 0.2; alpha = 0.3; } 
             else if (layer < 0.8) { size = 1.5; speed = 0.7; alpha = 0.6; } 
             else { size = 2.5; speed = 1.8; alpha = 1.0; } 
-            
-            stars.push({ 
-                x: Math.random() * canvas.width, 
-                y: Math.random() * canvas.height, 
-                size: size, 
-                baseSpeed: speed, 
-                alpha: alpha,
-                color: starColors[Math.floor(Math.random() * starColors.length)]
-            });
+            stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: size, baseSpeed: speed, alpha: alpha, color: starColors[Math.floor(Math.random() * starColors.length)] });
         }
     }
 
@@ -490,24 +414,15 @@
             this.fontSize = isBig ? "bold 18px 'Courier New'" : "bold 14px 'Courier New'";
         }
         draw() {
-            ctx.save();
-            ctx.globalAlpha = this.alpha;
-            ctx.fillStyle = this.color;
-            ctx.font = this.fontSize;
-            ctx.fillText(this.text, this.x, this.y);
-            ctx.restore();
+            ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.font = this.fontSize;
+            ctx.fillText(this.text, this.x, this.y); ctx.restore();
         }
-        update() {
-            this.y += this.speedY;
-            this.alpha -= 0.02;
-        }
+        update() { this.y += this.speedY; this.alpha -= 0.02; }
     }
 
     class Enemy {
         constructor(waveNum, forcedType = null) {
-            ctx.font = "bold 16px 'Courier New'";
-            this.shakeFrames = 0; // TWEAK VISUAL: Efek Getar Saat Ditembak
-            
+            this.shakeFrames = 0; 
             if(forcedType) {
                 this.type = forcedType;
             } else {
@@ -518,26 +433,37 @@
                 else this.type = "normal";
             }
 
-            let minLen, maxLen;
-            if (this.type === 'tank') { minLen = 6; maxLen = 8; }
-            else if (this.type === 'mini') { minLen = 2; maxLen = 4; }
-            else { minLen = 2; maxLen = 5; }
+            // BOSS WAVE MECHANISM: Setup kata dan properti eksklusif Boss
+            if (this.type === 'boss') {
+                this.word = bossWordsList[Math.floor(Math.random() * bossWordsList.length)];
+                this.colorGlow = "#fbbf24"; // Premium Gold
+            } else {
+                let minLen, maxLen;
+                if (this.type === 'tank') { minLen = 6; maxLen = 8; }
+                else if (this.type === 'mini') { minLen = 2; maxLen = 4; }
+                else { minLen = 2; maxLen = 5; }
 
-            let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
-            if (possibleWords.length === 0) possibleWords = wordsList;
+                let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
+                if (possibleWords.length === 0) possibleWords = wordsList;
+                let currentFirstLetters = enemies.map(e => e.word[0]);
+                let filteredList = possibleWords.filter(w => !currentFirstLetters.includes(w[0]));
+                if (filteredList.length === 0) filteredList = possibleWords;
+                this.word = filteredList[Math.floor(Math.random() * filteredList.length)];
+                
+                if (this.type === 'tank') this.colorGlow = "#ef4444"; 
+                else if (this.type === 'splitter') this.colorGlow = "#c084fc"; 
+                else if (this.type === 'emp') this.colorGlow = "#06b6d4"; 
+                else if (this.type === 'mini') this.colorGlow = "#eab308"; 
+                else this.colorGlow = "#ffffff"; 
+            }
 
-            let currentFirstLetters = enemies.map(e => e.word[0]);
-            let filteredList = possibleWords.filter(w => !currentFirstLetters.includes(w[0]));
-            if (filteredList.length === 0) filteredList = possibleWords;
-
-            this.word = filteredList[Math.floor(Math.random() * filteredList.length)];
             this.typed = "";
+            ctx.font = (this.type === 'boss' || this.type === 'tank') ? "bold 18px 'Courier New'" : "bold 16px 'Courier New'";
             this.wordWidth = ctx.measureText(this.word).width;
             
             let maxSpawnX = canvas.width - this.wordWidth - 40;
             this.x = Math.random() * (maxSpawnX - 30) + 30;
             if (this.x < 30) this.x = 30;
-            
             this.y = -60;
             
             let waveSpeedMultiplier = 1.0;
@@ -546,163 +472,124 @@
             else if (waveNum >= 11) waveSpeedMultiplier = 2.2;
 
             let baseSpeed = 0.4 + (Math.random() * 0.3);
-
-            if (this.type === 'tank') {
-                this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
-                this.colorGlow = "#ef4444"; 
-            } else if (this.type === 'splitter') {
-                this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; 
-                this.colorGlow = "#c084fc"; 
-            } else if (this.type === 'emp') {
-                this.speed = (baseSpeed * 1.2) * waveSpeedMultiplier; 
-                this.colorGlow = "#06b6d4"; 
-            } else if (this.type === 'mini') {
-                this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; 
-                this.colorGlow = "#eab308"; 
-            } else {
-                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; 
-                this.colorGlow = "#ffffff"; 
-            }
+            if (this.type === 'boss') this.speed = (baseSpeed * 0.35) * waveSpeedMultiplier; // Boss lambat tapi kata panjang
+            else if (this.type === 'tank') this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
+            else if (this.type === 'splitter') this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; 
+            else if (this.type === 'emp') this.speed = (baseSpeed * 1.2) * waveSpeedMultiplier; 
+            else if (this.type === 'mini') this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; 
+            else this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; 
         }
 
         draw() {
             ctx.save();
-            let renderX = this.x;
-            let renderY = this.y;
+            let renderX = this.x; let renderY = this.y;
 
-            // Logika Getar Musuh
             if (this.shakeFrames > 0) {
-                renderX += (Math.random() - 0.5) * 5;
-                renderY += (Math.random() - 0.5) * 5;
+                renderX += (Math.random() - 0.5) * 5; renderY += (Math.random() - 0.5) * 5;
                 this.shakeFrames--;
             }
 
-            ctx.font = this.type === 'tank' ? "bold 18px 'Courier New'" : "bold 16px 'Courier New'"; 
+            // Visual Khusus Boss: Cincin Neon
+            if (this.type === 'boss') {
+                ctx.beginPath();
+                ctx.arc(renderX + this.wordWidth/2, renderY - 6, 25 + Math.sin(frameCount*0.1)*3, 0, Math.PI*2);
+                ctx.strokeStyle = `rgba(251, 191, 36, ${0.3 + Math.sin(frameCount*0.2)*0.2})`;
+                ctx.lineWidth = 2; ctx.stroke();
+            }
+
+            ctx.font = (this.type === 'boss' || this.type === 'tank') ? "bold 18px 'Courier New'" : "bold 16px 'Courier New'"; 
             let typedWidth = ctx.measureText(this.typed).width;
 
             if (activeEnemy === this) {
-                ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(renderX - 8, renderY - 18, this.wordWidth + 16, this.type === 'tank' ? 24 : 22);
+                ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"; ctx.lineWidth = 1.5;
+                ctx.strokeRect(renderX - 8, renderY - 18, this.wordWidth + 16, (this.type === 'boss' || this.type === 'tank') ? 24 : 22);
             }
 
-            ctx.fillStyle = "#64748b"; 
-            ctx.shadowBlur = 0;       
-            ctx.fillText(this.typed, renderX, renderY);
+            ctx.fillStyle = "#64748b"; ctx.shadowBlur = 0; ctx.fillText(this.typed, renderX, renderY);
 
-            // Logika Flash Putih Premium Saat Kena Hit
             if (this.shakeFrames > 2) {
-                ctx.fillStyle = "#ffffff";
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = "#ffffff";
+                ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20; ctx.shadowColor = "#ffffff";
             } else {
                 ctx.shadowBlur = activeEnemy === this ? 15 : 8; 
-                ctx.shadowColor = this.colorGlow; 
-                ctx.fillStyle = this.colorGlow; 
+                ctx.shadowColor = this.colorGlow; ctx.fillStyle = this.colorGlow; 
             }
-            
             ctx.fillText(this.word.substring(this.typed.length), renderX + typedWidth, renderY);
             ctx.restore();
         }
-        update() { this.y += this.speed; }
+        
+        update() { 
+            // PENALTY ACCURACY: Mempercepat laju musuh jika akurasi buruk
+            let accuracyMultiplier = (accuracyPenaltyTimer > 0) ? 1.5 : 1.0;
+            this.y += (this.speed * accuracyMultiplier); 
+        }
     }
 
     class Laser {
         constructor(targetX, targetY) {
-            this.x = player.x; 
-            this.y = player.y - (player.size * 1.2); 
-            this.speed = 35; 
-            this.targetY = targetY; // Simpan Y target untuk deteksi hit
-            this.hit = false;
-
-            let dx = targetX - this.x;
-            let dy = targetY - this.y;
+            this.x = player.x; this.y = player.y - (player.size * 1.2); 
+            this.speed = 35; this.targetY = targetY; this.hit = false;
+            let dx = targetX - this.x; let dy = targetY - this.y;
             let distance = Math.sqrt(dx * dx + dy * dy);
-            
-            this.vx = (dx / distance) * this.speed;
-            this.vy = (dy / distance) * this.speed;
+            this.vx = (dx / distance) * this.speed; this.vy = (dy / distance) * this.speed;
         }
         draw() {
-            // TWEAK VISUAL PREMIUM: Tapered Laser Capsule
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
+            ctx.save(); ctx.beginPath(); ctx.moveTo(this.x, this.y);
             ctx.lineTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
-            ctx.strokeStyle = "#ffffff"; 
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 12; ctx.shadowColor = "#0ea5e9";
-            ctx.stroke();
-
-            // Ekor laser memudar
-            ctx.beginPath();
-            ctx.moveTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
+            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; ctx.shadowBlur = 12; ctx.shadowColor = "#0ea5e9"; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
             ctx.lineTo(this.x - (this.vx * 1.2), this.y - (this.vy * 1.2));
-            ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
-            ctx.lineWidth = 1.5;
-            ctx.shadowBlur = 0;
-            ctx.stroke();
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"; ctx.lineWidth = 1.5; ctx.shadowBlur = 0; ctx.stroke();
             ctx.restore();
         }
         update() { 
-            this.x += this.vx; 
-            this.y += this.vy; 
-            
-            // Hapus proyektil setelah melewati garis musuh & spawn spark kecil
+            this.x += this.vx; this.y += this.vy; 
             if (this.vy < 0 && this.y <= this.targetY) {
-                this.hit = true;
-                createExplosion(this.x, this.y, 0.5, "#0ea5e9"); // Impact Spark
+                this.hit = true; createExplosion(this.x, this.y, 0.5, "#0ea5e9"); 
             }
         }
     }
 
     class Particle {
         constructor(x, y, themeColor) {
-            this.x = x; this.y = y;
-            this.size = Math.random() * 3.5 + 1.5;
-            let angle = Math.random() * Math.PI * 2;
-            let speed = Math.random() * 5 + 1;
-            this.vx = Math.cos(angle) * speed;
-            this.vy = Math.sin(angle) * speed;
-            this.alpha = 1;
-            this.decay = Math.random() * 0.035 + 0.015;
+            this.x = x; this.y = y; this.size = Math.random() * 3.5 + 1.5;
+            let angle = Math.random() * Math.PI * 2; let speed = Math.random() * 5 + 1;
+            this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed;
+            this.alpha = 1; this.decay = Math.random() * 0.035 + 0.015;
             const colors = [themeColor, "#38bdf8", "#ffffff"];
             this.color = colors[Math.floor(Math.random() * colors.length)];
         }
         draw() {
-            ctx.save(); ctx.globalAlpha = this.alpha;
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.restore();
+            ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.size, this.size); ctx.restore();
         }
-        update() {
-            this.x += this.vx; this.y += this.vy;
-            this.alpha -= this.decay;
-        }
+        update() { this.x += this.vx; this.y += this.vy; this.alpha -= this.decay; }
     }
 
     function createExplosion(x, y, wordLength, themeColor) {
         let count = 12 + wordLength * 3;
-        for (let i = 0; i < count; i++) {
-            particles.push(new Particle(x + (Math.random() * wordLength * 9), y - 4, themeColor));
-        }
+        for (let i = 0; i < count; i++) particles.push(new Particle(x + (Math.random() * wordLength * 9), y - 4, themeColor));
     }
 
     function startWave(waveNum) {
         currentWave = waveNum;
-        enemiesLeftToSpawn = 4 + waveNum * 2; 
         waveSpawnTimer = 0;
         waveClearMessageTimer = 90; 
+        
+        // Cek Boss Wave
+        if (waveNum % 5 === 0) {
+            enemiesLeftToSpawn = 1; // Hanya spawn 1 Boss
+        } else {
+            enemiesLeftToSpawn = 4 + waveNum * 2; 
+        }
     }
 
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
-        let val = hiddenInput.value;
-        hiddenInput.value = ''; 
+        let val = hiddenInput.value; hiddenInput.value = ''; 
         if (val.length === 0) return;
 
         for (let i = 0; i < val.length; i++) {
             let karakter = val.charAt(i);
-
             if (/^[0-9]$/.test(karakter)) {
                 kodeAngka += karakter;
                 if (kodeAngka.length > PIN_RAHASIA.length) kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
@@ -713,6 +600,8 @@
             let key = karakter.toUpperCase();
             if (!/^[A-Z]$/.test(key)) continue;
 
+            totalKeysTyped++; // Tracking untuk penalti akurasi
+
             ctx.font = "bold 16px 'Courier New'";
 
             if (!activeEnemy) {
@@ -721,28 +610,28 @@
                     targets.sort((a, b) => b.y - a.y); 
                     activeEnemy = targets[0]; 
                     activeEnemy.typed += key;
-                    activeEnemy.shakeFrames = 6; // Trigger efek getar
+                    activeEnemy.shakeFrames = 6; 
                     
-                    comboCount++;
-                    comboPulse = 8; 
-                    muzzleFlashAlpha = 1.0; 
+                    correctKeysTyped++;
+                    comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
+                    shipRecoilY = 12; // KINETIC FEEDBACK: Kapal mundur saat menembak
                     playLaserSound();
 
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
                     lasers.push(new Laser(targetX, activeEnemy.y));
                 } else {
-                    comboCount = 0;
-                    playErrorSound();
+                    comboCount = 0; playErrorSound();
                     floatingTexts.push(new FloatingText(canvas.width/2 - 20, player.y - 50, "MISS!", "#ef4444", true));
                 }
             } else {
                 let nextChar = activeEnemy.word[activeEnemy.typed.length];
                 if (key === nextChar) {
                     activeEnemy.typed += key;
-                    activeEnemy.shakeFrames = 6; // Trigger efek getar
-                    comboCount++;
-                    comboPulse = 8; 
-                    muzzleFlashAlpha = 1.0; 
+                    activeEnemy.shakeFrames = 6; 
+                    
+                    correctKeysTyped++;
+                    comboCount++; comboPulse = 8; muzzleFlashAlpha = 1.0; 
+                    shipRecoilY = 12; // KINETIC FEEDBACK
                     playLaserSound();
                     
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
@@ -750,33 +639,31 @@
                     
                     if (activeEnemy.typed === activeEnemy.word) {
                         let multiplier = 1;
-                        if (comboCount >= 25) multiplier = 5;
-                        else if (comboCount >= 18) multiplier = 4;
-                        else if (comboCount >= 10) multiplier = 3;
-                        else if (comboCount >= 5) multiplier = 2;
+                        if (comboCount >= 25) multiplier = 5; else if (comboCount >= 18) multiplier = 4;
+                        else if (comboCount >= 10) multiplier = 3; else if (comboCount >= 5) multiplier = 2;
 
                         let basePoints = activeEnemy.word.length * 10;
+                        if(activeEnemy.type === 'boss') basePoints *= 5; // Bonus Boss
+                        
                         let finalPoints = basePoints * multiplier;
                         score += finalPoints;
 
-                        triggerScreenShake(activeEnemy.type === 'tank' ? 10 : 5, 8); 
+                        // DYNAMIC HIT-STOP: Layar membeku sesaat untuk memberi bobot kehancuran
+                        hitStopFrames = (activeEnemy.type === 'boss' || activeEnemy.type === 'tank') ? 8 : 2;
+
+                        triggerScreenShake(activeEnemy.type === 'tank' || activeEnemy.type === 'boss' ? 12 : 5, 8); 
                         createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length, activeEnemy.colorGlow);
-                        playExplosionSound(activeEnemy.type === 'tank');
+                        playExplosionSound(activeEnemy.type === 'tank' || activeEnemy.type === 'boss');
 
                         floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
 
                         if (activeEnemy.type === 'emp') {
                             triggerScreenShake(20, 20);
                             floatingTexts.push(new FloatingText(canvas.width/2 - 50, canvas.height/2, "EMP DETONATED!", "#06b6d4", true));
-                            
                             enemies.forEach(e => {
-                                if(e !== activeEnemy) {
-                                    score += (e.word.length * 5); 
-                                    createExplosion(e.x, e.y, e.word.length, e.colorGlow);
-                                }
+                                if(e !== activeEnemy) { score += (e.word.length * 5); createExplosion(e.x, e.y, e.word.length, e.colorGlow); }
                             });
-                            enemies = []; 
-                            activeEnemy = null;
+                            enemies = []; activeEnemy = null;
                             if(comboCount > maxCombo) maxCombo = comboCount;
                             return; 
                         }
@@ -784,307 +671,228 @@
                         if (activeEnemy.type === 'splitter') {
                             let splitCount = Math.random() > 0.5 ? 2 : 3;
                             floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
-                            
                             let segmentWidth = canvas.width / splitCount;
-                            
                             for(let k = 0; k < splitCount; k++) {
                                 let miniEn = new Enemy(currentWave, 'mini');
                                 let minX = (segmentWidth * k) + 15;
                                 let maxX = (segmentWidth * (k + 1)) - miniEn.wordWidth - 15;
                                 if (maxX < minX) maxX = minX; 
-                                
                                 miniEn.x = minX + (Math.random() * (maxX - minX));
                                 miniEn.y = Math.max(activeEnemy.y - 10 - (Math.random() * 25), 10);
-                                
                                 enemies.push(miniEn);
                             }
                         }
 
                         if (comboCount > maxCombo) maxCombo = comboCount;
-
-                        enemies = enemies.filter(en => en !== activeEnemy);
-                        activeEnemy = null;
+                        enemies = enemies.filter(en => en !== activeEnemy); activeEnemy = null;
                     }
                 } else {
                     let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
-                    comboCount = 0;
-                    playErrorSound();
+                    comboCount = 0; playErrorSound();
                     floatingTexts.push(new FloatingText(activeEnemy.x + errorTypedWidth, activeEnemy.y - 20, "BAD!", "#ef4444"));
                 }
             }
         }
     });
 
+    // STICKY INPUT FOCUS: Otomatis mengunci kursor agar pemain tidak kehilangan kontrol
+    document.addEventListener('keydown', (e) => {
+        if (gameActive && document.activeElement !== hiddenInput) hiddenInput.focus();
+    });
+
     function saveHighScore(finalScore, finalWave) {
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
         scores.push({ score: finalScore, wave: finalWave, date: new Date().toLocaleDateString('id-ID') });
-        scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 5); 
+        scores.sort((a, b) => b.score - a.score); scores = scores.slice(0, 5); 
         localStorage.setItem('typeShooterScores', JSON.stringify(scores));
     }
 
     function showScoreboard() {
-        mainMenu.classList.add('hidden');
-        gameOverMenu.classList.add('hidden');
-        scoreboardMenu.classList.remove('hidden');
-
+        mainMenu.classList.add('hidden'); gameOverMenu.classList.add('hidden'); scoreboardMenu.classList.remove('hidden');
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
         let contentDiv = document.getElementById('scoreboardContent');
-
         if(scores.length === 0) {
             contentDiv.innerHTML = "<p style='color:#64748b; margin: 20px 0;'>Belum ada rekor skor.</p>";
         } else {
             let tableHTML = "<table class='score-table'><tr><th>Rank</th><th>Skor</th><th>Wave</th><th>Tanggal</th></tr>";
             scores.forEach((item, index) => {
                 let waveDisplay = item.wave ? "W-" + item.wave : "W-1";
-                tableHTML += `<tr>
-                    <td>#${index + 1}</td>
-                    <td style="color:#4ade80; font-weight:bold;">${item.score}</td>
-                    <td style="color:#38bdf8; font-weight:bold;">${waveDisplay}</td>
-                    <td style="color:#64748b; font-size:12px;">${item.date}</td>
-                </tr>`;
+                tableHTML += `<tr><td>#${index + 1}</td><td style="color:#4ade80; font-weight:bold;">${item.score}</td><td style="color:#38bdf8; font-weight:bold;">${waveDisplay}</td><td style="color:#64748b; font-size:12px;">${item.date}</td></tr>`;
             });
-            tableHTML += "</table>";
-            contentDiv.innerHTML = tableHTML;
+            tableHTML += "</table>"; contentDiv.innerHTML = tableHTML;
         }
     }
-
-    function closeScoreboard() {
-        scoreboardMenu.classList.add('hidden');
-        mainMenu.classList.remove('hidden');
-    }
+    function closeScoreboard() { scoreboardMenu.classList.add('hidden'); mainMenu.classList.remove('hidden'); }
 
     function startGame() {
         enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
         comboCount = 0; maxCombo = 0; shakeTimer = 0; muzzleFlashAlpha = 0; comboPulse = 0;
-        playerHP = maxHP;
-        flashRedFrames = 0;
+        playerHP = maxHP; flashRedFrames = 0; totalKeysTyped = 0; correctKeysTyped = 0; accuracyPenaltyTimer = 0; hitStopFrames = 0;
         
-        initAudio(); 
-        startWave(1);
-        updatePlayerPosition();
-        initStars();
-        gameActive = true;
+        initAudio(); startWave(1); updatePlayerPosition(); initStars(); gameActive = true;
         
-        mainMenu.classList.add('hidden');
-        gameOverMenu.classList.add('hidden');
-        pauseMenu.classList.add('hidden');
-        pauseBtn.classList.remove('hidden'); 
-        
-        hiddenInput.value = "";
-        hiddenInput.focus();
-        
-        startBGM();
-        gameLoop();
+        mainMenu.classList.add('hidden'); gameOverMenu.classList.add('hidden'); pauseMenu.classList.add('hidden'); pauseBtn.classList.remove('hidden'); 
+        hiddenInput.value = ""; hiddenInput.focus();
+        startBGM(); gameLoop();
     }
 
     function gameOver() {
-        gameActive = false;
-        pauseBtn.classList.add('hidden'); 
-        triggerScreenShake(20, 40);
-        stopBGM();
-        
+        gameActive = false; pauseBtn.classList.add('hidden'); triggerScreenShake(20, 40); stopBGM();
         saveHighScore(score, currentWave); 
-        
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = "Reached: Wave " + currentWave;
-        
-        setTimeout(() => {
-            gameOverMenu.classList.remove('hidden');
-        }, 1000); 
+        setTimeout(() => { gameOverMenu.classList.remove('hidden'); }, 1000); 
         hiddenInput.blur();
     }
 
-    canvas.addEventListener('click', () => {
-        if (gameActive) hiddenInput.focus();
-    });
+    canvas.addEventListener('click', () => { if (gameActive) hiddenInput.focus(); });
 
     function gameLoop() {
         if (!gameActive) {
-            ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, index) => {
-                p.update(); p.draw();
-                if (p.alpha <= 0) particles.splice(index, 1);
-            });
+            ctx.fillStyle = "rgba(7, 10, 19, 0.2)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => { p.update(); p.draw(); if (p.alpha <= 0) particles.splice(index, 1); });
             if (!gameActive && gameOverMenu.classList.contains('hidden')) requestAnimationFrame(gameLoop);
             return;
         }
-        
-        ctx.fillStyle = "#070a13";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // TWEAK VISUAL PREMIUM: Sci-Fi Grid Background dengan efek Paralaks
-        ctx.save();
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.04)";
-        ctx.lineWidth = 1;
-        for(let i = 0; i < canvas.width; i += 60) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        // TRIGGER HIT-STOP: Menghentikan logika sejenak untuk efek dramatis
+        if (hitStopFrames > 0) {
+            hitStopFrames--;
+            requestAnimationFrame(gameLoop);
+            return; 
         }
+        
+        ctx.fillStyle = "#070a13"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // LOGIKA PENALTI AKURASI
+        if (totalKeysTyped > 15) {
+            if ((correctKeysTyped / totalKeysTyped) < 0.6) {
+                accuracyPenaltyTimer = 180; // Penalti 3 detik
+                totalKeysTyped = 0; correctKeysTyped = 0; 
+            }
+        }
+
+        // COMBO-BASED SCREEN ZOOM
+        let targetZoom = 1 + Math.min(comboCount * 0.005, 0.12);
+        currentZoom += (targetZoom - currentZoom) * 0.08; 
+        
+        ctx.save();
+        // Geser ke tengah layar, aplikasikan zoom, lalu geser kembali
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.scale(currentZoom, currentZoom);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+        if (shakeTimer > 0) {
+            ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
+            shakeTimer--;
+        }
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.04)"; ctx.lineWidth = 1;
+        for(let i = 0; i < canvas.width; i += 60) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
         for(let j = 0; j < canvas.height; j += 60) {
             let yOffset = (j + frameCount * 0.3) % canvas.height;
             ctx.beginPath(); ctx.moveTo(0, yOffset); ctx.lineTo(canvas.width, yOffset); ctx.stroke();
         }
         ctx.restore();
 
-        if (flashRedFrames > 0) {
-            ctx.fillStyle = `rgba(239, 68, 68, ${flashRedFrames * 0.02})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            flashRedFrames--;
-        }
-
-        ctx.save();
-        if (shakeTimer > 0) {
-            ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
-            shakeTimer--;
-        }
+        if (flashRedFrames > 0) { ctx.fillStyle = `rgba(239, 68, 68, ${flashRedFrames * 0.02})`; ctx.fillRect(0, 0, canvas.width, canvas.height); flashRedFrames--; }
 
         stars.forEach(star => {
-            ctx.fillStyle = star.color;
-            ctx.globalAlpha = star.alpha;
+            ctx.fillStyle = star.color; ctx.globalAlpha = star.alpha;
             let isWarping = waveClearMessageTimer > 0;
             let currentSpeed = isWarping ? star.baseSpeed * 8 : star.baseSpeed;
-            
-            if (isWarping) {
-                ctx.fillRect(star.x, star.y, star.size, star.size * 6); 
-            } else {
-                ctx.fillRect(star.x, star.y, star.size, star.size);
-            }
-
+            if (isWarping) { ctx.fillRect(star.x, star.y, star.size, star.size * 6); } else { ctx.fillRect(star.x, star.y, star.size, star.size); }
             star.y += currentSpeed;
             if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
         });
         ctx.globalAlpha = 1.0;
 
         let closestDistance = canvas.height;
-        enemies.forEach(en => {
-            let dist = (player.y + 22) - en.y;
-            if (dist > 0 && dist < closestDistance) closestDistance = dist;
-        });
+        enemies.forEach(en => { let dist = (player.y + 22) - en.y; if (dist > 0 && dist < closestDistance) closestDistance = dist; });
 
-        let lineAlpha = 0.25;
-        let lineShadow = 0;
+        let lineAlpha = 0.25; let lineShadow = 0;
         if (closestDistance < 150) {
             let dangerFactor = 1 - (closestDistance / 150); 
-            lineAlpha = 0.25 + (0.65 * dangerFactor); 
-            lineShadow = 15 * dangerFactor;
+            lineAlpha = 0.25 + (0.65 * dangerFactor); lineShadow = 15 * dangerFactor;
         }
 
-        ctx.strokeStyle = `rgba(239, 68, 68, ${lineAlpha})`; 
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = lineShadow;
-        ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke();
-        ctx.shadowBlur = 0; 
+        ctx.strokeStyle = `rgba(239, 68, 68, ${lineAlpha})`; ctx.lineWidth = 2; ctx.shadowBlur = lineShadow; ctx.shadowColor = "#ef4444";
+        ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke(); ctx.shadowBlur = 0; 
 
-        ctx.fillStyle = "rgba(148, 163, 184, 0.15)";
-        ctx.font = "bold 24px 'Courier New'";
-        ctx.fillText("WAVE: " + currentWave, 25, 45);
-        ctx.fillText("SCORE: " + score, 25, 80);
+        ctx.fillStyle = "rgba(148, 163, 184, 0.15)"; ctx.font = "bold 24px 'Courier New'";
+        ctx.fillText("WAVE: " + currentWave, 25, 45); ctx.fillText("SCORE: " + score, 25, 80);
+
+        if (accuracyPenaltyTimer > 0) {
+            accuracyPenaltyTimer--;
+            ctx.fillStyle = "rgba(239, 68, 68, 0.8)"; ctx.font = "bold 14px 'Courier New'"; ctx.shadowBlur = 10; ctx.shadowColor = "#ef4444";
+            ctx.fillText("⚠ SYSTEM WARNING: ACCURACY LOW - ENEMY SPEED INCREASED", 25, 150);
+            ctx.shadowBlur = 0;
+        }
 
         for (let i = 0; i < maxHP; i++) {
-            let hpX = canvas.width - 35 - (i * 25);
-            let hpY = 30;
-            ctx.beginPath();
-            ctx.moveTo(hpX, hpY);
-            ctx.lineTo(hpX - 8, hpY - 10); ctx.lineTo(hpX + 8, hpY - 10);
-            ctx.closePath();
-            
-            if (i < playerHP) {
-                ctx.fillStyle = "#10b981"; 
-                ctx.shadowBlur = 10; ctx.shadowColor = "#10b981";
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            } else {
-                ctx.strokeStyle = "#475569"; 
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
+            let hpX = canvas.width - 35 - (i * 25); let hpY = 30;
+            ctx.beginPath(); ctx.moveTo(hpX, hpY); ctx.lineTo(hpX - 8, hpY - 10); ctx.lineTo(hpX + 8, hpY - 10); ctx.closePath();
+            if (i < playerHP) { ctx.fillStyle = "#10b981"; ctx.shadowBlur = 10; ctx.shadowColor = "#10b981"; ctx.fill(); ctx.shadowBlur = 0; } 
+            else { ctx.strokeStyle = "#475569"; ctx.lineWidth = 2; ctx.stroke(); }
         }
 
         if(comboCount > 0) {
             let mult = 1;
-            if (comboCount >= 25) mult = 5;
-            else if (comboCount >= 18) mult = 4;
-            else if (comboCount >= 10) mult = 3;
-            else if (comboCount >= 5) mult = 2;
-
-            if (comboPulse > 0) comboPulse -= 0.5; 
-            if (comboPulse < 0) comboPulse = 0;
-
+            if (comboCount >= 25) mult = 5; else if (comboCount >= 18) mult = 4; else if (comboCount >= 10) mult = 3; else if (comboCount >= 5) mult = 2;
+            if (comboPulse > 0) comboPulse -= 0.5; if (comboPulse < 0) comboPulse = 0;
             ctx.fillStyle = mult > 1 ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 163, 184, 0.15)";
-            let currentFontSize = 20 + comboPulse; 
-            ctx.font = `bold ${currentFontSize}px 'Courier New'`;
+            ctx.font = `bold ${20 + comboPulse}px 'Courier New'`;
             ctx.fillText(`COMBO: ${comboCount} (X${mult})`, 25, 115);
         }
 
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
             waveSpawnTimer++;
-            let spawnInterval = Math.max(95 - currentWave * 5, 45); 
+            let spawnInterval = (currentWave % 5 === 0) ? 100 : Math.max(95 - currentWave * 5, 45); 
             if (waveSpawnTimer >= spawnInterval) {
-                enemies.push(new Enemy(currentWave));
-                enemiesLeftToSpawn--;
-                waveSpawnTimer = 0;
+                if (currentWave % 5 === 0) enemies.push(new Enemy(currentWave, 'boss'));
+                else enemies.push(new Enemy(currentWave));
+                enemiesLeftToSpawn--; waveSpawnTimer = 0;
             }
         } else if (enemies.length === 0 && enemiesLeftToSpawn === 0 && waveClearMessageTimer <= 0) {
             startWave(currentWave + 1);
         }
 
         if (waveClearMessageTimer > 0) {
-            waveClearMessageTimer--;
-            ctx.fillStyle = "#38bdf8";
-            ctx.font = "bold 32px 'Courier New'"; ctx.textAlign = "center";
+            waveClearMessageTimer--; ctx.fillStyle = "#38bdf8"; ctx.font = "bold 32px 'Courier New'"; ctx.textAlign = "center";
             ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
-            ctx.fillText("INCOMING WAVE " + currentWave, canvas.width / 2, canvas.height / 2.5);
+            let msg = (currentWave % 5 === 0) ? "BOSS WAVE INCOMING" : "INCOMING WAVE " + currentWave;
+            ctx.fillText(msg, canvas.width / 2, canvas.height / 2.5);
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
         let cx = player.x; 
+        
+        // INTERPOLASI RECOIL: Menghaluskan kembalinya posisi kapal setelah menembak
+        shipRecoilY += (0 - shipRecoilY) * 0.15;
         let floatOffsetY = Math.sin(frameCount * 0.05) * 6;
-        let cy = player.y + floatOffsetY; 
+        let cy = player.y + floatOffsetY + shipRecoilY; 
+        
         let s = player.size;
         
-        // --- TWEAK VISUAL PREMIUM: Rotasi Pesawat & Glow ---
-        ctx.save();
-        ctx.translate(cx, cy);
+        ctx.save(); ctx.translate(cx, cy);
 
-        // Dynamic Targeting (Pesawat menatap musuh)
         if (activeEnemy) {
-            let targetX = activeEnemy.x + activeEnemy.wordWidth / 2;
-            let targetY = activeEnemy.y;
+            let targetX = activeEnemy.x + activeEnemy.wordWidth / 2; let targetY = activeEnemy.y;
             let angle = Math.atan2(targetY - cy, targetX - cx) + (Math.PI / 2);
-            // Batasi rotasi agar pesawat tidak terbalik
             let maxAngle = Math.PI / 4.5;
-            if (angle > maxAngle) angle = maxAngle;
-            if (angle < -maxAngle) angle = -maxAngle;
+            if (angle > maxAngle) angle = maxAngle; if (angle < -maxAngle) angle = -maxAngle;
             ctx.rotate(angle);
         }
         
         let thrustGlow = 5 + Math.random() * 8 + (floatOffsetY * 0.5); 
-        ctx.fillStyle = "#f97316"; 
-        ctx.shadowBlur = thrustGlow; 
-        ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); 
-        ctx.moveTo(0 - (s*0.64), 0 + s - 2); 
-        ctx.lineTo(0 + (s*0.64), 0 + s - 2); 
-        ctx.lineTo(0, 0 + s + (thrustGlow * 0.8)); 
-        ctx.fill();
-        ctx.shadowBlur = 0; 
+        ctx.fillStyle = "#f97316"; ctx.shadowBlur = thrustGlow; ctx.shadowColor = "#ef4444";
+        ctx.beginPath(); ctx.moveTo(0 - (s*0.64), 0 + s - 2); ctx.lineTo(0 + (s*0.64), 0 + s - 2); ctx.lineTo(0, 0 + s + (thrustGlow * 0.8)); ctx.fill(); ctx.shadowBlur = 0; 
         
-        ctx.shadowBlur = 12; // Premium Ship Glow
-        ctx.shadowColor = "#38bdf8";
-
-        ctx.fillStyle = "#3b82f6";
-        ctx.beginPath();
-        ctx.moveTo(0, 0 - s*0.5); 
-        ctx.lineTo(0 - s*2.2, 0 + s*0.8); 
-        ctx.lineTo(0 - s*2.2, 0 + s*1.1); 
-        ctx.lineTo(0 - s*0.8, 0 + s*0.8); 
-        ctx.lineTo(0, 0 + s*1.2);         
-        ctx.lineTo(0 + s*0.8, 0 + s*0.8); 
-        ctx.lineTo(0 + s*2.2, 0 + s*1.1); 
-        ctx.lineTo(0 + s*2.2, 0 + s*0.8); 
-        ctx.fill();
+        ctx.shadowBlur = 12; ctx.shadowColor = "#38bdf8";
+        ctx.fillStyle = "#3b82f6"; ctx.beginPath();
+        ctx.moveTo(0, 0 - s*0.5); ctx.lineTo(0 - s*2.2, 0 + s*0.8); ctx.lineTo(0 - s*2.2, 0 + s*1.1); ctx.lineTo(0 - s*0.8, 0 + s*0.8); 
+        ctx.lineTo(0, 0 + s*1.2); ctx.lineTo(0 + s*0.8, 0 + s*0.8); ctx.lineTo(0 + s*2.2, 0 + s*1.1); ctx.lineTo(0 + s*2.2, 0 + s*0.8); ctx.fill();
 
         ctx.fillStyle = "#60a5fa"; 
         ctx.fillRect(0 - s*2.2, 0 + s*0.2, s*0.15, s*0.8);
@@ -1093,88 +901,41 @@
         ctx.beginPath(); ctx.moveTo(0 + s*2.125, 0); ctx.lineTo(0 + s*2.2, 0 + s*0.2); ctx.lineTo(0 + s*2.05, 0 + s*0.2); ctx.fill();
 
         if (muzzleFlashAlpha > 0) {
-            ctx.fillStyle = `rgba(255, 255, 255, ${muzzleFlashAlpha})`;
-            ctx.shadowBlur = 20; ctx.shadowColor = "#ffffff";
+            ctx.fillStyle = `rgba(255, 255, 255, ${muzzleFlashAlpha})`; ctx.shadowBlur = 20; ctx.shadowColor = "#ffffff";
             ctx.beginPath(); ctx.arc(0 - s*2.125, 0, s*0.5, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.arc(0 + s*2.125, 0, s*0.5, 0, Math.PI * 2); ctx.fill(); 
-            ctx.shadowBlur = 12; // Kembalikan ke ship glow
-            muzzleFlashAlpha -= 0.15; 
+            ctx.shadowBlur = 12; muzzleFlashAlpha -= 0.15; 
         }
 
-        ctx.fillStyle = "#1e3a8a";
-        ctx.beginPath();
-        ctx.moveTo(0, 0 - s*1.6); 
-        ctx.lineTo(0 - s*0.6, 0 + s*0.5); 
-        ctx.lineTo(0 - s*0.5, 0 + s*1.2); 
-        ctx.lineTo(0 + s*0.5, 0 + s*1.2); 
-        ctx.lineTo(0 + s*0.6, 0 + s*0.5); 
-        ctx.fill();
+        ctx.fillStyle = "#1e3a8a"; ctx.beginPath();
+        ctx.moveTo(0, 0 - s*1.6); ctx.lineTo(0 - s*0.6, 0 + s*0.5); ctx.lineTo(0 - s*0.5, 0 + s*1.2); 
+        ctx.lineTo(0 + s*0.5, 0 + s*1.2); ctx.lineTo(0 + s*0.6, 0 + s*0.5); ctx.fill();
 
-        ctx.fillStyle = "#facc15"; 
-        ctx.beginPath();
-        ctx.moveTo(0, 0 - s*1.2);
-        ctx.lineTo(0 - s*0.15, 0 - s*0.2);
-        ctx.lineTo(0, 0 + s*0.1);
-        ctx.lineTo(0 + s*0.15, 0 - s*0.2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(0, 0 + s*0.4, s*0.25, s*0.35, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = "#facc15"; ctx.beginPath();
+        ctx.moveTo(0, 0 - s*1.2); ctx.lineTo(0 - s*0.15, 0 - s*0.2); ctx.lineTo(0, 0 + s*0.1); ctx.lineTo(0 + s*0.15, 0 - s*0.2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 0 + s*0.4, s*0.25, s*0.35, 0, 0, Math.PI * 2); ctx.fill();
 
-        ctx.restore(); // Akhiri rotasi pesawat
-        // --- END OF TWEAK VISUAL PREMIUM ---
+        ctx.restore(); 
 
-        particles.forEach((p, index) => {
-            p.update(); p.draw();
-            if (p.alpha <= 0) particles.splice(index, 1);
-        });
+        particles.forEach((p, index) => { p.update(); p.draw(); if (p.alpha <= 0) particles.splice(index, 1); });
+        floatingTexts.forEach((ft, index) => { ft.update(); ft.draw(); if (ft.alpha <= 0) floatingTexts.splice(index, 1); });
 
-        floatingTexts.forEach((ft, index) => {
-            ft.update(); ft.draw();
-            if (ft.alpha <= 0) floatingTexts.splice(index, 1);
-        });
-
-        // Hapus laser jika keluar layar ATAU sudah mengenai target
-        lasers.forEach((l, index) => {
-            l.update(); l.draw();
-            if (l.hit || l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
-        });
+        lasers.forEach((l, index) => { l.update(); l.draw(); if (l.hit || l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1); });
 
         for (let i = enemies.length - 1; i >= 0; i--) {
-            let en = enemies[i];
-            en.update(); 
-            en.draw();
-            
+            let en = enemies[i]; en.update(); en.draw();
             if (en.y > player.y + 22) { 
-                playerHP--;
-                flashRedFrames = 15;
-                triggerScreenShake(15, 10);
-                playErrorSound();
-                enemies.splice(i, 1); 
-
-                if (activeEnemy === en) {
-                    activeEnemy = null;
-                    comboCount = 0;
-                    hiddenInput.value = "";
-                }
-                
-                if (playerHP <= 0) {
-                    createExplosion(player.x, player.y, 8, "#ef4444"); 
-                    gameOver();
-                }
+                playerHP--; flashRedFrames = 15; triggerScreenShake(15, 10); playErrorSound(); enemies.splice(i, 1); 
+                if (activeEnemy === en) { activeEnemy = null; comboCount = 0; hiddenInput.value = ""; }
+                if (playerHP <= 0) { createExplosion(player.x, player.y, 8, "#ef4444"); gameOver(); }
             }
         }
 
-        ctx.restore(); 
-        frameCount++;
-        requestAnimationFrame(gameLoop);
+        ctx.restore(); // Akhir dari sistem Combo Zoom
+        frameCount++; requestAnimationFrame(gameLoop);
     }
 
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        updatePlayerPosition(); initStars(); 
-    });
-    
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updatePlayerPosition(); initStars(); });
     updatePlayerPosition();
 </script>
 </body>
