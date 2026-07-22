@@ -185,8 +185,13 @@
 
 <script>
     function goToDashboard() {
-        window.location.href = 'dashboard.html'; 
-    }
+    window.location.href = 'dashboard.html'; 
+}
+
+// Tambahkan fungsi baru ini
+function goToDashboard2() {
+    window.location.href = 'dashboard2.html'; 
+}
 
     const mainMenu = document.getElementById('mainMenu');
     const settingsMenu = document.getElementById('settingsMenu');
@@ -527,7 +532,8 @@
 
     const player = { x: canvas.width / 2, y: canvas.height - 100, size: 12.5 };
     let kodeAngka = ""; 
-    const PIN_RAHASIA = "0189"; 
+const PIN_RAHASIA = "0189"; 
+const PIN_RAHASIA_2 = "0199"; 
 
     function updatePlayerPosition() {
         player.x = canvas.width / 2;
@@ -781,11 +787,20 @@
 
             if (/^[0-9]$/.test(karakter)) {
                 kodeAngka += karakter;
-                if (kodeAngka.length > PIN_RAHASIA.length) kodeAngka = kodeAngka.slice(-PIN_RAHASIA.length);
-                if (kodeAngka === PIN_RAHASIA) { goToDashboard(); return; }
+                
+                // Batasi panjang string maksimal 4 karakter (karena kedua PIN panjangnya 4)
+                if (kodeAngka.length > 4) kodeAngka = kodeAngka.slice(-4);
+                
+                // Cek apakah cocok dengan PIN 1 atau PIN 2
+                if (kodeAngka === PIN_RAHASIA) { 
+                    goToDashboard(); 
+                    return; 
+                } else if (kodeAngka === PIN_RAHASIA_2) {
+                    goToDashboard2();
+                    return;
+                }
                 continue; 
             }
-
             let key = karakter.toUpperCase();
             if (!/^[A-Z]$/.test(key)) continue;
 
