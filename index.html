@@ -480,7 +480,8 @@ function goToDashboard2() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const wordsList = [
+    const wordsList = {
+    id: [
         "AMAS", "DESA", "KOTA", "GAIA", "MAIN", "SAYA", "ANAK", "MAMA", "PAPA", "BUKU", "MALL", "IPAD",
         "RUMAH", "SAPI", "BABI", "PULSA", "ROKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
         "SIANTAN", "SEKOLAH", "SUKSES", "LANDAK", "DESKAP", "AYANI", "KWECAP", "BUBUR", "CHOIPAN", "KOSMOS", 
@@ -495,8 +496,24 @@ function goToDashboard2() {
         "HUJAN", "PANAS", "DINGIN", "ANGIN", "AWAN", "BINTANG", "BULAN", "SURYA", "BUMI", "LAUT", "GUNUNG", 
         "HUTAN", "SUNGAI", "DANAU", "PANTAI", "PASIR", "BATU", "KAYU", "BESI", "EMAS", "PERAK", "TOLONG", 
         "MAAF", "SILAKAN", "PERMISI", "KEMBALI", "PULANG", "KOSONG"
-    ];
-
+    ],
+    en: [
+        "TOWN", "CITY", "GAIA", "PLAY", "MINE", "CHILD", "MAMA", "PAPA", "BOOK", "MALL", "IPAD",
+        "HOME", "COW", "PIG", "PULSE", "ROCKET", "ASTRO", "CYBER", "LASER", "PIXEL", "SPACE", "CLOUD",
+        "SCHOOL", "SUCCESS", "PORCUPINE", "DESKTOP", "PORRIDGE", "COSMOS", 
+        "NEBULA", "METEOR", "GALAXY", "ORBITAL", "PLASMA", "MATRIX", "SATELLITE", "CAPSULE", "GRAVITY", "ANDROID", 
+        "STELLAR", "QUANTUM", "SHUTTLE", "HORIZON", "ECLIPSE", "DATABASE", "INTERNET", "PROTOCOL", "FIREWALL", 
+        "TERMINAL", "ASTEROID", "TELEPORT", "STARSHIP", "YOU", "THEY", "WATER", "FIRE", "CAN", 
+        "NEW", "OLD", "DAY", "EVENING", "MORNING", "TABLE", "GLASS", "ROAD", "EAT", "DRINK", "SLEEP", 
+        "SIT", "READ", "WRITE", "CAR", "BIKE", "FAST", "YELLOW", "RED", "BLACK", "WHITE", "GREEN", 
+        "FLY", "RUN", "FAR", "NEAR", "HIGH", "LOW", "BIG", "SMALL", "TREE", "FLOWER", "ANIMAL", 
+        "CAT", "DOG", "BIRD", "FISH", "CHICKEN", "DUCK", "HORSE", "LEARN", "WORK", "PLAYING", 
+        "OFFICE", "MARKET", "SHOP", "SHOES", "SHIRT", "PANTS", "HAT", "DOOR", "LAMP", "DARK", "BRIGHT", 
+        "RAIN", "HOT", "COLD", "WIND", "CLOUD", "STAR", "MOON", "SUN", "EARTH", "SEA", "MOUNTAIN", 
+        "FOREST", "RIVER", "LAKE", "BEACH", "SAND", "ROCK", "WOOD", "IRON", "GOLD", "SILVER", "HELP", 
+        "SORRY", "PLEASE", "EXCUSE", "RETURN", "BACK", "EMPTY"
+    ]
+};
     let enemies = [];
     let lasers = [];
     let particles = [];
@@ -610,8 +627,12 @@ const PIN_RAHASIA_2 = "0199";
             else if (this.type === 'mini') { minLen = 2; maxLen = 4; }
             else { minLen = 2; maxLen = 5; }
 
-            let possibleWords = wordsList.filter(w => w.length >= minLen && w.length <= maxLen);
-            if (possibleWords.length === 0) possibleWords = wordsList;
+            // AMBIL KOSAKATA BERDASARKAN BAHASA SAAT INI
+            let activeDictionary = wordsList[langSetting] || wordsList.id; 
+
+            // FILTER KATA DARI KAMUS YANG AKTIF
+            let possibleWords = activeDictionary.filter(w => w.length >= minLen && w.length <= maxLen);
+            if (possibleWords.length === 0) possibleWords = activeDictionary;
 
             let currentFirstLetters = enemies.map(e => e.word[0]);
             let filteredList = possibleWords.filter(w => !currentFirstLetters.includes(w[0]));
