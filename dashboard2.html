@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splitter Pro - Balance AI</title>
+    <title>Splitter Pro - Ultimate AI</title>
     <style>
         :root {
             --bg-gray: #2b2b2b;
@@ -164,8 +164,8 @@
             <div class="form-group">
                 <label for="mathRule">Aturan</label>
                 <select id="mathRule">
+                    <option value="5" selected>Berakhiran 5 & 0</option>
                     <option value="1">Acak Bebas / Pas Sisa</option>
-                    <option value="5">Berakhiran 5 & 0</option>
                 </select>
             </div>
             <div class="form-group">
@@ -188,12 +188,12 @@
     <div class="people-config-container">
         <div class="config-header">SETTING KAPASITAS BD</div>
         <div style="text-align: center; color: #888; font-size: 0.8rem; margin-top: -10px; margin-bottom: 15px;">
-            *Default terisi otomatis: Max Pasang (25) & Max X (30). Jika punya BB 6 digit, ubah Max Pasang ke 30.
+            *Default otomatis terisi (Pasang: 30, Max X: 50). Sistem mengekstrak BB 6, 5, 4, 3 angka.
         </div>
         <div id="peopleConfigList" class="layout-bds"></div>
     </div>
 
-    <button class="btn-primary" onclick="processAndSplit()">Proses & Cari Distribusi Terbaik (500x Simulasi)</button>
+    <button class="btn-primary" onclick="processAndSplit()">Proses Distribusi Sempurna</button>
     <div id="results" class="layout-results"></div>
 </div>
 
@@ -208,7 +208,7 @@
             const text = await navigator.clipboard.readText();
             document.getElementById('rawInput').value = text;
         } catch (err) {
-            alert('Akses Paste diblokir browser. Silakan klik kotak teks lalu tekan Ctrl+V (PC) atau Tahan & Tempel (HP).');
+            alert('Akses Paste diblokir browser. Silakan tekan Ctrl+V atau Tahan & Tempel manual.');
         }
     }
 
@@ -227,10 +227,11 @@
         for (var i = 1; i <= count; i++) {
             var row = document.createElement('div');
             row.className = 'person-row';
+            // Default diatur sesuai permintaan: Max Pasang 30, Max X 50
             row.innerHTML = 
                 '<div class="person-label">BD ' + i + '</div>' +
-                '<input type="number" id="maxBlocks_' + i + '" value="25" placeholder="Max Pasang" min="1" style="flex:1;" title="Maksimal Pasang Angka">' +
-                '<input type="number" id="maxMultiplier_' + i + '" value="30" placeholder="Max X" min="1" style="flex:1;" title="Maksimal X">';
+                '<input type="number" id="maxBlocks_' + i + '" value="30" placeholder="Max Pasang" min="1" style="flex:1;">' +
+                '<input type="number" id="maxMultiplier_' + i + '" value="50" placeholder="Max X" min="1" style="flex:1;">';
             container.appendChild(row);
         }
     }
@@ -267,6 +268,7 @@
         return result;
     }
 
+    // ALGORITMA BARU: DISTRIBUSI TETES (TOKEN BUCKET)
     function runSimulation(chunks, bdsTemplate, targetX, targetMinCost, mathRule) {
         let bds = bdsTemplate.map(bd => ({
             id: bd.id, maxP: bd.maxP, maxX: bd.maxX, currentPairs: 0, currentCost: 0, blocks: []
@@ -279,57 +281,54 @@
         for (let c = 0; c < chunks.length; c++) {
             let chunk = chunks[c];
             let reqX = targetX;
-            let eligibleBDs = bds.filter(bd => (bd.currentPairs + chunk.pairsArray.length) <= bd.maxP);
+            let chunkLen = chunk.pairsArray.length;
+
+            let eligibleBDs = bds.filter(bd => (bd.currentPairs + chunkLen) <= bd.maxP);
 
             if (eligibleBDs.length > 0) {
-                // Sorting BDs secara acak namun dengan prioritas memberi pada BD yang total biayanya (cost) masih kecil
-                let shuffledBDs = [...eligibleBDs].sort((a,b) => (a.currentCost + Math.random()*200) - (b.currentCost + Math.random()*200));
                 let allocation = new Map();
-                shuffledBDs.forEach(bd => allocation.set(bd.id, 0));
+                eligibleBDs.forEach(bd => allocation.set(bd.id, 0));
 
-                for (let i = 0; i < shuffledBDs.length; i++) {
-                    let bd = shuffledBDs[i];
-                    if (reqX < step) break;
+                let canStillAllocate = true;
+                // Selama X belum habis dan masih ada BD yang bisa menampung
+                while (reqX >= step && canStillAllocate) {
+                    canStillAllocate = false;
 
-                    let maxAvail = Math.min(reqX, bd.maxX);
-                    maxAvail = Math.floor(maxAvail / step) * step;
+                    // Urutkan BD berdasarkan "Harga Termurah" + sedikit acak
+                    // Ini memastikan BD yang tertinggal akan mendapat jatah X, sehingga sebaran rata
+                    eligibleBDs.sort((a, b) => {
+                        let costA = a.currentCost + (allocation.get(a.id) * chunkLen);
+                        let costB = b.currentCost + (allocation.get(b.id) * chunkLen);
+                        return (costA + Math.random() * 200) - (costB + Math.random() * 200);
+                    });
 
-                    if (maxAvail >= step) {
-                        let possibleSteps = Math.floor(maxAvail / step);
-                        let randSteps = Math.floor(Math.random() * possibleSteps) + 1;
-                        let takeX = randSteps * step;
-                        allocation.set(bd.id, takeX);
-                        reqX -= takeX;
-                    }
-                }
-
-                if (reqX >= step) {
+                    // Coba teteskan 'step' (misal 5) ke BD pertama yang muat
                     for (let i = 0; i < eligibleBDs.length; i++) {
                         let bd = eligibleBDs[i];
-                        if (reqX < step) break;
                         let currentAlloc = allocation.get(bd.id);
-                        let spaceLeft = bd.maxX - currentAlloc;
-                        let maxTake = Math.min(reqX, spaceLeft);
-                        maxTake = Math.floor(maxTake / step) * step;
                         
-                        if (maxTake >= step) {
-                            allocation.set(bd.id, currentAlloc + maxTake);
-                            reqX -= maxTake;
+                        if (currentAlloc + step <= bd.maxX && reqX >= step) {
+                            allocation.set(bd.id, currentAlloc + step);
+                            reqX -= step;
+                            canStillAllocate = true; // Berhasil meneteskan, ulangi siklus
+                            break; 
                         }
                     }
                 }
 
+                // Setelah perputaran tetesan selesai, masukkan hasilnya ke BD
                 for (let i = 0; i < eligibleBDs.length; i++) {
                     let bd = eligibleBDs[i];
                     let allocX = allocation.get(bd.id);
                     if (allocX > 0) {
                         bd.blocks.push({ chunkData: chunk, xVal: allocX });
-                        bd.currentPairs += chunk.pairsArray.length;
-                        bd.currentCost += (chunk.pairsArray.length * allocX); // Catat cost
+                        bd.currentPairs += chunkLen;
+                        bd.currentCost += (chunkLen * allocX);
                     }
                 }
             }
 
+            // Jika secara matematis benar-benar tidak muat di seluruh BD yang ada
             if (reqX > 0) {
                 leftovers.push({ chunkData: chunk, missing: reqX });
                 missingTotal += reqX;
@@ -357,9 +356,7 @@
             var maxP = parseInt(document.getElementById('maxBlocks_' + i).value);
             var maxX = parseInt(document.getElementById('maxMultiplier_' + i).value);
             bdsTemplate.push({
-                id: i,
-                maxP: isNaN(maxP) || maxP < 1 ? 999999 : maxP,
-                maxX: isNaN(maxX) || maxX < 1 ? 999999 : maxX
+                id: i, maxP: isNaN(maxP) || maxP < 1 ? 999999 : maxP, maxX: isNaN(maxX) || maxX < 1 ? 999999 : maxX
             });
         }
 
@@ -384,7 +381,7 @@
             }
         }
         
-        // Ekstrak dari yang terbesar
+        // Ekstraksi lengkap dari BB 6 turun ke 3
         extractBB(6); 
         extractBB(5); 
         extractBB(4); 
@@ -409,17 +406,13 @@
         shuffleArray(normalChunks);
         chunks = chunks.concat(normalChunks);
 
-        // MENCARI HASIL TERBAIK (500x SIMULASI)
+        // Simulasi Pencarian Keseimbangan (Maks 500 iterasi)
         let bestResult = null;
         let lowestScore = Infinity;
 
         for (let sim = 0; sim < 500; sim++) {
             let currentRun = runSimulation(chunks, bdsTemplate, targetX, targetMinCost, mathRule);
             
-            // Evaluasi Skor Fitness: 
-            // 1. Sisa Angka (Paling Fatal)
-            // 2. Jumlah BD yang belum memenuhi Total Minimum
-            // 3. Jarak selisih (Variance) antar BD terbesar dan terkecil
             let activeBDs = currentRun.bds.filter(b => b.currentCost > 0);
             let variance = 0;
             let belowMinCount = 0;
@@ -431,21 +424,20 @@
                 belowMinCount = activeBDs.filter(b => b.currentCost < targetMinCost).length;
             }
 
+            // Sisa angka adalah dosa terbesar (dikali sejuta). BD yang belum mencapai minimum adalah dosa kedua.
             let score = (currentRun.missingTotal * 1000000) + (belowMinCount * 10000) + variance;
 
             if (score < lowestScore) {
                 lowestScore = score;
                 bestResult = currentRun;
             }
-            // Jika sudah mencapai kesempurnaan mutlak (0 sisa, 0 dibawah minimum, variance kecil sekali)
-            if (score === 0) break; 
+            if (score === 0) break; // Jika ketemu yang 100% sempurna, stop simulasi
         }
 
         let bds = bestResult.bds;
         let leftovers = bestResult.leftovers;
         let hasError = bestResult.missingTotal > 0;
 
-        // RENDER HASIL
         resultsDiv.innerHTML = '';
 
         bds.forEach(bd => {
@@ -505,7 +497,6 @@
             }
         });
 
-        // RENDER KOLOM SISA
         if (leftovers.length > 0) {
             var leftoverCopyLines = [];
             var normalLeftoverByX = {};
@@ -561,9 +552,9 @@
         }
 
         if (hasError) {
-            resultsDiv.innerHTML += `<div class="status-bar status-error">⚠️ SIMULASI SELESAI: Masih ada sisa angka yang tidak muat ke BD manapun</div>`;
+            resultsDiv.innerHTML += `<div class="status-bar status-error">⚠️ PERHATIAN: Masih ada sisa angka (Kapasitas BD Penuh)</div>`;
         } else {
-            resultsDiv.innerHTML += `<div class="status-bar status-success">✅ SIMULASI SEMPURNA: Distribusi rata dan tanpa sisa!</div>`;
+            resultsDiv.innerHTML += `<div class="status-bar status-success">✅ SIMULASI SEMPURNA: Distribusi rata dan bersih tanpa sisa!</div>`;
         }
     }
 
