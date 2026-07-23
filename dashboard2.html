@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splitter Pro</title>
+    <title>Splitter Pro - Balance AI</title>
     <style>
         :root {
             --bg-gray: #2b2b2b;
@@ -35,30 +35,18 @@
             border: 1px solid var(--neon-blue);
             width: 100%;
             max-width: 1100px;
+            margin-bottom: 50px;
         }
 
         h1 { 
-            text-align: center; 
-            font-size: 2rem; 
-            margin-bottom: 25px; 
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-align: center; font-size: 2rem; margin-bottom: 25px; color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); text-transform: uppercase; letter-spacing: 2px;
         }
-        h1 span { 
-            color: var(--neon-green); 
-            text-shadow: 0 0 15px rgba(57, 255, 20, 0.6);
-        }
+        h1 span { color: var(--neon-green); text-shadow: 0 0 15px rgba(57, 255, 20, 0.6); }
 
-        .layout-top {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 20px;
-        }
-
+        .layout-top { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 20px; }
         .form-group { margin-bottom: 12px; }
+        
         label { 
             display: block; margin-bottom: 5px; font-weight: 600; 
             color: var(--neon-blue); font-size: 0.9rem; letter-spacing: 0.5px;
@@ -87,11 +75,7 @@
             font-weight: bold; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;
         }
         
-        .layout-bds {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        .layout-bds { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
         .person-row {
             display: flex; gap: 10px; align-items: center; padding: 10px; background: #1e1e1e; border-radius: 6px; border: 1px solid #333;
@@ -103,24 +87,15 @@
             border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s; margin-top: 10px;
             text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
         }
-        button.btn-primary:hover { 
-            background-color: var(--neon-green); color: #000; box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
-        }
+        button.btn-primary:hover { background-color: var(--neon-green); color: #000; box-shadow: 0 0 20px rgba(57, 255, 20, 0.5); }
 
-        .layout-results {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 30px;
-        }
+        .layout-results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
 
         .person-section {
             background-color: #1a1a1a; border-top: 3px solid var(--neon-blue); padding: 15px; border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
         }
-        .leftover-section { 
-            border-top: 3px solid #ff3333; grid-column: 1 / -1; 
-        }
+        .leftover-section { border-top: 3px solid #ff3333; grid-column: 1 / -1; }
         
         .header-result { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .title-box { display: flex; flex-direction: column; }
@@ -130,7 +105,7 @@
         
         .btn-copy {
             background-color: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 6px 12px; border-radius: 4px;
-            cursor: pointer; font-size: 0.8rem; transition: 0.2s; font-weight: bold;
+            cursor: pointer; font-size: 0.8rem; transition: 0.2s; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
         .btn-copy:hover { background-color: var(--neon-blue); color: #000; box-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
 
@@ -147,9 +122,18 @@
         .status-success { background-color: rgba(57, 255, 20, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
         .status-error { background-color: rgba(255, 51, 51, 0.1); color: #ff3333; border: 1px solid #ff3333; }
         
-        @media (max-width: 768px) {
-            .layout-top, .layout-bds, .layout-results { grid-template-columns: 1fr; }
+        /* Floating Nav Buttons */
+        .floating-nav {
+            position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 1000;
         }
+        .floating-nav button {
+            background-color: rgba(30, 30, 30, 0.8); color: var(--neon-blue); border: 2px solid var(--neon-blue);
+            width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+        .floating-nav button:hover { background-color: var(--neon-blue); color: #000; box-shadow: 0 0 20px rgba(0, 243, 255, 0.8); }
+
+        @media (max-width: 768px) { .layout-top, .layout-bds, .layout-results { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -160,7 +144,10 @@
     <div class="layout-top">
         <div class="left-panel">
             <div class="form-group" style="height: 100%;">
-                <label for="rawInput">ISI ANGKA DISINI</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label for="rawInput" style="margin-bottom: 0;">ISI ANGKA DISINI</label>
+                    <button onclick="pasteText()" class="btn-copy" style="font-size: 0.75rem; padding: 4px 10px; border-color: var(--neon-green); color: var(--neon-green);">📋 PASTE</button>
+                </div>
                 <textarea id="rawInput" placeholder="Tempel baris angka di sini..."></textarea>
             </div>
         </div>
@@ -171,8 +158,8 @@
                 <input type="number" id="targetMultiplier" placeholder="Contoh: 50" min="1">
             </div>
             <div class="form-group">
-                <label for="minMultiplier">X Minimum (Minimal Nilai X)</label>
-                <input type="number" id="minMultiplier" placeholder="Contoh: 5 (Cegah X kecil)" min="1" value="5">
+                <label for="minTotalCost">Target Total Minimum / BD</label>
+                <input type="number" id="minTotalCost" placeholder="Contoh: 450 (Agar BD tidak terlalu kecil)" min="0" value="400">
             </div>
             <div class="form-group">
                 <label for="mathRule">Aturan</label>
@@ -200,14 +187,31 @@
 
     <div class="people-config-container">
         <div class="config-header">SETTING KAPASITAS BD</div>
+        <div style="text-align: center; color: #888; font-size: 0.8rem; margin-top: -10px; margin-bottom: 15px;">
+            *Default terisi otomatis: Max Pasang (25) & Max X (30). Jika punya BB 6 digit, ubah Max Pasang ke 30.
+        </div>
         <div id="peopleConfigList" class="layout-bds"></div>
     </div>
 
-    <button class="btn-primary" onclick="processAndSplit()">Proses & Cari Hasil Terbaik</button>
+    <button class="btn-primary" onclick="processAndSplit()">Proses & Cari Distribusi Terbaik (500x Simulasi)</button>
     <div id="results" class="layout-results"></div>
 </div>
 
+<div class="floating-nav">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Ke Atas">▲</button>
+    <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Ke Bawah">▼</button>
+</div>
+
 <script>
+    async function pasteText() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('rawInput').value = text;
+        } catch (err) {
+            alert('Akses Paste diblokir browser. Silakan klik kotak teks lalu tekan Ctrl+V (PC) atau Tahan & Tempel (HP).');
+        }
+    }
+
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -225,8 +229,8 @@
             row.className = 'person-row';
             row.innerHTML = 
                 '<div class="person-label">BD ' + i + '</div>' +
-                '<input type="number" id="maxBlocks_' + i + '" placeholder="Max Pasang" min="1" style="flex:1;">' +
-                '<input type="number" id="maxMultiplier_' + i + '" placeholder="Max X" min="1" style="flex:1;">';
+                '<input type="number" id="maxBlocks_' + i + '" value="25" placeholder="Max Pasang" min="1" style="flex:1;" title="Maksimal Pasang Angka">' +
+                '<input type="number" id="maxMultiplier_' + i + '" value="30" placeholder="Max X" min="1" style="flex:1;" title="Maksimal X">';
             container.appendChild(row);
         }
     }
@@ -235,18 +239,16 @@
         var button = document.getElementById(elementId);
         var textToCopy = button.getAttribute('data-copy');
         navigator.clipboard.writeText(textToCopy).then(function() {
-            var originalText = button.innerText;
-            button.innerText = "✅ TERSALIN";
+            var originalText = button.innerHTML;
+            button.innerHTML = "✅ TERSALIN";
             button.style.backgroundColor = "var(--neon-green)";
             button.style.color = "#000";
             setTimeout(function() {
-                button.innerText = originalText;
+                button.innerHTML = originalText;
                 button.style.backgroundColor = "transparent";
                 button.style.color = "var(--neon-blue)";
             }, 1500);
-        }).catch(function() {
-            alert('Gagal meng-copy.');
-        });
+        }).catch(function() { alert('Gagal meng-copy.'); });
     }
 
     function getCombinations(chars, k) {
@@ -265,41 +267,37 @@
         return result;
     }
 
-    // FUNGSI SIMULASI UTAMA
-    function runSimulation(chunks, bdsTemplate, targetX, minX, mathRule) {
+    function runSimulation(chunks, bdsTemplate, targetX, targetMinCost, mathRule) {
         let bds = bdsTemplate.map(bd => ({
-            id: bd.id, maxP: bd.maxP, maxX: bd.maxX, currentPairs: 0, blocks: []
+            id: bd.id, maxP: bd.maxP, maxX: bd.maxX, currentPairs: 0, currentCost: 0, blocks: []
         }));
         
         let leftovers = [];
         let missingTotal = 0;
         let step = (mathRule === 5) ? 5 : 1;
-        let actualMinX = Math.max(1, minX);
-        if (mathRule === 5) { actualMinX = Math.ceil(actualMinX / 5) * 5; }
 
         for (let c = 0; c < chunks.length; c++) {
             let chunk = chunks[c];
             let reqX = targetX;
-
             let eligibleBDs = bds.filter(bd => (bd.currentPairs + chunk.pairsArray.length) <= bd.maxP);
 
             if (eligibleBDs.length > 0) {
-                let shuffledBDs = shuffleArray([...eligibleBDs]);
+                // Sorting BDs secara acak namun dengan prioritas memberi pada BD yang total biayanya (cost) masih kecil
+                let shuffledBDs = [...eligibleBDs].sort((a,b) => (a.currentCost + Math.random()*200) - (b.currentCost + Math.random()*200));
                 let allocation = new Map();
                 shuffledBDs.forEach(bd => allocation.set(bd.id, 0));
 
                 for (let i = 0; i < shuffledBDs.length; i++) {
                     let bd = shuffledBDs[i];
-                    if (reqX < actualMinX) break;
+                    if (reqX < step) break;
 
                     let maxAvail = Math.min(reqX, bd.maxX);
                     maxAvail = Math.floor(maxAvail / step) * step;
 
-                    if (maxAvail >= actualMinX) {
-                        let possibleSteps = Math.floor((maxAvail - actualMinX) / step);
-                        let randSteps = Math.floor(Math.random() * (possibleSteps + 1));
-                        let takeX = actualMinX + (randSteps * step);
-
+                    if (maxAvail >= step) {
+                        let possibleSteps = Math.floor(maxAvail / step);
+                        let randSteps = Math.floor(Math.random() * possibleSteps) + 1;
+                        let takeX = randSteps * step;
                         allocation.set(bd.id, takeX);
                         reqX -= takeX;
                     }
@@ -309,15 +307,11 @@
                     for (let i = 0; i < eligibleBDs.length; i++) {
                         let bd = eligibleBDs[i];
                         if (reqX < step) break;
-
                         let currentAlloc = allocation.get(bd.id);
                         let spaceLeft = bd.maxX - currentAlloc;
-
                         let maxTake = Math.min(reqX, spaceLeft);
                         maxTake = Math.floor(maxTake / step) * step;
-
-                        if (currentAlloc === 0 && maxTake < actualMinX) continue;
-
+                        
                         if (maxTake >= step) {
                             allocation.set(bd.id, currentAlloc + maxTake);
                             reqX -= maxTake;
@@ -331,6 +325,7 @@
                     if (allocX > 0) {
                         bd.blocks.push({ chunkData: chunk, xVal: allocX });
                         bd.currentPairs += chunk.pairsArray.length;
+                        bd.currentCost += (chunk.pairsArray.length * allocX); // Catat cost
                     }
                 }
             }
@@ -350,8 +345,8 @@
         var targetX = parseInt(document.getElementById('targetMultiplier').value);
         if (isNaN(targetX) || targetX <= 0) { alert('Isi Total Perkalian terlebih dahulu!'); return; }
         
-        var minXInput = parseInt(document.getElementById('minMultiplier').value);
-        var minX = isNaN(minXInput) || minXInput < 1 ? 1 : minXInput;
+        var minTotalInput = parseInt(document.getElementById('minTotalCost').value);
+        var targetMinCost = isNaN(minTotalInput) || minTotalInput < 0 ? 0 : minTotalInput;
 
         var personCount = parseInt(document.getElementById('personCount').value);
         var mathRule = parseInt(document.getElementById('mathRule').value);
@@ -389,6 +384,9 @@
             }
         }
         
+        // Ekstrak dari yang terbesar
+        extractBB(6); 
+        extractBB(5); 
         extractBB(4); 
         extractBB(3); 
 
@@ -411,17 +409,36 @@
         shuffleArray(normalChunks);
         chunks = chunks.concat(normalChunks);
 
-        // MENCARI HASIL TERBAIK (100x SIMULASI)
+        // MENCARI HASIL TERBAIK (500x SIMULASI)
         let bestResult = null;
-        let lowestMissing = Infinity;
+        let lowestScore = Infinity;
 
-        for (let sim = 0; sim < 100; sim++) {
-            let currentRun = runSimulation(chunks, bdsTemplate, targetX, minX, mathRule);
-            if (currentRun.missingTotal < lowestMissing) {
-                lowestMissing = currentRun.missingTotal;
+        for (let sim = 0; sim < 500; sim++) {
+            let currentRun = runSimulation(chunks, bdsTemplate, targetX, targetMinCost, mathRule);
+            
+            // Evaluasi Skor Fitness: 
+            // 1. Sisa Angka (Paling Fatal)
+            // 2. Jumlah BD yang belum memenuhi Total Minimum
+            // 3. Jarak selisih (Variance) antar BD terbesar dan terkecil
+            let activeBDs = currentRun.bds.filter(b => b.currentCost > 0);
+            let variance = 0;
+            let belowMinCount = 0;
+            
+            if (activeBDs.length > 0) {
+                let maxCost = Math.max(...activeBDs.map(b => b.currentCost));
+                let minCost = Math.min(...activeBDs.map(b => b.currentCost));
+                variance = maxCost - minCost;
+                belowMinCount = activeBDs.filter(b => b.currentCost < targetMinCost).length;
+            }
+
+            let score = (currentRun.missingTotal * 1000000) + (belowMinCount * 10000) + variance;
+
+            if (score < lowestScore) {
+                lowestScore = score;
                 bestResult = currentRun;
             }
-            if (lowestMissing === 0) break; // Jika sisa = 0, hentikan simulasi (Sudah sempurna)
+            // Jika sudah mencapai kesempurnaan mutlak (0 sisa, 0 dibawah minimum, variance kecil sekali)
+            if (score === 0) break; 
         }
 
         let bds = bestResult.bds;
@@ -433,14 +450,10 @@
 
         bds.forEach(bd => {
             if (bd.blocks.length > 0) {
-                
                 var bbLines = [];
                 var normalGroupedByX = {};
-                var totalCostAsli = 0;
-
+                
                 bd.blocks.forEach(bl => {
-                    totalCostAsli += (bl.chunkData.pairsArray.length * bl.xVal);
-
                     if (bl.chunkData.type === 'bb') {
                         bbLines.push(bl.chunkData.digits + ' bb x' + bl.xVal);
                     } else {
@@ -449,7 +462,9 @@
                     }
                 });
 
-                var totalCostDiskon = totalCostAsli * 0.71; // Potong 29%
+                var totalCostDiskon = bd.currentCost * 0.71; 
+                var isUnderMinimum = bd.currentCost < targetMinCost;
+                var totalColor = isUnderMinimum ? "#ff9800" : "var(--neon-green)";
 
                 var copyLines = [];
                 copyLines.push(...bbLines);
@@ -464,7 +479,7 @@
                         <div class="header-result">
                             <div class="title-box">
                                 <div class="person-title">BD ${bd.id} <span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted);">(${bd.currentPairs} Pasang)</span></div>
-                                <div class="total-box">Total: ${totalCostAsli} | -29%: <span>${totalCostDiskon.toFixed(2)}</span></div>
+                                <div class="total-box">Total: ${bd.currentCost} | -29%: <span style="color:${totalColor}">${totalCostDiskon.toFixed(2)}</span></div>
                             </div>
                             <button id="${bdId}" data-copy="${finalCopyString}" onclick="copyText('${bdId}')" class="btn-copy">📋 COPY</button>
                         </div>`;
@@ -546,9 +561,9 @@
         }
 
         if (hasError) {
-            resultsDiv.innerHTML += `<div class="status-bar status-error">⚠️ SIMULASI TERBAIK: Masih ada sisa angka</div>`;
+            resultsDiv.innerHTML += `<div class="status-bar status-error">⚠️ SIMULASI SELESAI: Masih ada sisa angka yang tidak muat ke BD manapun</div>`;
         } else {
-            resultsDiv.innerHTML += `<div class="status-bar status-success">✅ SIMULASI SEMPURNA: Semua angka terbagi tanpa sisa</div>`;
+            resultsDiv.innerHTML += `<div class="status-bar status-success">✅ SIMULASI SEMPURNA: Distribusi rata dan tanpa sisa!</div>`;
         }
     }
 
