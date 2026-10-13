@@ -1391,6 +1391,32 @@ const PIN_RAHASIA_2 = "0199";
         if (gameActive) hiddenInput.focus();
     });
 
+    function drawHudPanel(x, y, width, height, accent) {
+        const radius = Math.min(12, height / 2, width / 2);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+
+        ctx.fillStyle = "rgba(5, 14, 30, 0.82)";
+        ctx.shadowColor = accent;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+    }
+
     function gameLoop() {
         if (!gameActive) {
             ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
@@ -1471,47 +1497,130 @@ const PIN_RAHASIA_2 = "0199";
         ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke();
         ctx.shadowBlur = 0; 
 
-        // HUD IN-GAME
+        // HUD IN-GAME — compact premium layout with responsive spacing
         const t = translations[langSetting];
-        ctx.fillStyle = "rgba(148, 163, 184, 0.15)";
-        ctx.font = "bold 24px 'Courier New'";
-        ctx.fillText((langSetting === 'id' ? "WAVE: " : "WAVE: ") + currentWave, 25, 45);
-        ctx.fillText((langSetting === 'id' ? "SKOR: " : "SCORE: ") + score, 25, 80);
+        const compactHud = canvas.width < 360;
+        const hudLeftX = compactHud ? 12 : 16;
+        const hudTopY = 14;
+        const hudLeftWidth = compactHud ? 112 : (canvas.width < 480 ? 154 : 206);
+        const hudLeftHeight = 70;
+        const hudDividerX = hudLeftX + Math.round(hudLeftWidth * 0.49);
+        const hudScoreX = hudDividerX + (compactHud ? 6 : 10);
+        const hudAccent = "rgba(88, 217, 255, 0.28)";
 
+        drawHudPanel(hudLeftX, hudTopY, hudLeftWidth, hudLeftHeight, hudAccent);
+
+        ctx.save();
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#8ba6c8";
+        ctx.font = "bold 9px 'Courier New'";
+        ctx.fillText("WAVE", hudLeftX + 10, hudTopY + 19);
+        ctx.fillText(langSetting === "id" ? "SKOR" : "SCORE", hudScoreX, hudTopY + 19);
+
+        ctx.strokeStyle = "rgba(148, 185, 220, 0.17)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(hudDividerX, hudTopY + 12);
+        ctx.lineTo(hudDividerX, hudTopY + hudLeftHeight - 12);
+        ctx.stroke();
+
+        const waveText = String(currentWave);
+        const scoreText = String(score);
+        const waveFontSize = compactHud ? 17 : 21;
+        const scoreColumnWidth = hudLeftX + hudLeftWidth - hudScoreX - 8;
+        const scoreFontSize = Math.max(
+            10,
+            Math.min(compactHud ? 12 : 18, scoreColumnWidth / Math.max(2.8, scoreText.length * 0.66))
+        );
+
+        ctx.fillStyle = "#eff9ff";
+        ctx.shadowColor = "rgba(88, 217, 255, 0.22)";
+        ctx.shadowBlur = 7;
+        ctx.font = "bold " + waveFontSize + "px 'Courier New'";
+        ctx.fillText(waveText, hudLeftX + 10, hudTopY + 49, Math.max(30, hudDividerX - hudLeftX - 17));
+
+        ctx.fillStyle = "#f4fbff";
+        ctx.font = "bold " + scoreFontSize + "px 'Courier New'";
+        ctx.fillText(scoreText, hudScoreX, hudTopY + 49, Math.max(24, scoreColumnWidth));
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        // Life panel berada di kiri tombol pause dengan jarak aman.
+        const lifePanelWidth = compactHud ? 78 : (canvas.width < 520 ? 102 : 126);
+        const lifeRightInset = compactHud ? 62 : 74;
+        const lifePanelX = Math.max(
+            hudLeftX + hudLeftWidth + 8,
+            canvas.width - lifeRightInset - lifePanelWidth
+        );
+        const lifePanelY = 14;
+        const lifePanelHeight = 58;
+        const lowLife = playerHP === 1;
+        const lifeAccent = lowLife
+            ? (Math.floor(frameCount / 18) % 2 ? "rgba(248, 113, 113, 0.52)" : "rgba(248, 113, 113, 0.25)")
+            : "rgba(52, 211, 153, 0.3)";
+
+        drawHudPanel(lifePanelX, lifePanelY, lifePanelWidth, lifePanelHeight, lifeAccent);
+
+        ctx.save();
+        ctx.textAlign = "left";
+        ctx.fillStyle = lowLife ? "#fda4af" : "#9ab7d1";
+        ctx.font = "bold 9px 'Courier New'";
+        ctx.fillText(compactHud ? "HP" : "LIFE", lifePanelX + 9, lifePanelY + 16);
+
+        const lifeCenterY = lifePanelY + 39;
+        const lifeSpacing = compactHud ? 17 : 20;
+        const lifeCenterX = lifePanelX + lifePanelWidth / 2;
         for (let i = 0; i < maxHP; i++) {
-            let hpX = canvas.width - 115 - (i * 25);
-            let hpY = 30;
+            const hpX = lifeCenterX + (i - (maxHP - 1) / 2) * lifeSpacing;
+            const hpY = lifeCenterY;
             ctx.beginPath();
-            ctx.moveTo(hpX, hpY);
-            ctx.lineTo(hpX - 8, hpY - 10); ctx.lineTo(hpX + 8, hpY - 10);
+            ctx.moveTo(hpX, hpY - 6);
+            ctx.lineTo(hpX - 6, hpY + 5);
+            ctx.lineTo(hpX + 6, hpY + 5);
             ctx.closePath();
-            
+
             if (i < playerHP) {
-                ctx.fillStyle = "#10b981"; 
-                ctx.shadowBlur = 10; ctx.shadowColor = "#10b981";
+                ctx.fillStyle = lowLife ? "#fb7185" : "#5eead4";
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = lowLife ? "#fb7185" : "#2dd4bf";
                 ctx.fill();
                 ctx.shadowBlur = 0;
             } else {
-                ctx.strokeStyle = "#475569"; 
-                ctx.lineWidth = 2;
+                ctx.fillStyle = "rgba(71, 85, 105, 0.16)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(148, 163, 184, 0.48)";
+                ctx.lineWidth = 1.2;
                 ctx.stroke();
             }
         }
+        ctx.restore();
 
-        if(comboCount > 0) {
+        if (comboCount > 0) {
             let mult = 1;
             if (comboCount >= 25) mult = 5;
             else if (comboCount >= 18) mult = 4;
             else if (comboCount >= 10) mult = 3;
             else if (comboCount >= 5) mult = 2;
 
-            if (comboPulse > 0) comboPulse -= 0.5; 
+            if (comboPulse > 0) comboPulse -= 0.5;
             if (comboPulse < 0) comboPulse = 0;
 
-            ctx.fillStyle = mult > 1 ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 163, 184, 0.15)";
-            let currentFontSize = 20 + comboPulse; 
-            ctx.font = `bold ${currentFontSize}px 'Courier New'`;
-            ctx.fillText(`COMBO: ${comboCount} (X${mult})`, 25, 115);
+            const comboFontSize = compactHud ? 12 : 14;
+            const comboText = "COMBO " + comboCount + "  ×" + mult;
+            ctx.save();
+            ctx.font = "bold " + (comboFontSize + Math.min(comboPulse * 0.15, 2)) + "px 'Courier New'";
+            const comboPanelWidth = Math.min(
+                canvas.width - hudLeftX * 2,
+                Math.ceil(ctx.measureText(comboText).width + 24)
+            );
+            const comboAccent = mult > 1 ? "rgba(167, 139, 250, 0.42)" : "rgba(88, 217, 255, 0.24)";
+            drawHudPanel(hudLeftX, hudTopY + hudLeftHeight + 8, comboPanelWidth, 32, comboAccent);
+            ctx.fillStyle = mult > 1 ? "#c4b5fd" : "#9be7ff";
+            ctx.shadowColor = mult > 1 ? "rgba(167, 139, 250, 0.6)" : "rgba(88, 217, 255, 0.35)";
+            ctx.shadowBlur = comboPulse > 0 ? 9 : 3;
+            ctx.textAlign = "left";
+            ctx.fillText(comboText, hudLeftX + 12, hudTopY + hudLeftHeight + 29, Math.max(24, comboPanelWidth - 20));
+            ctx.restore();
         }
 
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
