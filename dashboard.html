@@ -878,7 +878,7 @@ function bagiHasilAkhirDuaBagian() {
         const line = rawLine.trim();
         if (!line || /^[-—]+$/.test(line)) continue;
 
-        const bbMatch = line.match(/^(\d{3,})\s*bb\b/i);
+        const bbMatch = line.match(/^(\d+)\s*bb\b/i);
         if (bbMatch) {
             const digitLength = bbMatch[1].length;
             if (digitLength === 4) {
@@ -891,35 +891,116 @@ function bagiHasilAkhirDuaBagian() {
             continue;
         }
 
-        // Ambil hanya pasangan 2 digit yang memang sudah tertulis di hasil akhir.
-        const foundNumbers = line.match(/\d{2}/g);
-        if (foundNumbers) ordinaryNumbers.push(...foundNumbers);
+        // Baca hanya angka 2D yang sudah ada; jangan membuat angka baru.
+        const foundNumbers = line.split(/[\s.,]+/).filter(token => /^\d{2}$/.test(token));
+        ordinaryNumbers.push(...foundNumbers);
     }
 
     if (otherBBDigits.length > 0) {
-        alert('Ada BB selain 3 dan 4 angka. Hasil tidak diubah agar data BB lain tidak hilang.');
+        alert('Ditemukan BB selain 4 angka dan 3 angka. Hasil tidak diubah agar data lain tidak hilang.');
         return;
     }
 
-    if (bb4Lines.length !== 2 || bb3Lines.length !== 2) {
+    if (bb4Lines.length !== 2) {
         alert(
-            'Pembagian membutuhkan tepat 2 BB 4 angka dan 2 BB 3 angka yang sudah ada. ' +
-            'Saat ini ditemukan BB 4 angka: ' + bb4Lines.length +
-            ', BB 3 angka: ' + bb3Lines.length +
-            '. Hasil tidak diubah.'
+            'Tombol BAGI 2 membutuhkan tepat 2 BB 4 angka. ' +
+            'Saat ini ditemukan ' + bb4Lines.length + '. Hasil tidak diubah.'
         );
         return;
     }
 
-    if (ordinaryNumbers.length < 10) {
-        alert('Diperlukan minimal 10 angka biasa agar bagian kedua dapat diisi. Hasil tidak diubah.');
+    // Izinkan tombol ditekan kembali setelah hasil terbagi: gunakan BB3 yang sudah terbentuk.
+    let selectedBB3Lines = [];
+    let numbersAfterBB3 = [];
+
+    if (bb3Lines.length === 2 && ordinaryNumbers.length === 33) {
+        selectedBB3Lines = bb3Lines.slice();
+        numbersAfterBB3 = ordinaryNumbers.slice();
+    } else if (bb3Lines.length === 0 && ordinaryNumbers.length === 45) {
+        if (new Set(ordinaryNumbers).size !== ordinaryNumbers.length) {
+            alert('Ada angka biasa yang duplikat. Hasil tidak diubah agar jumlah angka tetap akurat.');
+            return;
+        }
+
+        const ordinarySet = new Set(ordinaryNumbers);
+        const digitSets = [];
+        const digits = '0123456789';
+
+        // Cari semua kombinasi 3 digit yang keenam pasangan bolak-baliknya
+        // benar-benar tersedia di antara 45 angka biasa yang tersisa.
+        function buildDigitSets(prefix, remainingDigits) {
+            if (prefix.length === 3) {
+                digitSets.push(prefix);
+                return;
+            }
+            for (let i = 0; i < remainingDigits.length; i++) {
+                buildDigitSets(prefix + remainingDigits[i], remainingDigits.slice(i + 1));
+            }
+        }
+        buildDigitSets('', digits);
+
+        const validBB3 = digitSets.map(digitSet => {
+            const pairs = [];
+            for (let i = 0; i < digitSet.length; i++) {
+                for (let j = 0; j < digitSet.length; j++) {
+                    if (i !== j) pairs.push(digitSet[i] + digitSet[j]);
+                }
+            }
+            return { digitSet, pairs };
+        }).filter(candidate => candidate.pairs.every(pair => ordinarySet.has(pair)));
+
+        // Acak pilihan seperti fungsi BB yang sudah ada, lalu cari dua grup
+        // yang tidak memakai pasangan 2D yang sama.
+        for (let i = validBB3.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [validBB3[i], validBB3[j]] = [validBB3[j], validBB3[i]];
+        }
+
+        let selectedCandidates = null;
+        for (let i = 0; i < validBB3.length && !selectedCandidates; i++) {
+            const firstPairs = new Set(validBB3[i].pairs);
+            for (let j = i + 1; j < validBB3.length; j++) {
+                if (validBB3[j].pairs.every(pair => !firstPairs.has(pair))) {
+                    selectedCandidates = [validBB3[i], validBB3[j]];
+                    break;
+                }
+            }
+        }
+
+        if (!selectedCandidates) {
+            alert('Tidak ditemukan 2 kombinasi BB 3 angka yang valid dan tidak saling bertumpuk dari 45 angka tersisa. Hasil tidak diubah.');
+            return;
+        }
+
+        const bb3CoveredPairs = new Set();
+        selectedCandidates.forEach(candidate => {
+            candidate.pairs.forEach(pair => bb3CoveredPairs.add(pair));
+            selectedBB3Lines.push(candidate.digitSet + ' bb 2a X');
+        });
+
+        // Enam pasangan untuk setiap BB3 dipindahkan dari angka biasa ke notasi BB3.
+        numbersAfterBB3 = ordinaryNumbers.filter(number => !bb3CoveredPairs.has(number));
+
+        if (numbersAfterBB3.length !== 33 || bb3CoveredPairs.size !== 12) {
+            alert('Pemeriksaan jumlah angka tidak cocok. Hasil tidak diubah agar tidak ada data yang hilang.');
+            return;
+        }
+    } else {
+        alert(
+            'Format sumber belum sesuai. Gunakan BB 4 terlebih dahulu, sehingga hasil berisi ' +
+            '2 BB 4 angka dan 45 angka biasa. Jika sudah pernah dibagi, hasil harus berisi ' +
+            '2 BB 4 angka, 2 BB 3 angka, dan 33 angka biasa. ' +
+            'Saat ini ditemukan BB 4: ' + bb4Lines.length +
+            ', BB 3: ' + bb3Lines.length +
+            ', angka biasa: ' + ordinaryNumbers.length + '.'
+        );
         return;
     }
 
-    // Sepuluh angka biasa terakhir ditempatkan di bagian kedua; angka tidak dibuat ulang.
-    const splitIndex = ordinaryNumbers.length - 10;
-    const firstPartNumbers = ordinaryNumbers.slice(0, splitIndex);
-    const secondPartNumbers = ordinaryNumbers.slice(splitIndex);
+    if (numbersAfterBB3.length !== 33 || selectedBB3Lines.length !== 2) {
+        alert('Jumlah akhir tidak sesuai target 69 angka. Hasil tidak diubah.');
+        return;
+    }
 
     function groupIntoSix(numbers) {
         const rows = [];
@@ -929,15 +1010,19 @@ function bagiHasilAkhirDuaBagian() {
         return rows;
     }
 
+    // 33 angka biasa dibagi menjadi 23 di bagian pertama dan 10 di bagian kedua.
+    const firstPartNumbers = numbersAfterBB3.slice(0, 23);
+    const secondPartNumbers = numbersAfterBB3.slice(23);
+
     const firstPart = [
-        ...groupIntoSix(firstPartNumbers),
+        ...groupIntoSix(firstPartNumbers), // 6, 6, 6, 5 angka
         bb4Lines[0],
-        bb3Lines[0]
+        selectedBB3Lines[0]
     ];
     const secondPart = [
         bb4Lines[1],
-        bb3Lines[1],
-        ...groupIntoSix(secondPartNumbers)
+        selectedBB3Lines[1],
+        ...groupIntoSix(secondPartNumbers) // 6, 4 angka
     ];
 
     outputTextArea.value = firstPart.join('\n') + '\n---\n' + secondPart.join('\n');
