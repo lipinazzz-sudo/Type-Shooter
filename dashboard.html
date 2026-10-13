@@ -361,9 +361,15 @@
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <label style="margin: 0; font-size: 16px;">Hasil Akhir / Manual</label>
-                <button onclick="pasteHasilManual()" style="background-color: #1e293b; color: #3b82f6; border: 1px solid #24324d; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;">
-                    PASTE
-                </button>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" onclick="bagiHasilAkhirDuaBagian()" title="Bagi BB 4 angka dan BB 3 angka menjadi 2 bagian"
+                        style="background-color: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 4px 7px; font-size: 10px; font-weight: 600; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                        BAGI 2
+                    </button>
+                    <button onclick="pasteHasilManual()" style="background-color: #1e293b; color: #3b82f6; border: 1px solid #24324d; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;">
+                        PASTE
+                    </button>
+                </div>
             </div>
             
             <div class="output-container">
@@ -850,6 +856,92 @@ function pastePembanding() {
     .catch(err => {
         alert('Gagal membaca clipboard. Pastikan browser diizinkan.');
     });
+}
+
+// BAGI HASIL AKHIR MENJADI 2 BAGIAN TANPA MEMBUAT ANGKA BARU
+function bagiHasilAkhirDuaBagian() {
+    const outputTextArea = document.getElementById('outputData');
+    const originalText = outputTextArea.value;
+
+    if (!originalText.trim()) {
+        alert('Kolom Hasil Akhir masih kosong.');
+        return;
+    }
+
+    const lines = originalText.split(/\r?\n/);
+    const bb4Lines = [];
+    const bb3Lines = [];
+    const otherBBDigits = [];
+    const ordinaryNumbers = [];
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line || /^[-—]+$/.test(line)) continue;
+
+        const bbMatch = line.match(/^(\d{3,})\s*bb\b/i);
+        if (bbMatch) {
+            const digitLength = bbMatch[1].length;
+            if (digitLength === 4) {
+                bb4Lines.push(line);
+            } else if (digitLength === 3) {
+                bb3Lines.push(line);
+            } else {
+                otherBBDigits.push(digitLength);
+            }
+            continue;
+        }
+
+        // Ambil hanya pasangan 2 digit yang memang sudah tertulis di hasil akhir.
+        const foundNumbers = line.match(/\d{2}/g);
+        if (foundNumbers) ordinaryNumbers.push(...foundNumbers);
+    }
+
+    if (otherBBDigits.length > 0) {
+        alert('Ada BB selain 3 dan 4 angka. Hasil tidak diubah agar data BB lain tidak hilang.');
+        return;
+    }
+
+    if (bb4Lines.length !== 2 || bb3Lines.length !== 2) {
+        alert(
+            'Pembagian membutuhkan tepat 2 BB 4 angka dan 2 BB 3 angka yang sudah ada. ' +
+            'Saat ini ditemukan BB 4 angka: ' + bb4Lines.length +
+            ', BB 3 angka: ' + bb3Lines.length +
+            '. Hasil tidak diubah.'
+        );
+        return;
+    }
+
+    if (ordinaryNumbers.length < 10) {
+        alert('Diperlukan minimal 10 angka biasa agar bagian kedua dapat diisi. Hasil tidak diubah.');
+        return;
+    }
+
+    // Sepuluh angka biasa terakhir ditempatkan di bagian kedua; angka tidak dibuat ulang.
+    const splitIndex = ordinaryNumbers.length - 10;
+    const firstPartNumbers = ordinaryNumbers.slice(0, splitIndex);
+    const secondPartNumbers = ordinaryNumbers.slice(splitIndex);
+
+    function groupIntoSix(numbers) {
+        const rows = [];
+        for (let i = 0; i < numbers.length; i += 6) {
+            rows.push(numbers.slice(i, i + 6).join('.'));
+        }
+        return rows;
+    }
+
+    const firstPart = [
+        ...groupIntoSix(firstPartNumbers),
+        bb4Lines[0],
+        bb3Lines[0]
+    ];
+    const secondPart = [
+        bb4Lines[1],
+        bb3Lines[1],
+        ...groupIntoSix(secondPartNumbers)
+    ];
+
+    outputTextArea.value = firstPart.join('\n') + '\n---\n' + secondPart.join('\n');
+    document.getElementById('btnCopyText').innerText = 'Copy';
 }
 
 // FUNGSI PASTE HASIL AKHIR MANUAL
