@@ -36,15 +36,61 @@
             margin-bottom: 30px; 
         }
 
-        h1 {
+        .dashboard-title-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0 25px;
+            padding: 0 0 15px;
+            border-bottom: 1px solid var(--border-color);
+            min-height: 27px;
+        }
+
+        .dashboard-title-row h1 {
             color: var(--text-color);
             text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            width: 100%;
             font-size: 22px;
             font-weight: 600;
             letter-spacing: 0.5px;
+        }
+
+        .force-reset-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 5px 7px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 500;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.72;
+            transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        .force-reset-btn:hover,
+        .force-reset-btn:focus-visible {
+            opacity: 1;
+            color: var(--text-color);
+            border-color: #64748b;
+            outline: none;
+        }
+
+        .force-reset-btn:disabled {
+            cursor: wait;
+            opacity: 0.7;
         }
 
         .main-layout {
@@ -253,7 +299,12 @@
 <body>
 
 <div class="container">
-    <h1>Kalkulator</h1>
+    <div class="dashboard-title-row">
+        <h1>Kalkulator</h1>
+        <button type="button" id="forceResetBtn" class="force-reset-btn"
+            onclick="forceResetDashboard()" title="Bersihkan cache aplikasi dan muat kode terbaru"
+            aria-label="Force Reset">↻ Force Reset</button>
+    </div>
 
     <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 5px;">
@@ -395,6 +446,46 @@
 </div>
 
 <script>
+    // Bersihkan parameter cache-buster setelah versi terbaru selesai dimuat.
+    (function cleanForceResetQuery() {
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.has('_forceReset')) {
+            currentUrl.searchParams.delete('_forceReset');
+            const cleanUrl = currentUrl.pathname + currentUrl.search + currentUrl.hash;
+            window.history.replaceState(null, document.title, cleanUrl);
+        }
+    })();
+
+    async function forceResetDashboard() {
+        const confirmed = window.confirm(
+            'Force Reset akan membersihkan cache aplikasi dan memuat ulang kode terbaru. Semua input serta hasil sementara di halaman ini akan hilang. Lanjutkan?'
+        );
+        if (!confirmed) return;
+
+        const button = document.getElementById('forceResetBtn');
+        if (button) {
+            button.disabled = true;
+            button.textContent = '↻ Memuat...';
+        }
+
+        try {
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                const appCaches = cacheNames.filter(name =>
+                    name === 'splitter-pro-v2' || name.startsWith('splitter-pro-')
+                );
+                await Promise.all(appCaches.map(name => caches.delete(name)));
+            }
+        } catch (error) {
+            // Lanjutkan dengan URL unik jika Cache Storage tidak tersedia.
+            console.warn('Cache aplikasi tidak dapat dibersihkan sepenuhnya:', error);
+        }
+
+        const refreshUrl = new URL(window.location.href);
+        refreshUrl.searchParams.set('_forceReset', String(Date.now()));
+        window.location.replace(refreshUrl.toString());
+    }
+
     // FILTER DATA ASLI
     function bersihkanInput(str) {
         if (!str) return [];
