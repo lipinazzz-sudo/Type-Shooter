@@ -449,7 +449,7 @@
                         if (rem === 0 || rem >= minTake) {
                             let curCount = bd.xCounts[t] || 0;
                             // ATURAN 3 (Batas maksimal 6) TETAP DIPERTAHANKAN
-                            if (curCount > 0 && curCount + chunk.pairsArray.length > 6) continue;
+                            if (bd.maxX !== 999 && curCount > 0 && curCount + chunk.pairsArray.length > 6) continue;
                             possibleTakes.push(t);
                         }
                     }
@@ -468,7 +468,7 @@
                     } else if (remaining === maxTake) {
                         let validMaxTake = true;
                         let curMax = bd.xCounts[maxTake] || 0;
-                        if (curMax > 0 && curMax + chunk.pairsArray.length > 6) validMaxTake = false;
+                        if (bd.maxX !== 999 && curMax > 0 && curMax + chunk.pairsArray.length > 6) validMaxTake = false;
                         
                         if (validMaxTake) {
                             allocation.set(bd.id, maxTake);
@@ -492,7 +492,7 @@
                             for (let subT = maxTake; subT >= step; subT -= step) {
                                 let testProposed = currentAlloc + subT;
                                 let curTest = bd.xCounts[testProposed] || 0;
-                                if (!(curTest > 0 && curTest + chunk.pairsArray.length > 6)) {
+                                if (bd.maxX === 999 || !(curTest > 0 && curTest + chunk.pairsArray.length > 6)) {
                                     maxTake = subT;
                                     proposedX = testProposed;
                                     foundValid = true;
@@ -528,7 +528,7 @@
                             
                             // Aturan limit 6 tetap dipertahankan
                             let curTest = bd.xCounts[proposedX] || 0;
-                            if (!(curTest > 0 && curTest + chunk.pairsArray.length > 6)) {
+                            if (bd.maxX === 999 || !(curTest > 0 && curTest + chunk.pairsArray.length > 6)) {
                                 allocation.set(bd.id, proposedX);
                                 remaining -= take;
                             }
@@ -672,7 +672,7 @@
             }
 
             activeBDs.forEach(bd => {
-                if (bd.bbCount === 0) {
+                if (bd.bbCount === 0 && bd.maxX !== 999) {
                     noBDPenalty += 500000;
                 }
                 bd.blocks.forEach(bl => {
