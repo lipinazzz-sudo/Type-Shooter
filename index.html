@@ -539,7 +539,7 @@
             </div><div class="ship-roster-count">08 FIGHTERS / 01 PILOT</div></div>
             <div id="shipGrid" class="ship-grid" role="group" aria-label="Pilih pesawat"></div>
             <div class="ship-detail-panel">
-                <div class="ship-detail-art"><img id="shipPreviewImage" src="assets/ships/aurora.svg" alt="Preview kapal terpilih"></div>
+                <div class="ship-detail-art"><img id="shipPreviewImage" src="assets/ships/aurora.png" alt="Preview kapal terpilih"></div>
                 <div class="ship-detail-copy"><p id="ship-detail-kicker" class="ship-detail-kicker">KAPAL TERPILIH</p>
                     <h3 id="shipDetailName">AURORA</h3>
                     <p id="shipDetailDescription">Fighter serbaguna dengan pelindung putih, detail cyan, dan mesin bercahaya.</p>
@@ -651,7 +651,7 @@ function goToDashboard2() {
     const shipImageCache=Object.create(null);
     SHIP_ROSTER.forEach(ship=>{
         const image=new Image(); image.decoding="async";
-        image.src="assets/ships/"+ship.id+".svg";
+        image.src="assets/ships/"+ship.id+".png";
         shipImageCache[ship.id]=image;
     });
 
@@ -709,13 +709,13 @@ function goToDashboard2() {
             const top=document.createElement("span");top.className="ship-card-topline";
             top.innerHTML='<span class="ship-card-number">'+String(index+1).padStart(2,"0")+' / 08</span><span class="ship-card-check" aria-hidden="true">✓</span>';
             const art=document.createElement("span");art.className="ship-card-art";
-            const img=document.createElement("img");img.src="assets/ships/"+ship.id+".svg";img.alt="";img.loading="eager";img.decoding="async";art.appendChild(img);
+            const img=document.createElement("img");img.src="assets/ships/"+ship.id+".png";img.alt="";img.loading="eager";img.decoding="async";art.appendChild(img);
             const name=document.createElement("span");name.className="ship-card-name";name.textContent=ship.name;
             const role=document.createElement("span");role.className="ship-card-role";role.textContent=langSetting==="id"?ship.roleId:ship.roleEn;
             card.append(top,art,name,role);card.addEventListener("click",()=>selectShip(ship.id));shipGrid.appendChild(card);
         });
         const selected=SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0];
-        const preview=document.getElementById("shipPreviewImage");preview.src="assets/ships/"+selected.id+".svg";preview.alt=selected.name+" ship preview";
+        const preview=document.getElementById("shipPreviewImage");preview.src="assets/ships/"+selected.id+".png";preview.alt=selected.name+" ship preview";
         preview.parentElement.style.setProperty("--ship-accent",selected.accent);
         document.getElementById("shipDetailName").textContent=selected.name;
         document.getElementById("shipDetailDescription").textContent=langSetting==="id"?selected.descId:selected.descEn;
