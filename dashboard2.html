@@ -403,18 +403,27 @@
 
             if (eligibleBDs.length > 0) {
                 let shuffledBDs = [...eligibleBDs];
-                
-                // PERBAIKAN SARAN 2: Prioritaskan BD dengan Cost & Line terkecil secara mutlak, hilangkan math.random berlebih
+
+                // Acak urutan awal BD untuk memutus bias urutan ID/daftar.
+                // Kriteria keseimbangan tetap menjadi prioritas; pengacakan memecah nilai yang sama.
+                for (let i = shuffledBDs.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledBDs[i], shuffledBDs[j]] = [shuffledBDs[j], shuffledBDs[i]];
+                }
+                const randomRank = new Map(shuffledBDs.map((bd, index) => [bd.id, index]));
+
                 if (chunk.type === 'bb') {
                     shuffledBDs.sort((a,b) => {
                         if (a.bbCount !== b.bbCount) return a.bbCount - b.bbCount;
                         if (a.currentCost !== b.currentCost) return a.currentCost - b.currentCost;
-                        return a.currentPairs - b.currentPairs;
+                        if (a.currentPairs !== b.currentPairs) return a.currentPairs - b.currentPairs;
+                        return randomRank.get(a.id) - randomRank.get(b.id);
                     });
                 } else {
                     shuffledBDs.sort((a,b) => {
                         if (a.currentCost !== b.currentCost) return a.currentCost - b.currentCost;
-                        return a.currentPairs - b.currentPairs;
+                        if (a.currentPairs !== b.currentPairs) return a.currentPairs - b.currentPairs;
+                        return randomRank.get(a.id) - randomRank.get(b.id);
                     });
                 }
 
@@ -469,8 +478,8 @@
                 }
 
                 if (remaining >= step) {
-                    for (let i = 0; i < eligibleBDs.length; i++) {
-                        let bd = eligibleBDs[i];
+                    for (let i = 0; i < shuffledBDs.length; i++) {
+                        let bd = shuffledBDs[i];
                         if (remaining < step) break;
                         let currentAlloc = allocation.get(bd.id) || 0;
                         let spaceLeft = bd.maxX - currentAlloc;
@@ -500,7 +509,7 @@
 
                 // PERBAIKAN SARAN 4: Sapu bersih/Fallback. Paksa masukan berapapun sisa angka yang ada.
                 if (remaining > 0) {
-                    let sweepBDs = [...eligibleBDs].sort((a,b) => {
+                    let sweepBDs = [...shuffledBDs].sort((a,b) => {
                         let aAlloc = allocation.get(a.id) || 0;
                         let bAlloc = allocation.get(b.id) || 0;
                         return (b.maxX - bAlloc) - (a.maxX - aAlloc);
