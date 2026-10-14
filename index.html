@@ -550,7 +550,20 @@
           .ship-detail-panel{margin-top:8px;padding:8px}.ship-detail-art img{height:78px}
         }
 
-    </style>
+    
+        /* perspective hangar floor — ship selection backdrop */
+        .ship-select-overlay::before{
+            content:"";position:fixed;z-index:0;pointer-events:none;left:-25vw;right:-25vw;bottom:-18vh;height:48vh;
+            transform:perspective(380px) rotateX(58deg);transform-origin:center bottom;opacity:.72;
+            background-image:
+                radial-gradient(ellipse at 50% 0%,rgba(32,175,255,.24),transparent 54%),
+                linear-gradient(180deg,rgba(1,7,18,0),rgba(1,8,20,.94)),
+                repeating-linear-gradient(90deg,transparent 0 44px,rgba(50,181,255,.16) 45px 46px),
+                repeating-linear-gradient(0deg,transparent 0 24px,rgba(48,159,239,.14) 25px 26px);
+            mask-image:linear-gradient(to bottom,transparent 0%,black 25%,black 100%);
+        }
+        .ship-select-shell{position:relative;z-index:1}
+</style>
 </head>
 <body>
 
