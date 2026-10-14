@@ -58,6 +58,17 @@
                 <h2 id="ship-select-title">PILIH PESAWAT</h2>
                 <p id="ship-select-subtitle" class="ship-select-subtitle">Pilih kapal tempur sebelum memulai misi.</p>
             </div><div class="ship-roster-count">06 FIGHTERS / 01 PILOT</div></div>
+            <div id="difficultyPicker" class="difficulty-picker" aria-labelledby="difficultyLabel">
+                <div class="difficulty-picker-heading">
+                    <span id="difficultyLabel">TINGKAT KESULITAN</span>
+                    <span id="difficultyBandNote">KECEPATAN: WAVE 1–3 · 4–6 · 7–9 · MAKS. 10</span>
+                </div>
+                <div class="difficulty-options" role="group" aria-label="Pilih tingkat kesulitan">
+                    <button type="button" class="difficulty-option" data-difficulty="easy" onclick="setDifficulty('easy')" aria-pressed="false"><strong id="difficultyEasyName">MUDAH</strong><small id="difficultyEasyMeta">4–5 MUSUH / WAVE</small></button>
+                    <button type="button" class="difficulty-option" data-difficulty="medium" onclick="setDifficulty('medium')" aria-pressed="false"><strong id="difficultyMediumName">SEDANG</strong><small id="difficultyMediumMeta">6–7 MUSUH / WAVE</small></button>
+                    <button type="button" class="difficulty-option" data-difficulty="hard" onclick="setDifficulty('hard')" aria-pressed="false"><strong id="difficultyHardName">SULIT</strong><small id="difficultyHardMeta">8–10 MUSUH / WAVE</small></button>
+                </div>
+            </div>
             <div id="shipGrid" class="ship-grid" role="group" aria-label="Pilih pesawat"></div>
             <div class="ship-detail-panel">
                 <div class="ship-detail-art"><img id="shipPreviewImage" src="assets/ships/aurora.png" alt="Preview kapal terpilih"></div>

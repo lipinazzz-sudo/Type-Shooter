@@ -47,6 +47,51 @@ function goToDashboard2() {
     let bgmVolume = parseFloat(localStorage.getItem('bgmVolume') ?? 0.5);
     let sfxVolume = parseFloat(localStorage.getItem('sfxVolume') ?? 0.5);
 
+    const DIFFICULTY_PROFILES = {
+        easy: { minEnemies: 4, maxEnemies: 5, spawnIntervalScale: 1.16, waveSpeedMultipliers: [0.78, 0.84, 0.92, 1.00] },
+        medium: { minEnemies: 6, maxEnemies: 7, spawnIntervalScale: 1.00, waveSpeedMultipliers: [1.00, 1.12, 1.28, 1.40] },
+        hard: { minEnemies: 8, maxEnemies: 10, spawnIntervalScale: 1.00, waveSpeedMultipliers: [1.08, 1.28, 1.52, 1.80] }
+    };
+    let selectedDifficulty = localStorage.getItem("typeShooterDifficulty") || "medium";
+    if (!Object.prototype.hasOwnProperty.call(DIFFICULTY_PROFILES, selectedDifficulty)) selectedDifficulty = "medium";
+
+    function getWaveSpeedMultiplier(waveNum) {
+        const profile = DIFFICULTY_PROFILES[selectedDifficulty] || DIFFICULTY_PROFILES.medium;
+        const speedBand = waveNum <= 3 ? 0 : waveNum <= 6 ? 1 : waveNum <= 9 ? 2 : 3;
+        return profile.waveSpeedMultipliers[speedBand];
+    }
+
+    function setDifficulty(mode) {
+        if (!Object.prototype.hasOwnProperty.call(DIFFICULTY_PROFILES, mode)) return;
+        selectedDifficulty = mode;
+        try { localStorage.setItem("typeShooterDifficulty", mode); } catch (error) {}
+        updateDifficultySelectorUI();
+    }
+
+    function updateDifficultySelectorUI() {
+        const t = translations[langSetting] || translations.id;
+        const labels = {
+            easy: {name:t.difficultyEasy, meta:t.difficultyEasyMeta},
+            medium: {name:t.difficultyMedium, meta:t.difficultyMediumMeta},
+            hard: {name:t.difficultyHard, meta:t.difficultyHardMeta}
+        };
+        const label = document.getElementById("difficultyLabel");
+        const note = document.getElementById("difficultyBandNote");
+        if (label) label.textContent = t.difficultyTitle;
+        if (note) note.textContent = t.difficultyBandNote;
+        document.querySelectorAll(".difficulty-option").forEach(button => {
+            const copy = labels[button.dataset.difficulty];
+            if (!copy) return;
+            const name = button.querySelector("strong");
+            const meta = button.querySelector("small");
+            if (name) name.textContent = copy.name;
+            if (meta) meta.textContent = copy.meta;
+            const isSelected = button.dataset.difficulty === selectedDifficulty;
+            button.classList.toggle("is-selected", isSelected);
+            button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        });
+    }
+
     // Kumpulan Data Bahasa (Localization)
     const translations = {
         id: {
@@ -61,7 +106,11 @@ function goToDashboard2() {
             incomingWave: "WAVE DATANG ", miss: "LUPUT!", bad: "SALAH!",
             shipSelectTitle: "PILIH PESAWAT", shipSelectSubtitle: "Pilih kapal tempur sebelum memulai misi.",
             shipSelected: "KAPAL TERPILIH", shipCosmeticNote: "Pilihan visual saja — aturan dan kemampuan game tetap sama.",
-            shipBack: "KEMBALI", shipStart: "MULAI GAME"
+            shipBack: "KEMBALI", shipStart: "MULAI GAME",
+            difficultyTitle: "TINGKAT KESULITAN",
+            difficultyEasy: "MUDAH", difficultyMedium: "SEDANG", difficultyHard: "SULIT",
+            difficultyEasyMeta: "4–5 MUSUH / WAVE", difficultyMediumMeta: "6–7 MUSUH / WAVE", difficultyHardMeta: "8–10 MUSUH / WAVE",
+            difficultyBandNote: "KECEPATAN: WAVE 1–3 · 4–6 · 7–9 · MAKS. 10"
         },
         en: {
             title: "TYPE-SHOOTER", subtitle: "FAR AND BEYOND", madeWithLove: "Made With Love",
@@ -75,12 +124,17 @@ function goToDashboard2() {
             incomingWave: "INCOMING WAVE ", miss: "MISS!", bad: "BAD!",
             shipSelectTitle: "SELECT YOUR SHIP", shipSelectSubtitle: "Choose your fighter before starting the mission.",
             shipSelected: "SELECTED SHIP", shipCosmeticNote: "Visual choice only — game rules and abilities remain unchanged.",
-            shipBack: "BACK", shipStart: "START GAME"
+            shipBack: "BACK", shipStart: "START GAME",
+            difficultyTitle: "DIFFICULTY",
+            difficultyEasy: "EASY", difficultyMedium: "MEDIUM", difficultyHard: "HARD",
+            difficultyEasyMeta: "4–5 ENEMIES / WAVE", difficultyMediumMeta: "6–7 ENEMIES / WAVE", difficultyHardMeta: "8–10 ENEMIES / WAVE",
+            difficultyBandNote: "SPEED: WAVES 1–3 · 4–6 · 7–9 · MAX 10"
         }
     };
     function updateShipSelectionUI(){
         if(!shipGrid)return;
         const t=translations[langSetting];shipGrid.innerHTML="";
+        updateDifficultySelectorUI();
         SHIP_ROSTER.forEach((ship,index)=>{
             const card=document.createElement("button");card.type="button";
             card.className="ship-card"+(ship.id===selectedShipId?" is-selected":"");
@@ -135,6 +189,7 @@ function goToDashboard2() {
         document.getElementById('btn-settings').innerText = t.settings;
         document.getElementById('btn-scoreboard').innerText = t.scoreboard;
         document.getElementById('ui-mobile-hint').innerText = t.mobileHint;
+        updateDifficultySelectorUI();
         
         // Settings Menu
         document.getElementById('ui-settings-title').innerText = t.settings;
@@ -569,12 +624,9 @@ const PIN_RAHASIA_2 = "0199";
             
             this.y = -60;
             
-            let waveSpeedMultiplier = 1.0;
-            if (waveNum >= 4 && waveNum <= 7) waveSpeedMultiplier = 1.4;
-            else if (waveNum >= 8 && waveNum <= 10) waveSpeedMultiplier = 1.8;
-            else if (waveNum >= 11) waveSpeedMultiplier = 2.2;
-
-            let baseSpeed = 0.4 + (Math.random() * 0.3);
+            // Difficulty-specific speed grows in four gentle bands and caps at wave 10.
+            const waveSpeedMultiplier = getWaveSpeedMultiplier(waveNum);
+            const baseSpeed = 0.4 + (Math.random() * 0.3);
 
             if (this.type === 'tank') {
                 this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
@@ -723,9 +775,10 @@ const PIN_RAHASIA_2 = "0199";
 
     function startWave(waveNum) {
         currentWave = waveNum;
-        enemiesLeftToSpawn = 4 + waveNum * 2; 
+        const profile = DIFFICULTY_PROFILES[selectedDifficulty] || DIFFICULTY_PROFILES.medium;
+        enemiesLeftToSpawn = profile.minEnemies + Math.floor(Math.random() * (profile.maxEnemies - profile.minEnemies + 1));
         waveSpawnTimer = 0;
-        waveClearMessageTimer = 90; 
+        waveClearMessageTimer = 90;
     }
 
 
@@ -1222,7 +1275,8 @@ const PIN_RAHASIA_2 = "0199";
 
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
             waveSpawnTimer++;
-            let spawnInterval = Math.max(95 - currentWave * 5, 45); 
+            const profile = DIFFICULTY_PROFILES[selectedDifficulty] || DIFFICULTY_PROFILES.medium;
+            const spawnInterval = Math.max(45, Math.round(Math.max(95 - currentWave * 5, 45) * profile.spawnIntervalScale));
             if (waveSpawnTimer >= spawnInterval) {
                 enemies.push(new Enemy(currentWave));
                 enemiesLeftToSpawn--;
