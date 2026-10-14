@@ -450,6 +450,7 @@ function goToDashboard2() {
     gameWidth = window.innerWidth;
     gameHeight = window.innerHeight;
     const gameKeyboard = document.getElementById("gameKeyboard");
+    const floatingBombButton = document.getElementById("floatingBombBtn");
     let nativeNumberEntryActive = false;
     const gameKeyboardStatus = document.getElementById("gameKeyboardStatus");
     function isMobilePortraitGame(){
@@ -460,7 +461,13 @@ function goToDashboard2() {
         const visibleHeight=Math.round((window.visualViewport&&window.visualViewport.height)||window.innerHeight);
         const keyboardActive=gameActive&&isMobilePortraitGame()&&!nativeNumberEntryActive;
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
-        const keyboardHeight=keyboardActive&&gameKeyboard?Math.round(gameKeyboard.getBoundingClientRect().height):0;
+        if(floatingBombButton)floatingBombButton.classList.toggle("hidden",!keyboardActive);
+        const keyboardRect=keyboardActive&&gameKeyboard?gameKeyboard.getBoundingClientRect():null;
+        if(floatingBombButton&&keyboardRect){
+            const controlHeight=floatingBombButton.offsetHeight||36;
+            floatingBombButton.style.top=Math.max(8,keyboardRect.top-controlHeight-8)+"px";
+        }
+        const keyboardHeight=keyboardRect?Math.round(keyboardRect.height):0;
         // Reserve the full gap beneath the floating keyboard so the canvas ends at the key panel, not behind it.
         const keyboardBottomGap=keyboardActive?25:0;
         gameHeight=Math.max(220,visibleHeight-keyboardHeight-keyboardBottomGap);
@@ -682,9 +689,15 @@ const PIN_RAHASIA_2 = "0199";
             let typedWidth = ctx.measureText(this.typed).width;
 
             if (activeEnemy === this) {
-                ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(renderX - 8, renderY - 18, this.wordWidth + 16, this.type === 'tank' ? 24 : 22);
+                const targetBoxHeight=this.type === 'tank' ? 24 : 22;
+                ctx.fillStyle="rgba(255,48,72,.085)";
+                ctx.fillRect(renderX-8,renderY-18,this.wordWidth+16,targetBoxHeight);
+                ctx.strokeStyle="rgba(255,58,79,.98)";
+                ctx.lineWidth=1.8;
+                ctx.shadowColor="#ff263f";
+                ctx.shadowBlur=15;
+                ctx.strokeRect(renderX-8,renderY-18,this.wordWidth+16,targetBoxHeight);
+                ctx.shadowBlur=0;
             }
 
             ctx.fillStyle = "#64748b"; 
@@ -806,16 +819,18 @@ const PIN_RAHASIA_2 = "0199";
     const skillLabels={bomb:"BOMB",shield:"SHIELD",clear:"CLEAR"};
     const skillColors={bomb:"#ffbd59",shield:"#58d9ff",clear:"#dbeafe"};
     function updateSkillInventoryUI(){
-        const ids={shield:"skillCountShield",bomb:"skillCountBomb",clear:"skillCountClear"};
-        Object.keys(ids).forEach(type=>{
-            const countNode=document.getElementById(ids[type]);
-            const button=gameKeyboard&&gameKeyboard.querySelector('[data-skill="'+type+'"]');
-            if(countNode)countNode.textContent=String(skillInventory[type]);
-            if(button){
-                button.disabled=skillInventory[type]<1||(type==="shield"&&shieldActive)||(type==="clear"&&!activeEnemy);
-                button.setAttribute("aria-label",skillLabels[type]+", tersimpan "+skillInventory[type]);
-            }
-        });
+        const bombCount=document.getElementById("skillCountBombFloating");
+        const clearButton=gameKeyboard&&gameKeyboard.querySelector('[data-keyboard-action="clear"]');
+        if(bombCount)bombCount.textContent=String(skillInventory.bomb);
+        if(floatingBombButton){
+            floatingBombButton.disabled=skillInventory.bomb<1&&skillInventory.shield<1;
+            floatingBombButton.setAttribute("aria-label","BOMB tersimpan "+skillInventory.bomb+". Tahan untuk SHIELD.");
+            floatingBombButton.title="Ketuk: Bomb · Tahan: Shield";
+        }
+        if(clearButton){
+            clearButton.disabled=skillInventory.clear<1||!activeEnemy;
+            clearButton.setAttribute("aria-label","Gunakan Clear; tersimpan "+skillInventory.clear);
+        }
         if(gameKeyboardStatus&&document.activeElement!==hiddenInput)gameKeyboardStatus.textContent=shieldActive?"SHIELD AKTIF — MENAHAN 1 TABRAKAN":"KETIK HURUF PADA KATA MUSUH";
     }
     function grantRandomSkill(enemy){
@@ -869,7 +884,8 @@ const PIN_RAHASIA_2 = "0199";
     }
     if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
         const button=event.target.closest("button");if(!button||button.disabled)return;
-        if(button.dataset.skill){useStoredSkill(button.dataset.skill);return;}
+        if(button.dataset.keyboardAction==="bomb"){useStoredSkill("bomb");return;}
+        if(button.dataset.keyboardAction==="clear"){useStoredSkill("clear");return;}
         if(button.dataset.keyboardMode==="number"){
             nativeNumberEntryActive=true;
             hiddenInput.setAttribute("inputmode","numeric");
@@ -882,17 +898,47 @@ const PIN_RAHASIA_2 = "0199";
             hiddenInput.focus();
             return;
         }
-        if(button.dataset.keyboardAction==="backspace"){
-            if(kodeAngka.length)kodeAngka=kodeAngka.slice(0,-1);
-            if(activeEnemy&&activeEnemy.typed.length){activeEnemy.typed=activeEnemy.typed.slice(0,-1);}
-            updateSkillInventoryUI();return;
-        }
-        if(button.dataset.key===" "){
-            sendGameCharacter(" ");
-            return;
-        }
         if(button.dataset.key)sendGameCharacter(button.dataset.key);
     });
+
+    // Physical controls mirror the virtual keyboard: Space = Bomb, Backspace = Clear, Shift = Shield.
+    document.addEventListener("keydown",event=>{
+        if(!gameActive||event.repeat||nativeNumberEntryActive)return;
+        if(event.code==="Space"){
+            event.preventDefault();
+            useStoredSkill("bomb");
+        }else if(event.key==="Backspace"){
+            event.preventDefault();
+            useStoredSkill("clear");
+        }else if(event.key==="Shift"){
+            useStoredSkill("shield");
+        }
+    });
+
+    // The only visible skill button sits outside the keyboard; a hold keeps Shield usable without another button.
+    let bombHoldTimer=null;
+    let suppressNextBombClick=false;
+    if(floatingBombButton){
+        floatingBombButton.addEventListener("pointerdown",event=>{
+            if(event.button!==undefined&&event.button!==0)return;
+            suppressNextBombClick=false;
+            if(bombHoldTimer)clearTimeout(bombHoldTimer);
+            bombHoldTimer=setTimeout(()=>{
+                if(!gameActive)return;
+                suppressNextBombClick=true;
+                useStoredSkill("shield");
+            },520);
+        });
+        ["pointerup","pointercancel","pointerleave"].forEach(type=>{
+            floatingBombButton.addEventListener(type,()=>{
+                if(bombHoldTimer){clearTimeout(bombHoldTimer);bombHoldTimer=null;}
+            });
+        });
+        floatingBombButton.addEventListener("click",()=>{
+            if(suppressNextBombClick){suppressNextBombClick=false;return;}
+            useStoredSkill("bomb");
+        });
+    }
 
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
