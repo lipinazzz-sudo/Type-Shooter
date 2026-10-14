@@ -62,16 +62,15 @@
                 <p class="ship-select-eyebrow">TYPE-SHOOTER / FLEET HANGAR</p>
                 <h2 id="ship-select-title">PILIH PESAWAT</h2>
                 <p id="ship-select-subtitle" class="ship-select-subtitle">Pilih kapal tempur sebelum memulai misi.</p>
-            </div><div class="ship-roster-count">06 FIGHTERS / 01 PILOT</div></div>
+            </div></div>
             <div id="difficultyPicker" class="difficulty-picker" aria-labelledby="difficultyLabel">
                 <div class="difficulty-picker-heading">
                     <span id="difficultyLabel">TINGKAT KESULITAN</span>
-                    <span id="difficultyBandNote">KECEPATAN: WAVE 1–3 · 4–6 · 7–9 · MAKS. 10</span>
                 </div>
                 <div class="difficulty-options" role="group" aria-label="Pilih tingkat kesulitan">
-                    <button type="button" class="difficulty-option" data-difficulty="easy" onclick="setDifficulty('easy')" aria-pressed="false"><strong id="difficultyEasyName">MUDAH</strong><small id="difficultyEasyMeta">4–5 MUSUH / WAVE</small></button>
-                    <button type="button" class="difficulty-option" data-difficulty="medium" onclick="setDifficulty('medium')" aria-pressed="false"><strong id="difficultyMediumName">SEDANG</strong><small id="difficultyMediumMeta">6–7 MUSUH / WAVE</small></button>
-                    <button type="button" class="difficulty-option" data-difficulty="hard" onclick="setDifficulty('hard')" aria-pressed="false"><strong id="difficultyHardName">SULIT</strong><small id="difficultyHardMeta">8–10 MUSUH / WAVE</small></button>
+                    <button type="button" class="difficulty-option" data-difficulty="easy" onclick="setDifficulty('easy')" aria-pressed="false"><strong id="difficultyEasyName">MUDAH</strong></button>
+                    <button type="button" class="difficulty-option" data-difficulty="medium" onclick="setDifficulty('medium')" aria-pressed="false"><strong id="difficultyMediumName">SEDANG</strong></button>
+                    <button type="button" class="difficulty-option" data-difficulty="hard" onclick="setDifficulty('hard')" aria-pressed="false"><strong id="difficultyHardName">SULIT</strong></button>
                 </div>
             </div>
             <div id="shipGrid" class="ship-grid" role="group" aria-label="Pilih pesawat"></div>
@@ -149,6 +148,12 @@
             <h1 id="ui-gameover-title" style="color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);">GAME OVER</h1>
             <h2 id="finalScoreText" style="margin-bottom: 5px;">Score: 0</h2>
             <p id="finalWaveText" style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 20px;">Reached: Wave 1</p>
+            <section id="gameOverStats" class="game-over-stats" aria-label="Statistik permainan">
+                <div class="game-over-stat"><span id="statAccuracyLabel">AKURASI</span><strong id="statAccuracyValue">0%</strong></div>
+                <div class="game-over-stat"><span id="statDestroyedLabel">MUSUH DIHANCURKAN</span><strong id="statDestroyedValue">0</strong></div>
+                <div class="game-over-stat"><span id="statBestComboLabel">COMBO TERBAIK</span><strong id="statBestComboValue">0</strong></div>
+                <div class="game-over-stat"><span id="statDurationLabel">DURASI AKTIF</span><strong id="statDurationValue">0:00</strong></div>
+            </section>
             
             <button id="btn-retry" onclick="startGame()">TRY AGAIN</button>
             <button id="btn-go-scoreboard" onclick="showScoreboard()" style="background: #10b981;">SCOREBOARD</button>
