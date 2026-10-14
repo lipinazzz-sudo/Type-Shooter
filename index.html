@@ -565,7 +565,7 @@
         .ship-select-shell{position:relative;z-index:1}
 
         /* Compact mobile keyboard, crisp HUD and one-screen ship selection */
-        .game-keyboard{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;flex-direction:column;gap:6px;height:clamp(206px,35vh,292px);height:clamp(206px,35dvh,292px);padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border-top:1px solid rgba(62,205,255,.86);background:linear-gradient(180deg,rgba(2,14,31,.99),rgba(1,6,18,1));box-shadow:0 -5px 18px rgba(0,0,0,.35),0 -1px 7px rgba(0,174,255,.12);touch-action:manipulation;user-select:none}
+        .game-keyboard{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;flex-direction:column;gap:4px;height:clamp(164px,25vh,204px);height:clamp(164px,25dvh,204px);padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border-top:1px solid rgba(62,205,255,.86);background:linear-gradient(180deg,rgba(2,14,31,.99),rgba(1,6,18,1));box-shadow:0 -5px 18px rgba(0,0,0,.35),0 -1px 7px rgba(0,174,255,.12);touch-action:manipulation;user-select:none}
         .game-skill-tray{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex:0 0 34px}
         .game-keyboard button{width:auto;min-width:0;margin:0;padding:0;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1;border-radius:6px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
         .game-skill{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 5px!important;border:1px solid rgba(87,201,255,.7)!important;background:linear-gradient(135deg,rgba(8,50,86,.96),rgba(3,17,36,.98))!important;color:#c9f6ff!important;font-size:10px!important;font-weight:900;letter-spacing:.04em}
@@ -577,7 +577,15 @@
         .game-key-row{display:flex;justify-content:center;gap:4px;min-height:0;flex:1}
         .game-key{flex:1 1 0;padding:0!important;max-width:42px;border:1px solid rgba(80,194,255,.62)!important;background:linear-gradient(180deg,rgba(12,39,70,.99),rgba(3,14,31,.99))!important;color:#f1f9ff!important;font-size:clamp(12px,3.3vw,17px)!important;font-weight:900;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.24)}
         .game-key:active{transform:scale(.94);background:linear-gradient(180deg,#087bb4,#07416c)!important}
-        .game-keyboard-status{flex:0 0 11px;text-align:center;overflow:hidden;color:#76dfff;font:800 8px/11px ui-monospace,monospace;letter-spacing:.12em;white-space:nowrap;text-overflow:ellipsis}
+        .game-key-row-bottom{flex:0 0 27px;gap:5px}
+        .game-special-key{display:flex;align-items:center;justify-content:center;border:1px solid rgba(80,194,255,.65)!important;background:linear-gradient(180deg,rgba(12,39,70,.99),rgba(3,14,31,.99))!important;color:#dff7ff!important;font-size:11px!important;font-weight:900;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+        .game-number-key{flex:0 0 54px;color:#8de5ff!important}
+        .game-space-key{flex:1 1 auto;letter-spacing:.16em}
+        .game-backspace-key{flex:0 0 54px;font-size:19px!important}
+        .game-special-key:active{transform:scale(.97);background:#07517d!important}
+        @media(max-width:390px) and (orientation:portrait){.game-keyboard{gap:3px;padding-top:4px}.game-skill-tray{flex-basis:27px;gap:4px}.game-keyboard-rows{gap:3px}.game-key-row{gap:3px}.game-key-row-bottom{flex-basis:25px}.game-number-key,.game-backspace-key{flex-basis:46px}.game-key{font-size:12px!important}}
+        @media(min-width:721px),(orientation:landscape){.game-keyboard{display:none!important}}
+
         @media(max-width:390px) and (orientation:portrait){.game-keyboard{gap:5px;padding-top:6px}.game-skill-tray{flex-basis:32px;gap:4px}.game-skill{font-size:9px!important;gap:4px}.game-key-row{gap:3px}.game-key{border-radius:5px;font-size:14px!important}}
         @media(min-width:721px),(orientation:landscape){.game-keyboard{display:none!important}}
         @media(max-width:720px) and (orientation:portrait){
@@ -619,8 +627,12 @@
         <div class="game-key-row"><button type="button" class="game-key" data-key="Q">Q</button><button type="button" class="game-key" data-key="W">W</button><button type="button" class="game-key" data-key="E">E</button><button type="button" class="game-key" data-key="R">R</button><button type="button" class="game-key" data-key="T">T</button><button type="button" class="game-key" data-key="Y">Y</button><button type="button" class="game-key" data-key="U">U</button><button type="button" class="game-key" data-key="I">I</button><button type="button" class="game-key" data-key="O">O</button><button type="button" class="game-key" data-key="P">P</button></div>
         <div class="game-key-row game-key-row-middle"><button type="button" class="game-key" data-key="A">A</button><button type="button" class="game-key" data-key="S">S</button><button type="button" class="game-key" data-key="D">D</button><button type="button" class="game-key" data-key="F">F</button><button type="button" class="game-key" data-key="G">G</button><button type="button" class="game-key" data-key="H">H</button><button type="button" class="game-key" data-key="J">J</button><button type="button" class="game-key" data-key="K">K</button><button type="button" class="game-key" data-key="L">L</button></div>
         <div class="game-key-row game-key-row-short"><button type="button" class="game-key" data-key="Z">Z</button><button type="button" class="game-key" data-key="X">X</button><button type="button" class="game-key" data-key="C">C</button><button type="button" class="game-key" data-key="V">V</button><button type="button" class="game-key" data-key="B">B</button><button type="button" class="game-key" data-key="N">N</button><button type="button" class="game-key" data-key="M">M</button></div>
+        <div class="game-key-row game-key-row-bottom">
+          <button type="button" class="game-special-key game-number-key" data-keyboard-mode="number">123</button>
+          <button type="button" class="game-special-key game-space-key" data-key=" ">SPACE</button>
+          <button type="button" class="game-special-key game-backspace-key" data-keyboard-action="backspace" aria-label="Hapus satu karakter">⌫</button>
+        </div>
       </div>
-      <div id="gameKeyboardStatus" class="game-keyboard-status">KETIK HURUF PADA KATA MUSUH</div>
     </section>
 
     <div id="mainMenu" class="ui-layer">
@@ -1458,7 +1470,7 @@ const PIN_RAHASIA_2 = "0199";
                 button.setAttribute("aria-label",skillLabels[type]+", tersimpan "+skillInventory[type]);
             }
         });
-        if(gameKeyboardStatus)gameKeyboardStatus.textContent=shieldActive?"SHIELD AKTIF — MENAHAN 1 TABRAKAN":"KETIK HURUF PADA KATA MUSUH";
+        if(gameKeyboardStatus&&document.activeElement!==hiddenInput)gameKeyboardStatus.textContent=shieldActive?"SHIELD AKTIF — MENAHAN 1 TABRAKAN":"KETIK HURUF PADA KATA MUSUH";
     }
     function grantRandomSkill(enemy){
         if(Math.random()>=.14)return;
@@ -1494,13 +1506,35 @@ const PIN_RAHASIA_2 = "0199";
         updateSkillInventoryUI();
     }
     function sendGameCharacter(character){
-        if(!gameActive||!/^[a-z]$/i.test(character))return;
+        if(!gameActive||!(/^[a-z]$/i.test(character)||character===" "))return;
         hiddenInput.value=character;
         hiddenInput.dispatchEvent(new Event("input",{bubbles:true}));
     }
     if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
         const button=event.target.closest("button");if(!button||button.disabled)return;
         if(button.dataset.skill){useStoredSkill(button.dataset.skill);return;}
+        if(button.dataset.keyboardMode==="number"){
+            hiddenInput.setAttribute("inputmode","numeric");
+            hiddenInput.setAttribute("pattern","[0-9]*");
+            hiddenInput.style.position="fixed";hiddenInput.style.left="8px";hiddenInput.style.bottom="8px";
+            hiddenInput.style.width="1px";hiddenInput.style.height="1px";hiddenInput.style.opacity="0.01";
+            hiddenInput.style.zIndex="40";
+            hiddenInput.focus();
+            if(gameKeyboardStatus)gameKeyboardStatus.textContent="MASUKKAN KODE DASHBOARD DENGAN KEYBOARD ANGKA";
+            return;
+        }
+        if(button.dataset.keyboardAction==="backspace"){
+            if(kodeAngka.length)kodeAngka=kodeAngka.slice(0,-1);
+            if(activeEnemy&&activeEnemy.typed.length){activeEnemy.typed=activeEnemy.typed.slice(0,-1);}
+            updateSkillInventoryUI();return;
+        }
+        if(button.dataset.key===" "){
+            hiddenInput.blur();
+            hiddenInput.removeAttribute("inputmode");hiddenInput.removeAttribute("pattern");
+            hiddenInput.style.cssText="";
+            if(gameKeyboardStatus)gameKeyboardStatus.textContent="KETIK HURUF PADA KATA MUSUH";
+            return;
+        }
         if(button.dataset.key)sendGameCharacter(button.dataset.key);
     });
 
@@ -1852,24 +1886,35 @@ const PIN_RAHASIA_2 = "0199";
         ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(gameWidth, player.y + 22); ctx.stroke();
         ctx.shadowBlur = 0; 
 
-        // Cinematic HUD: screenshot-style wave/score panel, red lives and combo.
-        const t = translations[langSetting];
-        const compactHud = gameWidth < 360;
-        const hudLeftX = 12;
-        const hudTopY = Math.max(12,(window.visualViewport&&window.visualViewport.offsetTop)||12);
-        const hudLeftWidth = compactHud ? 140 : (gameWidth < 520 ? 166 : 190);
-        const hudLeftHeight = 58;
-        drawHudPanel(hudLeftX,hudTopY,hudLeftWidth,hudLeftHeight,"rgba(69,207,255,.78)");
-        ctx.save();ctx.textAlign="left";ctx.fillStyle="#76e5ff";ctx.font="800 10px ui-monospace,monospace";
-        ctx.fillText("WAVE "+String(currentWave),hudLeftX+11,hudTopY+21);
-        ctx.fillStyle="#f2f9ff";ctx.shadowColor="rgba(56,189,248,.35)";ctx.shadowBlur=7;
-        ctx.font="900 "+(compactHud?13:15)+"px ui-monospace,monospace";
-        ctx.fillText("SCORE "+score.toLocaleString("en-US"),hudLeftX+11,hudTopY+43,hudLeftWidth-18);ctx.restore();
-
-        const lifePanelWidth=gameWidth<420?82:102,lifePanelHeight=42,lifePanelY=hudTopY;
-        const lifePanelX=Math.max(hudLeftX+hudLeftWidth+7,gameWidth-57-lifePanelWidth);
-        const lowLife=playerHP===1;
-        drawHudPanel(lifePanelX,lifePanelY,lifePanelWidth,lifePanelHeight,lowLife?(Math.floor(frameCount/18)%2?"rgba(248,113,113,.88)":"rgba(248,113,113,.42)"):"rgba(69,207,255,.78)");
+        // Single-row sci-fi HUD, proportioned for the supplied mobile mockup.
+        const compactHud=gameWidth<520;
+        const hudTopY=Math.max(10,(window.visualViewport&&window.visualViewport.offsetTop)||10);
+        const gap=4, left=10, reservePause=compactHud?47:54;
+        const usable=gameWidth-left*2-reservePause-gap*3;
+        const waveW=compactHud?Math.max(39,Math.round(usable*.15)):70;
+        const scoreW=compactHud?Math.max(83,Math.round(usable*.35)):170;
+        const comboW=compactHud?Math.max(58,Math.round(usable*.23)):100;
+        const lifeW=Math.max(57,usable-waveW-scoreW-comboW);
+        const panelH=compactHud?43:58;
+        const waveX=left,scoreX=waveX+waveW+gap,comboX=scoreX+scoreW+gap,lifeX=comboX+comboW+gap;
+        drawHudPanel(waveX,hudTopY,waveW,panelH,"rgba(69,207,255,.9)");
+        drawHudPanel(scoreX,hudTopY,scoreW,panelH,"rgba(69,207,255,.9)");
+        drawHudPanel(comboX,hudTopY,comboW,panelH,"rgba(255,184,72,.9)");
+        drawHudPanel(lifeX,hudTopY,lifeW,panelH,playerHP===1?(Math.floor(frameCount/18)%2?"rgba(248,113,113,.9)":"rgba(248,113,113,.45)"):"rgba(69,207,255,.9)");
+        ctx.save();ctx.textAlign="center";ctx.fillStyle="#76e5ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
+        ctx.fillText("WAVE",waveX+waveW/2,hudTopY+(compactHud?12:17));
+        ctx.fillStyle="#f2f9ff";ctx.font="900 "+(compactHud?15:22)+"px ui-monospace,monospace";
+        ctx.fillText(String(currentWave).padStart(2,"0"),waveX+waveW/2,hudTopY+(compactHud?32:43));
+        ctx.textAlign="left";ctx.fillStyle="#76e5ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
+        ctx.fillText("SCORE",scoreX+8,hudTopY+(compactHud?12:17));
+        ctx.fillStyle="#f2f9ff";ctx.font="900 "+(compactHud?14:22)+"px ui-monospace,monospace";
+        ctx.fillText(score.toLocaleString("en-US"),scoreX+8,hudTopY+(compactHud?32:43),scoreW-14);
+        let hudMult=comboCount>=25?5:comboCount>=18?4:comboCount>=10?3:comboCount>=5?2:1;
+        ctx.textAlign="center";ctx.fillStyle="#ffd18a";ctx.font="800 "+(compactHud?7:10)+"px ui-monospace,monospace";
+        ctx.fillText("COMBO",comboX+comboW/2,hudTopY+(compactHud?12:17));
+        ctx.fillStyle="#fff4d8";ctx.font="900 "+(compactHud?13:20)+"px ui-monospace,monospace";
+        ctx.fillText(String(comboCount)+" ×"+hudMult,comboX+comboW/2,hudTopY+(compactHud?32:43));
+        const heartSize=compactHud?5.3:8,heartGap=compactHud?lifeW/4:27;
         function traceLifeHeart(x,y,size){
             ctx.beginPath();ctx.moveTo(x,y+size*.78);
             ctx.bezierCurveTo(x-size*1.15,y+size*.02,x-size*1.02,y-size*.68,x-size*.42,y-size*.54);
@@ -1877,12 +1922,11 @@ const PIN_RAHASIA_2 = "0199";
             ctx.bezierCurveTo(x+size*.20,y-size*.59,x+size*.65,y-size*.72,x+size*.98,y-size*.35);
             ctx.bezierCurveTo(x+size*1.40,y+size*.20,x+size*.56,y+size*.69,x,y+size*.78);ctx.closePath();
         }
-        ctx.save();
-        const heartSize=gameWidth<420?6.7:8,heartGap=gameWidth<420?22:27;
-        const heartStart=lifePanelX+lifePanelWidth/2-(maxHP-1)*heartGap/2;
-        for(let i=0;i<maxHP;i++){
-            const hx=heartStart+i*heartGap,hy=lifePanelY+22;traceLifeHeart(hx,hy,heartSize);
-            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor=lowLife?"#ff2948":"#ff415b";ctx.shadowBlur=lowLife?6:3;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
+        const heartsTotal=playerHP>maxHP?maxHP:maxHP;
+        const heartStart=lifeX+lifeW/2-(heartsTotal-1)*heartGap/2;
+        for(let i=0;i<heartsTotal;i++){
+            const hx=heartStart+i*heartGap,hy=hudTopY+panelH/2+2;traceLifeHeart(hx,hy,heartSize);
+            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor="#ff415b";ctx.shadowBlur=compactHud?2:4;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
             else{ctx.fillStyle="rgba(71,85,105,.14)";ctx.fill();ctx.strokeStyle="rgba(148,163,184,.46)";ctx.lineWidth=1;ctx.stroke();}
         }
         ctx.restore();
@@ -1897,22 +1941,7 @@ const PIN_RAHASIA_2 = "0199";
             if (comboPulse > 0) comboPulse -= 0.5;
             if (comboPulse < 0) comboPulse = 0;
 
-            const comboFontSize = compactHud ? 12 : 14;
-            const comboText = "COMBO " + comboCount + "  ×" + mult;
-            ctx.save();
-            ctx.font = "bold " + (comboFontSize + Math.min(comboPulse * 0.15, 2)) + "px 'Courier New'";
-            const comboPanelWidth = Math.min(
-                gameWidth - hudLeftX * 2,
-                Math.ceil(ctx.measureText(comboText).width + 24)
-            );
-            const comboAccent = mult > 1 ? "rgba(167, 139, 250, 0.42)" : "rgba(88, 217, 255, 0.24)";
-            drawHudPanel(hudLeftX, hudTopY + hudLeftHeight + 8, comboPanelWidth, 32, comboAccent);
-            ctx.fillStyle = mult > 1 ? "#c4b5fd" : "#9be7ff";
-            ctx.shadowColor = mult > 1 ? "rgba(167, 139, 250, 0.6)" : "rgba(88, 217, 255, 0.35)";
-            ctx.shadowBlur = comboPulse > 0 ? 4 : 1;
-            ctx.textAlign = "left";
-            ctx.fillText(comboText, hudLeftX + 12, hudTopY + hudLeftHeight + 29, Math.max(24, comboPanelWidth - 20));
-            ctx.restore();
+            // Combo count and multiplier are rendered in the top HUD strip.
         }
 
         if (enemiesLeftToSpawn > 0 && waveClearMessageTimer <= 0) {
