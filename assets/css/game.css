@@ -655,6 +655,46 @@
         }
 
 
+
+        /* Mobile keyboard: +20% overall size while preserving shared key proportions */
+        @media(max-width:720px) and (orientation:portrait){
+          .game-keyboard{
+            height:clamp(199px,27.6vh,233px)!important;
+            height:clamp(199px,27.6dvh,233px)!important;
+            max-height:30vh!important;
+            gap:4px!important;
+            padding:6px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+          }
+          .game-skill-tray{flex:0 0 28px!important;gap:5px!important}
+          .game-skill{font-size:10px!important;gap:4px!important;padding:0 4px!important;letter-spacing:.025em!important}
+          .game-skill b{min-width:16px!important;height:16px!important;font-size:10px!important;padding:0 4px!important}
+          .game-keyboard-rows{gap:4px!important}
+          .game-key-row{gap:4px!important}
+          .game-key-row .game-key{
+            flex:0 0 calc((100% - 36px)/10)!important;
+            width:calc((100% - 36px)/10)!important;
+            font-size:clamp(13px,3.6vw,17px)!important;
+            border-radius:6px!important;
+          }
+          .game-key-row-short>button{
+            flex:0 0 calc((100% - 36px)/10)!important;
+            width:calc((100% - 36px)/10)!important;
+            border-radius:6px!important;
+          }
+          .game-number-key,.game-backspace-key{font-size:clamp(11px,3.1vw,14px)!important}
+          .game-key-row-space{flex:0 0 26px!important;min-height:26px!important}
+          .game-space-key{font-size:11px!important;letter-spacing:.14em!important}
+        }
+        @media(max-width:390px) and (orientation:portrait){
+          .game-keyboard{
+            height:clamp(197px,26.4vh,221px)!important;
+            height:clamp(197px,26.4dvh,221px)!important;
+            max-height:30vh!important;
+          }
+          .game-skill-tray{flex-basis:26px!important}
+          .game-key-row-space{flex-basis:25px!important;min-height:25px!important}
+        }
+
         /* Compact bottom controls and connected five-segment HUD */
         @media(max-width:720px) and (orientation:portrait){
           .game-keyboard{height:clamp(166px,23dvh,194px)!important;max-height:25vh!important;gap:3px!important;padding:5px max(7px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))!important}

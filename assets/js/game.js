@@ -694,10 +694,19 @@ const PIN_RAHASIA_2 = "0199";
             this.color = colors[Math.floor(Math.random() * colors.length)];
         }
         draw() {
-            ctx.save(); ctx.globalAlpha = this.alpha;
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.restore();
+            ctx.save();
+            ctx.globalAlpha=this.alpha;
+            const speed=Math.hypot(this.vx,this.vy);
+            if(speed>2.5){
+                ctx.beginPath();
+                ctx.moveTo(this.x,this.y);
+                ctx.lineTo(this.x-(this.vx/speed)*this.size*2.4,this.y-(this.vy/speed)*this.size*2.4);
+                ctx.strokeStyle=this.color;ctx.lineWidth=Math.max(.6,this.size*.34);ctx.globalAlpha=this.alpha*.42;
+                ctx.stroke();ctx.globalAlpha=this.alpha;
+            }
+            ctx.beginPath();ctx.arc(this.x,this.y,Math.max(.7,this.size*.48),0,Math.PI*2);
+            ctx.fillStyle=this.color;ctx.shadowColor=this.color;ctx.shadowBlur=2.5;ctx.fill();
+            ctx.shadowBlur=0;ctx.restore();
         }
         update() {
             this.x += this.vx; this.y += this.vy;
@@ -1068,18 +1077,6 @@ const PIN_RAHASIA_2 = "0199";
             nebula.addColorStop(0,"#163e78");nebula.addColorStop(.36,"#0b2851");nebula.addColorStop(1,"#010611");
             ctx.fillStyle=nebula;ctx.fillRect(0,0,w,h);
         }
-        const rocks=[[.035,.17,.052],[.095,.35,.067],[.91,.27,.058],[.955,.49,.074],[.055,.65,.047],[.94,.74,.052],[.19,.11,.025],[.84,.57,.028],[.13,.83,.04],[.88,.9,.034]];
-        rocks.forEach((rock,index)=>{
-            const x=w*rock[0],y=h*rock[1],r=Math.min(w,h)*rock[2];
-            ctx.save();ctx.translate(x,y);ctx.rotate(index*1.73);
-            const fill=ctx.createRadialGradient(-r*.3,-r*.34,r*.08,r*.04,r*.06,r*1.15);
-            fill.addColorStop(0,"#465d73");fill.addColorStop(.38,"#1a2c41");fill.addColorStop(1,"#030914");
-            ctx.beginPath();
-            for(let p=0;p<9;p++){const a=2*Math.PI*p/9,wb=.76+.22*Math.abs(Math.sin((index+2)*2.1+p*1.83)),px=Math.cos(a)*r*wb,py=Math.sin(a)*r*wb;if(p===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}
-            ctx.closePath();ctx.fillStyle=fill;ctx.shadowColor="rgba(0,0,0,.65)";ctx.shadowBlur=r*.24;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(115,164,198,.26)";ctx.lineWidth=Math.max(.6,r*.025);ctx.stroke();
-            for(let c=0;c<3;c++){const cx=Math.sin(index+2+c*4.2)*r*.45,cy=Math.cos(index*1.4+c*2.8)*r*.43,cr=r*(.07+.035*(c%2));ctx.beginPath();ctx.ellipse(cx,cy,cr*1.3,cr,.4,0,2*Math.PI);ctx.fillStyle="rgba(0,4,12,.52)";ctx.fill();ctx.strokeStyle="rgba(126,158,185,.19)";ctx.stroke();}
-            ctx.restore();
-        });
     }
     function gameLoop() {
         const t = translations[langSetting];
@@ -1104,18 +1101,7 @@ const PIN_RAHASIA_2 = "0199";
         
         drawSpaceBackground();
 
-        // BACKGROUND SCI-FI GRID WITH PARALLAX
-        ctx.save();
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.04)";
-        ctx.lineWidth = 1;
-        for(let i = 0; i < gameWidth; i += 60) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, gameHeight); ctx.stroke();
-        }
-        for(let j = 0; j < gameHeight; j += 60) {
-            let yOffset = (j + frameCount * 0.3) % gameHeight;
-            ctx.beginPath(); ctx.moveTo(0, yOffset); ctx.lineTo(gameWidth, yOffset); ctx.stroke();
-        }
-        ctx.restore();
+        // The high-resolution nebula PNG provides the environmental detail.
 
         if (flashRedFrames > 0) {
             ctx.fillStyle = `rgba(239, 68, 68, ${flashRedFrames * 0.02})`;
@@ -1152,20 +1138,22 @@ const PIN_RAHASIA_2 = "0199";
             if (dist > 0 && dist < closestDistance) closestDistance = dist;
         });
 
-        let lineAlpha = 0.25;
+        // The danger beam appears only when an enemy is close to the player.
+        let lineAlpha = 0;
         let lineShadow = 0;
-        if (closestDistance < 150) {
-            let dangerFactor = 1 - (closestDistance / 150); 
-            lineAlpha = 0.25 + (0.65 * dangerFactor); 
-            lineShadow = 15 * dangerFactor;
+        if (closestDistance < 210) {
+            const dangerFactor = 1 - (closestDistance / 210);
+            lineAlpha = 0.12 + (0.72 * dangerFactor);
+            lineShadow = 7 * dangerFactor;
         }
-
-        ctx.strokeStyle = `rgba(239, 68, 68, ${lineAlpha})`; 
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = lineShadow;
-        ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(gameWidth, player.y + 22); ctx.stroke();
-        ctx.shadowBlur = 0; 
+        if(lineAlpha>0){
+            ctx.strokeStyle = `rgba(255, 65, 83, ${lineAlpha})`;
+            ctx.lineWidth = 1.4 + lineAlpha;
+            ctx.shadowBlur = lineShadow;
+            ctx.shadowColor = "#ff4153";
+            ctx.beginPath();ctx.moveTo(0,player.y+22);ctx.lineTo(gameWidth,player.y+22);ctx.stroke();
+            ctx.shadowBlur = 0;
+        } 
 
         // One shared HUD plate split into WAVE / SCORE / COMBO / LIFE / PAUSE.
         const compactHud=gameWidth<520;
@@ -1269,13 +1257,29 @@ const PIN_RAHASIA_2 = "0199";
             }
             const selectedShip=SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0];
             const shipAccent=selectedShip.accent;
-            const plumeLength=s*(1.05+Math.random()*0.85+Math.max(0,floatOffsetY)*0.025);
+            const pulse=0.86+0.14*Math.sin(frameCount*.38);
+            const plumeLength=s*(1.25+0.34*pulse+Math.max(0,floatOffsetY)*0.018);
             for(const engineOffset of [-s*0.72,s*0.72]){
-                ctx.beginPath();ctx.moveTo(engineOffset-s*.2,s*1.35);ctx.lineTo(engineOffset+s*.2,s*1.35);ctx.lineTo(engineOffset,s*1.35+plumeLength);ctx.closePath();
-                ctx.fillStyle=shipAccent;ctx.globalAlpha=.68;ctx.shadowBlur=12;ctx.shadowColor=shipAccent;ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;
+                // Soft outer exhaust, saturated mid-core, then a narrow white-hot centre.
+                const outer=ctx.createLinearGradient(engineOffset,s*1.28,engineOffset,s*1.35+plumeLength);
+                outer.addColorStop(0,shipAccent);
+                outer.addColorStop(.28,"rgba(56,189,248,.82)");
+                outer.addColorStop(1,"rgba(22,119,255,0)");
+                ctx.beginPath();
+                ctx.moveTo(engineOffset-s*.19,s*1.28);
+                ctx.quadraticCurveTo(engineOffset-s*.12,s*1.8,engineOffset,s*1.35+plumeLength);
+                ctx.quadraticCurveTo(engineOffset+s*.12,s*1.8,engineOffset+s*.19,s*1.28);
+                ctx.closePath();ctx.globalAlpha=.72;ctx.fillStyle=outer;
+                ctx.shadowColor=shipAccent;ctx.shadowBlur=6;ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1;
+                const core=ctx.createLinearGradient(engineOffset,s*1.3,engineOffset,s*1.35+plumeLength*.72);
+                core.addColorStop(0,"#f5fdff");core.addColorStop(.24,shipAccent);core.addColorStop(1,"rgba(56,189,248,0)");
+                ctx.beginPath();ctx.moveTo(engineOffset-s*.065,s*1.3);ctx.lineTo(engineOffset+s*.065,s*1.3);ctx.lineTo(engineOffset,s*1.35+plumeLength*.72);ctx.closePath();
+                ctx.fillStyle=core;ctx.shadowColor="#bcefff";ctx.shadowBlur=3;ctx.fill();ctx.shadowBlur=0;
+                ctx.beginPath();ctx.arc(engineOffset,s*1.28,s*.085,0,Math.PI*2);
+                ctx.fillStyle="#f2fbff";ctx.fill();
             }
             const spriteWidth=s*4.5,spriteHeight=s*5.45;
-            ctx.shadowColor=shipAccent;ctx.shadowBlur=8;
+            ctx.shadowColor=shipAccent;ctx.shadowBlur=4;
             ctx.drawImage(selectedShipImage,-spriteWidth/2,-s*2.05,spriteWidth,spriteHeight);ctx.shadowBlur=0;
             if(muzzleFlashAlpha>0){
                 ctx.fillStyle="rgba(255,255,255,"+muzzleFlashAlpha+")";ctx.shadowBlur=18;ctx.shadowColor="#fff";
