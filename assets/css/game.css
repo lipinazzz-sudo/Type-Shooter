@@ -1209,3 +1209,28 @@
     bottom:15px!important;
   }
 }
+
+
+/* KEY PRESS FEEDBACK — CORRECT AND INCORRECT INPUT */
+/* Brief feedback for each letter typed; no layout or ship/canvas geometry changes. */
+.game-key.key-feedback-correct{
+  animation:gameKeyFeedbackCorrect 180ms ease-out;
+}
+.game-key.key-feedback-error{
+  animation:gameKeyFeedbackError 220ms ease-out;
+}
+@keyframes gameKeyFeedbackCorrect{
+  0%{transform:scale(1);filter:brightness(1) drop-shadow(0 0 0 rgba(88,217,255,0))}
+  45%{transform:scale(.93);filter:brightness(1.48) saturate(1.3) drop-shadow(0 0 7px rgba(88,217,255,.92))}
+  100%{transform:scale(1);filter:brightness(1) drop-shadow(0 0 0 rgba(88,217,255,0))}
+}
+@keyframes gameKeyFeedbackError{
+  0%{transform:translateX(0);filter:brightness(1)}
+  25%{transform:translateX(-1.5px);filter:brightness(1.5) drop-shadow(0 0 7px rgba(248,75,94,.94))}
+  55%{transform:translateX(1.5px);filter:brightness(1.35) drop-shadow(0 0 6px rgba(248,75,94,.82))}
+  100%{transform:translateX(0);filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  .game-key.key-feedback-correct,
+  .game-key.key-feedback-error{animation:none!important}
+}
