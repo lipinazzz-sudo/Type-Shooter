@@ -26,24 +26,22 @@
 
     <canvas id="gameCanvas"></canvas>
     <section id="gameKeyboard" class="game-keyboard hidden" aria-label="Keyboard khusus Type-Shooter">
-      <div class="game-skill-tray">
-        <button type="button" class="game-skill skill-shield" data-skill="shield" title="Simpan untuk menahan satu tabrakan">SHIELD <b id="skillCountShield">0</b></button>
-        <button type="button" class="game-skill skill-bomb" data-skill="bomb" title="Ledakkan musuh yang terlihat">BOMB <b id="skillCountBomb">0</b></button>
-        <button type="button" class="game-skill skill-clear" data-skill="clear" title="Lepaskan target aktif">CLEAR <b id="skillCountClear">0</b></button>
-      </div>
       <div class="game-keyboard-rows" role="group" aria-label="Huruf untuk mengetik kata musuh">
         <div class="game-key-row"><button type="button" class="game-key" data-key="Q">Q</button><button type="button" class="game-key" data-key="W">W</button><button type="button" class="game-key" data-key="E">E</button><button type="button" class="game-key" data-key="R">R</button><button type="button" class="game-key" data-key="T">T</button><button type="button" class="game-key" data-key="Y">Y</button><button type="button" class="game-key" data-key="U">U</button><button type="button" class="game-key" data-key="I">I</button><button type="button" class="game-key" data-key="O">O</button><button type="button" class="game-key" data-key="P">P</button></div>
         <div class="game-key-row game-key-row-middle"><button type="button" class="game-key" data-key="A">A</button><button type="button" class="game-key" data-key="S">S</button><button type="button" class="game-key" data-key="D">D</button><button type="button" class="game-key" data-key="F">F</button><button type="button" class="game-key" data-key="G">G</button><button type="button" class="game-key" data-key="H">H</button><button type="button" class="game-key" data-key="J">J</button><button type="button" class="game-key" data-key="K">K</button><button type="button" class="game-key" data-key="L">L</button></div>
         <div class="game-key-row game-key-row-short">
           <button type="button" class="game-special-key game-number-key" data-keyboard-mode="number" aria-label="Buka keyboard angka">123</button>
           <button type="button" class="game-key" data-key="Z">Z</button><button type="button" class="game-key" data-key="X">X</button><button type="button" class="game-key" data-key="C">C</button><button type="button" class="game-key" data-key="V">V</button><button type="button" class="game-key" data-key="B">B</button><button type="button" class="game-key" data-key="N">N</button><button type="button" class="game-key" data-key="M">M</button>
-          <button type="button" class="game-special-key game-backspace-key" data-keyboard-action="backspace" aria-label="Hapus satu karakter">⌫</button>
+          <button type="button" class="game-special-key game-backspace-key" data-keyboard-action="clear" aria-label="Gunakan Clear">CLEAR</button>
         </div>
         <div class="game-key-row game-key-row-bottom game-key-row-space">
-          <button type="button" class="game-special-key game-space-key" data-key=" ">SPACE</button>
+          <button type="button" class="game-special-key game-space-key" data-keyboard-action="bomb" aria-label="Gunakan Bomb">BOMB</button>
         </div>
       </div>
     </section>
+    <button id="floatingBombBtn" class="floating-bomb-button hidden" type="button" aria-label="Gunakan Bomb" title="Ledakkan musuh yang terlihat" disabled>
+      <span>BOMB</span><b id="skillCountBombFloating">0</b>
+    </button>
 
     <div id="mainMenu" class="ui-layer">
         <div class="menu-box">
