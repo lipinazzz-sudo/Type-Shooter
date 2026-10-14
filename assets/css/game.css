@@ -1463,3 +1463,22 @@
     bottom:40px!important;
   }
 }
+
+
+/* BUILD VERSION — visible in the home screen and useful for cache verification. */
+#buildVersion{
+  position:fixed;
+  right:max(10px,env(safe-area-inset-right));
+  bottom:max(8px,env(safe-area-inset-bottom));
+  z-index:30;
+  padding:4px 7px;
+  border:1px solid rgba(88,217,255,.2);
+  border-radius:5px;
+  background:rgba(3,10,24,.76);
+  color:rgba(158,190,213,.72);
+  font:700 10px/1.1 ui-monospace,Menlo,Consolas,monospace;
+  letter-spacing:.08em;
+  pointer-events:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
