@@ -475,8 +475,8 @@ function goToDashboard2() {
             floatingBombButton.style.top=Math.max(8,keyboardRect.top-controlHeight-8)+"px";
         }
         const keyboardHeight=keyboardRect?Math.round(keyboardRect.height):0;
-        // Reserve the full gap beneath the floating keyboard so the canvas ends at the key panel, not behind it.
-        const keyboardBottomGap=keyboardActive?25:0;
+        // Reserve a 40px gap below the floating keyboard (25px baseline + 15px requested).
+        const keyboardBottomGap=keyboardActive?40:0;
         gameHeight=Math.max(220,visibleHeight-keyboardHeight-keyboardBottomGap);
         canvasScale=Math.min(window.devicePixelRatio||1,3);
         canvas.width=Math.round(gameWidth*canvasScale);
@@ -670,19 +670,24 @@ const PIN_RAHASIA_2 = "0199";
 
             if (this.type === 'tank') {
                 this.speed = (baseSpeed * 0.5) * waveSpeedMultiplier; 
-                this.colorGlow = "#ef4444"; 
+                this.colorGlow = "#ef4444";
+                this.colorText = "#ff7b88";
             } else if (this.type === 'splitter') {
                 this.speed = (baseSpeed * 0.75) * waveSpeedMultiplier; 
-                this.colorGlow = "#c084fc"; 
+                this.colorGlow = "#c084fc";
+                this.colorText = "#e2b5ff";
             } else if (this.type === 'emp') {
                 this.speed = (baseSpeed * 1.2) * waveSpeedMultiplier; 
-                this.colorGlow = "#06b6d4"; 
+                this.colorGlow = "#06b6d4";
+                this.colorText = "#76efff";
             } else if (this.type === 'mini') {
                 this.speed = (baseSpeed * 1.1) * waveSpeedMultiplier; 
-                this.colorGlow = "#eab308"; 
+                this.colorGlow = "#eab308";
+                this.colorText = "#ffe36d";
             } else {
-                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier; 
-                this.colorGlow = "#ffffff"; 
+                this.speed = (baseSpeed * 1.0) * waveSpeedMultiplier;
+                this.colorGlow = "#c8f4ff";
+                this.colorText = "#f5fcff";
             }
         }
 
@@ -712,21 +717,25 @@ const PIN_RAHASIA_2 = "0199";
                 ctx.shadowBlur=0;
             }
 
-            ctx.fillStyle = "#64748b"; 
-            ctx.shadowBlur = 0;       
+            // A dark text keyline keeps both typed and remaining letters readable over nebula highlights.
+            ctx.lineJoin = "round";
+            ctx.lineWidth = 3.2;
+            ctx.strokeStyle = "rgba(1,8,20,.96)";
+            ctx.shadowBlur = 0;
+            ctx.strokeText(this.typed, renderX, renderY);
+            ctx.fillStyle = "#78e8ff";
             ctx.fillText(this.typed, renderX, renderY);
 
-            if (this.shakeFrames > 2) {
-                ctx.fillStyle = "#ffffff";
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = "#ffffff";
-            } else {
-                ctx.shadowBlur = activeEnemy === this ? 15 : 8; 
-                ctx.shadowColor = this.colorGlow; 
-                ctx.fillStyle = this.colorGlow; 
-            }
-            
-            ctx.fillText(this.word.substring(this.typed.length), renderX + typedWidth, renderY);
+            const remainingWord = this.word.substring(this.typed.length);
+            const isShaking = this.shakeFrames > 2;
+            ctx.lineWidth = 3.2;
+            ctx.strokeStyle = "rgba(1,8,20,.96)";
+            ctx.shadowBlur = 0;
+            ctx.strokeText(remainingWord, renderX + typedWidth, renderY);
+            ctx.fillStyle = isShaking ? "#ffffff" : (this.colorText || "#f5fcff");
+            ctx.shadowBlur = isShaking ? 12 : (activeEnemy === this ? 7 : 3.5);
+            ctx.shadowColor = isShaking ? "#ffffff" : this.colorGlow;
+            ctx.fillText(remainingWord, renderX + typedWidth, renderY);
             ctx.restore();
         }
         update() { this.y += this.speed; }
@@ -1245,9 +1254,15 @@ const PIN_RAHASIA_2 = "0199";
         if(gameBackgroundImage.complete&&gameBackgroundImage.naturalWidth>0){
             const iw=gameBackgroundImage.naturalWidth,ih=gameBackgroundImage.naturalHeight;
             const scale=Math.max(w/iw,h/ih),sw=w/scale,sh=h/scale;
+            // Keep a dark base under the lightly softened image to avoid bright edges.
+            ctx.fillStyle="#030916";
+            ctx.fillRect(0,0,w,h);
+            ctx.save();
+            ctx.filter="blur(1px) brightness(.84) saturate(.84)";
             ctx.drawImage(gameBackgroundImage,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);
+            ctx.restore();
             const shade=ctx.createLinearGradient(0,0,0,h);
-            shade.addColorStop(0,"rgba(1,7,21,.22)");shade.addColorStop(.44,"rgba(2,9,24,.035)");shade.addColorStop(1,"rgba(1,6,19,.22)");
+            shade.addColorStop(0,"rgba(1,7,21,.25)");shade.addColorStop(.44,"rgba(2,9,24,.13)");shade.addColorStop(1,"rgba(1,6,19,.30)");
             ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
         }else{
             ctx.fillStyle="#020817";ctx.fillRect(0,0,w,h);
