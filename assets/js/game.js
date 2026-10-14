@@ -459,13 +459,17 @@ function goToDashboard2() {
     const gameKeyboard = document.getElementById("gameKeyboard");
     const floatingBombButton = document.getElementById("floatingBombBtn");
     let nativeNumberEntryActive = false;
+    let numberEntryBaselineViewportHeight = 0;
+    let numberEntryViewportShrunk = false;
     const gameKeyboardStatus = document.getElementById("gameKeyboardStatus");
     function isMobilePortraitGame(){
         return !!(window.matchMedia && window.matchMedia("(max-width: 720px) and (orientation: portrait)").matches);
     }
     function resizeGameCanvas(){
         gameWidth=Math.max(240,window.innerWidth);
-        const visibleHeight=Math.round((window.visualViewport&&window.visualViewport.height)||window.innerHeight);
+        // Safari iOS shrinks visualViewport for its native keyboard, then may restore it late.
+        // Use the layout viewport for canvas geometry so the playfield cannot remain compressed.
+        const visibleHeight=Math.round(window.innerHeight);
         const keyboardActive=gameActive&&isMobilePortraitGame()&&!nativeNumberEntryActive;
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
         if(floatingBombButton)floatingBombButton.classList.toggle("hidden",!keyboardActive);
@@ -917,6 +921,8 @@ const PIN_RAHASIA_2 = "0199";
         if(button.dataset.keyboardAction==="clear"){useStoredSkill("clear");return;}
         if(button.dataset.keyboardMode==="number"){
             nativeNumberEntryActive=true;
+            numberEntryBaselineViewportHeight=Math.round((window.visualViewport&&window.visualViewport.height)||window.innerHeight);
+            numberEntryViewportShrunk=false;
             hiddenInput.setAttribute("inputmode","numeric");
             hiddenInput.setAttribute("pattern","[0-9]*");
             hiddenInput.setAttribute("enterkeyhint","done");
@@ -979,6 +985,8 @@ const PIN_RAHASIA_2 = "0199";
     function closeNativeNumberEntry(){
         if(!nativeNumberEntryActive)return;
         nativeNumberEntryActive=false;
+        numberEntryBaselineViewportHeight=0;
+        numberEntryViewportShrunk=false;
         kodeAngka="";
         hiddenInput.removeAttribute("inputmode");
         hiddenInput.removeAttribute("pattern");
@@ -1711,5 +1719,19 @@ const PIN_RAHASIA_2 = "0199";
         resizeGameCanvas();
         if(!shipSelectMenu.classList.contains('hidden'))updateShipSelectionUI();
     });
+    // Recover from iOS Safari's delayed visualViewport updates when the native number pad closes.
+    if(window.visualViewport){
+        window.visualViewport.addEventListener("resize",()=>{
+            const viewportHeight=Math.round(window.visualViewport.height);
+            if(nativeNumberEntryActive&&numberEntryBaselineViewportHeight>0){
+                if(viewportHeight<numberEntryBaselineViewportHeight-100){
+                    numberEntryViewportShrunk=true;
+                }else if(numberEntryViewportShrunk&&viewportHeight>=numberEntryBaselineViewportHeight-80){
+                    closeNativeNumberEntry();
+                }
+            }
+            resizeGameCanvas();
+        });
+    }
     resizeGameCanvas();
     updateSkillInventoryUI();
