@@ -935,8 +935,10 @@ const PIN_RAHASIA_2 = "0199";
             hiddenInput.style.position="fixed";hiddenInput.style.left="8px";hiddenInput.style.bottom="8px";
             hiddenInput.style.width="24px";hiddenInput.style.height="24px";hiddenInput.style.opacity="0.02";
             hiddenInput.style.zIndex="40";
+            // Focus first within the click's user activation, before hiding
+            // the tapped button or resizing the playfield.
+            hiddenInput.focus({preventScroll:true});
             resizeGameCanvas();
-            hiddenInput.focus();
             return;
         }
         if(button.dataset.key)sendGameCharacter(button.dataset.key);
@@ -950,14 +952,21 @@ const PIN_RAHASIA_2 = "0199";
                 const button=event.target.closest("button");
                 if(!button||button.disabled||!event.isPrimary)return;
                 if(event.pointerType==="mouse"&&event.button!==0)return;
+                // Opening the iOS native number pad must run from a normal click:
+                // cancelling pointerdown can prevent or immediately dismiss focus.
+                if(button.dataset.keyboardMode==="number")return;
                 event.preventDefault();
                 handleGameKeyboardButton(button);
             },{passive:false});
 
             // Keep keyboard / assistive-technology activation working without double-processing pointer taps.
             gameKeyboard.addEventListener("click",event=>{
-                if(event.detail!==0)return;
-                handleGameKeyboardButton(event.target.closest("button"));
+                const button=event.target.closest("button");
+                if(!button)return;
+                // Native number entry needs the trusted click on iOS Safari/PWA.
+                // Other keys already ran on pointerdown; detail=0 is accessibility input.
+                if(event.detail!==0&&button.dataset.keyboardMode!=="number")return;
+                handleGameKeyboardButton(button);
             });
         }else{
             // Compatibility fallback for older browsers without Pointer Events.
