@@ -461,7 +461,9 @@ function goToDashboard2() {
         const keyboardActive=gameActive&&isMobilePortraitGame()&&!nativeNumberEntryActive;
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
         const keyboardHeight=keyboardActive&&gameKeyboard?Math.round(gameKeyboard.getBoundingClientRect().height):0;
-        gameHeight=Math.max(220,visibleHeight-keyboardHeight);
+        // Reserve the full gap beneath the floating keyboard so the canvas ends at the key panel, not behind it.
+        const keyboardBottomGap=keyboardActive?25:0;
+        gameHeight=Math.max(220,visibleHeight-keyboardHeight-keyboardBottomGap);
         canvasScale=Math.min(window.devicePixelRatio||1,3);
         canvas.width=Math.round(gameWidth*canvasScale);
         canvas.height=Math.round(gameHeight*canvasScale);
@@ -1116,9 +1118,8 @@ const PIN_RAHASIA_2 = "0199";
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = t.reachedWave + currentWave;
         
-        setTimeout(() => {
-            gameOverMenu.classList.remove('hidden');
-        }, 1000); 
+        // Show the end-state immediately; do not leave the player staring at a frozen playfield for one second.
+        gameOverMenu.classList.remove('hidden');
         hiddenInput.blur();
     }
 
