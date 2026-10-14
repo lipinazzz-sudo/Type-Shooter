@@ -1281,8 +1281,17 @@ const PIN_RAHASIA_2 = "0199";
         const hudMult=comboCount>=25?5:comboCount>=18?4:comboCount>=10?3:comboCount>=5?2:1;
         ctx.textAlign="center";ctx.fillStyle="#ffd18a";ctx.font="800 "+(compactHud?7:10)+"px ui-monospace,monospace";
         ctx.fillText("COMBO",comboX+comboW/2,hudTopY+(compactHud?12:17));
-        ctx.fillStyle="#fff4d8";ctx.font="900 "+(compactHud?13:20)+"px ui-monospace,monospace";
-        ctx.fillText(String(comboCount)+" ×"+hudMult,comboX+comboW/2,hudTopY+(compactHud?32:43));
+        const comboAccent = hudMult >= 5 ? "#ffd36a" : hudMult >= 3 ? "#8be9ff" : hudMult >= 2 ? "#a5f3c1" : "#fff4d8";
+        const comboPulseAmount = Math.min(1, Math.max(0, comboPulse / 8));
+        ctx.save();
+        ctx.translate(comboX+comboW/2,hudTopY+(compactHud?32:43));
+        ctx.scale(1+comboPulseAmount*.1,1+comboPulseAmount*.1);
+        ctx.fillStyle=comboAccent;
+        ctx.font="900 "+(compactHud?13:20)+"px ui-monospace,monospace";
+        ctx.shadowColor=comboAccent;
+        ctx.shadowBlur=(hudMult>1?3:0)+comboPulseAmount*5;
+        ctx.fillText(String(comboCount)+" ×"+hudMult,0,0);
+        ctx.restore();
         const heartSize=compactHud?5.3:8,heartCount=maxHP,heartGap=lifeW/(heartCount+1);
         function traceLifeHeart(x,y,size){
             ctx.beginPath();ctx.moveTo(x,y+size*.78);
@@ -1335,11 +1344,50 @@ const PIN_RAHASIA_2 = "0199";
 
         if (waveClearMessageTimer > 0) {
             waveClearMessageTimer--;
-            ctx.fillStyle = "#38bdf8";
-            ctx.font = "bold 32px 'Courier New'"; ctx.textAlign = "center";
-            ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
-            ctx.fillText(t.incomingWave + currentWave, gameWidth / 2, gameHeight / 2.5);
-            ctx.shadowBlur = 0; ctx.textAlign = "left"; 
+            const waveMessage = t.incomingWave + currentWave;
+            const fadeIn = Math.min(1, (90-waveClearMessageTimer)/10);
+            const fadeOut = Math.min(1, waveClearMessageTimer/14);
+            const waveAlpha = Math.max(0, Math.min(fadeIn,fadeOut));
+            const wavePulse = .5 + .5*Math.sin(frameCount*.16);
+            const waveFontSize = Math.min(gameWidth<420?24:32, (gameWidth-36)/Math.max(8,waveMessage.length*.64));
+            const waveY = gameHeight/2.5;
+
+            ctx.save();
+            ctx.globalAlpha = waveAlpha;
+            ctx.translate(gameWidth/2,waveY);
+            ctx.scale(.97+wavePulse*.03,.97+wavePulse*.03);
+            ctx.font = "900 "+waveFontSize+"px ui-monospace,monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const textWidth = ctx.measureText(waveMessage).width;
+            const panelWidth = Math.min(gameWidth-24,textWidth+42);
+            const panelHeight = waveFontSize+28;
+            const panelGradient = ctx.createLinearGradient(-panelWidth/2,0,panelWidth/2,0);
+            panelGradient.addColorStop(0,"rgba(8,28,54,0)");
+            panelGradient.addColorStop(.18,"rgba(8,28,54,.82)");
+            panelGradient.addColorStop(.5,"rgba(10,42,73,.94)");
+            panelGradient.addColorStop(.82,"rgba(8,28,54,.82)");
+            panelGradient.addColorStop(1,"rgba(8,28,54,0)");
+
+            ctx.fillStyle = panelGradient;
+            ctx.fillRect(-panelWidth/2,-panelHeight/2,panelWidth,panelHeight);
+            ctx.strokeStyle = "rgba(93,222,255,"+(.38+wavePulse*.32)+")";
+            ctx.lineWidth = 1;
+            ctx.shadowColor = "#38bdf8";
+            ctx.shadowBlur = 6+wavePulse*5;
+            ctx.beginPath();
+            ctx.moveTo(-panelWidth/2+10,-panelHeight/2);
+            ctx.lineTo(-panelWidth/2+panelWidth*.28,-panelHeight/2);
+            ctx.moveTo(panelWidth/2-panelWidth*.28,panelHeight/2);
+            ctx.lineTo(panelWidth/2-10,panelHeight/2);
+            ctx.stroke();
+
+            ctx.fillStyle = "#dff9ff";
+            ctx.shadowColor = "#38bdf8";
+            ctx.shadowBlur = 10+wavePulse*7;
+            ctx.fillText(waveMessage,0,0,gameWidth-36);
+            ctx.restore();
         }
 
         let cx = player.x; 
