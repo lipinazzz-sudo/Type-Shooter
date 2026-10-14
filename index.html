@@ -509,7 +509,7 @@
         /* Immersive space style and 2 x 3 portrait ship selection pages */
         #pauseBtn.pause-btn{width:42px;height:42px;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));display:grid;place-items:center;border:1px solid rgba(92,220,255,.9);border-radius:7px;color:#e8faff;background:linear-gradient(145deg,rgba(7,29,52,.96),rgba(2,10,25,.96));box-shadow:0 0 10px rgba(56,189,248,.4),inset 0 0 8px rgba(56,189,248,.11);font:900 17px/1 Arial,sans-serif;text-shadow:0 0 8px #38bdf8;z-index:30;cursor:pointer;touch-action:manipulation}
         #pauseBtn.pause-btn:active{transform:scale(.95)}
-        .ship-select-overlay{background:linear-gradient(180deg,rgba(1,7,19,.37),rgba(1,7,20,.72) 75%,rgba(1,5,15,.9)),radial-gradient(ellipse at 50% 100%,rgba(14,165,233,.2),transparent 46%),url("assets/backgrounds/space-nebula.webp") center center/cover no-repeat!important;backdrop-filter:none}
+        .ship-select-overlay{background:linear-gradient(180deg,rgba(1,7,19,.37),rgba(1,7,20,.72) 75%,rgba(1,5,15,.9)),radial-gradient(ellipse at 50% 100%,rgba(14,165,233,.2),transparent 46%),url("assets/backgrounds/space-nebula.svg") center center/cover no-repeat!important;backdrop-filter:none}
         .ship-select-shell{border-color:rgba(78,205,255,.66);background:linear-gradient(155deg,rgba(3,16,35,.82),rgba(3,9,22,.88));box-shadow:0 0 32px rgba(14,165,233,.24),inset 0 0 26px rgba(14,165,233,.06);border-radius:12px}
         .ship-select-header h2{text-shadow:0 0 16px rgba(56,189,248,.52)}
         .ship-card{border-radius:8px!important;background:linear-gradient(155deg,rgba(7,22,43,.85),rgba(2,8,20,.9))!important;border-color:rgba(66,190,240,.35)!important;box-shadow:inset 0 0 16px rgba(20,128,195,.06),0 0 8px rgba(0,0,0,.16)!important}
@@ -583,7 +583,7 @@
         @media(max-width:720px) and (orientation:portrait){
           #gameCanvas{inset:0 auto auto 0}
           #pauseBtn.pause-btn{top:max(7px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));width:38px;height:38px}
-          .ship-select-overlay{padding:max(6px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left)}
+          .ship-select-overlay{padding:max(6px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))}
           .ship-select-shell{width:100%;max-height:100%;padding:8px;border-radius:10px}
           .ship-select-header{gap:5px;margin-bottom:6px}.ship-select-eyebrow{font-size:7px;letter-spacing:.12em;margin-bottom:3px}
           .ship-select-header h2{font-size:clamp(16px,4.3vw,21px);margin:0 0 3px}.ship-select-subtitle{font-size:8px;line-height:1.25}
@@ -768,7 +768,7 @@ function goToDashboard2() {
     const canvas = document.getElementById('gameCanvas');
     const gameBackgroundImage = new Image();
     gameBackgroundImage.decoding = "async";
-    gameBackgroundImage.src = "assets/backgrounds/space-nebula.webp";
+    gameBackgroundImage.src = "assets/backgrounds/space-nebula.svg";
     
     let langSetting = localStorage.getItem('langSetting') || 'id';
     let bgmVolume = parseFloat(localStorage.getItem('bgmVolume') ?? 0.5);
@@ -1118,6 +1118,7 @@ function goToDashboard2() {
         canvas.height=Math.round(gameHeight*canvasScale);
         canvas.style.width=gameWidth+"px";canvas.style.height=gameHeight+"px";
         ctx.setTransform(canvasScale,0,0,canvasScale,0,0);
+        ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
         updatePlayerPosition();initStars();
     }
@@ -1203,9 +1204,9 @@ const PIN_RAHASIA_2 = "0199";
         const isPortrait = gameHeight > gameWidth;
 
         if (isTouchDevice && isPortrait) {
-            player.y = gameHeight - 300; 
+            player.y = gameHeight - Math.max(76, Math.min(112, gameHeight * 0.14));
         } else if (isTouchDevice && !isPortrait) {
-            player.y = gameHeight - 180;
+            player.y = gameHeight - 100;
         } else {
             player.y = gameHeight - 50;
         }
@@ -1386,7 +1387,7 @@ const PIN_RAHASIA_2 = "0199";
                 const wx=x+px*2.1,wy=y+py*2.1,nx=x-px*2.1,ny=y-py*2.1;
                 ctx.shadowColor=accent;ctx.shadowBlur=16;ctx.fillStyle=accent;ctx.globalAlpha=.92;
                 ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(wx+ux*2,wy+uy*2);ctx.lineTo(rearX+px*1.1,rearY+py*1.1);ctx.lineTo(x-ux*17,y-uy*17);ctx.lineTo(rearX-px*1.1,rearY-py*1.1);ctx.lineTo(nx+ux*2,ny+uy*2);ctx.closePath();ctx.fill();
-                ctx.globalAlpha=1;ctx.shadowBlur=7;ctx.fillStyle="#f8fdff";
+                ctx.globalAlpha=1;ctx.shadowBlur=2;ctx.fillStyle="#f8fdff";
                 ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(x+ux*1.5+px*.7,y+uy*1.5+py*.7);ctx.lineTo(x-ux*10+px*.65,y-uy*10+py*.65);ctx.lineTo(x-ux*14,y-uy*14);ctx.lineTo(x-ux*10-px*.65,y-uy*10-py*.65);ctx.lineTo(x+ux*1.5-px*.7,y+uy*1.5-py*.7);ctx.closePath();ctx.fill();
                 const trail=ctx.createLinearGradient(x-ux*11,y-uy*11,x-ux*28,y-uy*28);trail.addColorStop(0,accent);trail.addColorStop(1,"rgba(20,90,170,0)");
                 ctx.strokeStyle=trail;ctx.lineWidth=1.6;ctx.shadowBlur=4;ctx.beginPath();ctx.moveTo(x-ux*9,y-uy*9);ctx.lineTo(x-ux*27,y-uy*27);ctx.stroke();
@@ -1538,7 +1539,8 @@ const PIN_RAHASIA_2 = "0199";
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
                 if (targets.length > 0) {
                     targets.sort((a, b) => b.y - a.y); 
-                    activeEnemy = targets[0]; 
+                    activeEnemy = targets[0];
+                    updateSkillInventoryUI();
                     activeEnemy.typed += key;
                     activeEnemy.shakeFrames = 6; 
                     
@@ -1624,6 +1626,7 @@ const PIN_RAHASIA_2 = "0199";
 
                         enemies = enemies.filter(en => en !== activeEnemy);
                         activeEnemy = null;
+                        updateSkillInventoryUI();
                     }
                 } else {
                     let errorTypedWidth = ctx.measureText(activeEnemy.typed).width;
@@ -1726,7 +1729,7 @@ const PIN_RAHASIA_2 = "0199";
 
         ctx.fillStyle = "rgba(5, 14, 30, 0.82)";
         ctx.shadowColor = accent;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 3;
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.strokeStyle = accent;
@@ -1742,7 +1745,7 @@ const PIN_RAHASIA_2 = "0199";
             const scale=Math.max(w/iw,h/ih),sw=w/scale,sh=h/scale;
             ctx.drawImage(gameBackgroundImage,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);
             const shade=ctx.createLinearGradient(0,0,0,h);
-            shade.addColorStop(0,"rgba(1,7,21,.48)");shade.addColorStop(.44,"rgba(2,9,24,.12)");shade.addColorStop(1,"rgba(1,6,19,.43)");
+            shade.addColorStop(0,"rgba(1,7,21,.22)");shade.addColorStop(.44,"rgba(2,9,24,.035)");shade.addColorStop(1,"rgba(1,6,19,.22)");
             ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
         }else{
             ctx.fillStyle="#020817";ctx.fillRect(0,0,w,h);
@@ -1878,7 +1881,7 @@ const PIN_RAHASIA_2 = "0199";
         const heartStart=lifePanelX+lifePanelWidth/2-(maxHP-1)*heartGap/2;
         for(let i=0;i<maxHP;i++){
             const hx=heartStart+i*heartGap,hy=lifePanelY+22;traceLifeHeart(hx,hy,heartSize);
-            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor=lowLife?"#ff2948":"#ff415b";ctx.shadowBlur=lowLife?12:7;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
+            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor=lowLife?"#ff2948":"#ff415b";ctx.shadowBlur=lowLife?6:3;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
             else{ctx.fillStyle="rgba(71,85,105,.14)";ctx.fill();ctx.strokeStyle="rgba(148,163,184,.46)";ctx.lineWidth=1;ctx.stroke();}
         }
         ctx.restore();
@@ -1905,7 +1908,7 @@ const PIN_RAHASIA_2 = "0199";
             drawHudPanel(hudLeftX, hudTopY + hudLeftHeight + 8, comboPanelWidth, 32, comboAccent);
             ctx.fillStyle = mult > 1 ? "#c4b5fd" : "#9be7ff";
             ctx.shadowColor = mult > 1 ? "rgba(167, 139, 250, 0.6)" : "rgba(88, 217, 255, 0.35)";
-            ctx.shadowBlur = comboPulse > 0 ? 9 : 3;
+            ctx.shadowBlur = comboPulse > 0 ? 4 : 1;
             ctx.textAlign = "left";
             ctx.fillText(comboText, hudLeftX + 12, hudTopY + hudLeftHeight + 29, Math.max(24, comboPanelWidth - 20));
             ctx.restore();
