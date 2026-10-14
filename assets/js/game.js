@@ -48,9 +48,9 @@ function goToDashboard2() {
     let sfxVolume = parseFloat(localStorage.getItem('sfxVolume') ?? 0.5);
 
     const DIFFICULTY_PROFILES = {
-        easy: { minEnemies: 4, maxEnemies: 5, spawnIntervalScale: 1.16, waveSpeedMultipliers: [0.78, 0.84, 0.92, 1.00] },
-        medium: { minEnemies: 6, maxEnemies: 7, spawnIntervalScale: 1.00, waveSpeedMultipliers: [1.00, 1.12, 1.28, 1.40] },
-        hard: { minEnemies: 8, maxEnemies: 10, spawnIntervalScale: 1.00, waveSpeedMultipliers: [1.08, 1.28, 1.52, 1.80] }
+        easy: { minEnemies: 4, maxEnemies: 5, spawnIntervalScale: 1.16, scoreMultiplier: 0.60, waveSpeedMultipliers: [0.7, 0.8, 0.9, 1.0] },
+        medium: { minEnemies: 6, maxEnemies: 7, spawnIntervalScale: 1.00, scoreMultiplier: 1.00, waveSpeedMultipliers: [1.0, 1.2, 1.4, 1.5] },
+        hard: { minEnemies: 8, maxEnemies: 10, spawnIntervalScale: 1.00, scoreMultiplier: 1.50, waveSpeedMultipliers: [1.5, 1.7, 1.9, 2.1] }
     };
     let selectedDifficulty = localStorage.getItem("typeShooterDifficulty") || "medium";
     if (!Object.prototype.hasOwnProperty.call(DIFFICULTY_PROFILES, selectedDifficulty)) selectedDifficulty = "medium";
@@ -59,6 +59,18 @@ function goToDashboard2() {
         const profile = DIFFICULTY_PROFILES[selectedDifficulty] || DIFFICULTY_PROFILES.medium;
         const speedBand = waveNum <= 3 ? 0 : waveNum <= 6 ? 1 : waveNum <= 9 ? 2 : 3;
         return profile.waveSpeedMultipliers[speedBand];
+    }
+
+    function getScoreMultiplier() {
+        const profile = DIFFICULTY_PROFILES[selectedDifficulty] || DIFFICULTY_PROFILES.medium;
+        return profile.scoreMultiplier;
+    }
+
+    function awardScore(rawPoints) {
+        const safePoints = Math.max(0, Number(rawPoints) || 0);
+        const finalAward = Math.round(safePoints * getScoreMultiplier());
+        score += finalAward;
+        return finalAward;
     }
 
     function setDifficulty(mode) {
@@ -109,8 +121,9 @@ function goToDashboard2() {
             shipBack: "KEMBALI", shipStart: "MULAI GAME",
             difficultyTitle: "TINGKAT KESULITAN",
             difficultyEasy: "MUDAH", difficultyMedium: "SEDANG", difficultyHard: "SULIT",
-            difficultyEasyMeta: "4–5 MUSUH / WAVE", difficultyMediumMeta: "6–7 MUSUH / WAVE", difficultyHardMeta: "8–10 MUSUH / WAVE",
-            difficultyBandNote: "KECEPATAN: WAVE 1–3 · 4–6 · 7–9 · MAKS. 10"
+            difficultyEasyMeta: "4–5 MUSUH · SKOR ×0,6", difficultyMediumMeta: "6–7 MUSUH · SKOR ×1,0", difficultyHardMeta: "8–10 MUSUH · SKOR ×1,5",
+            difficultyBandNote: "KECEPATAN: WAVE 1–3 · 4–6 · 7–9 · MAKS. 10",
+            scoreMode: "MODE", scoreModeLegacy: "LAMA", pauseButton: "Jeda permainan"
         },
         en: {
             title: "TYPE-SHOOTER", subtitle: "FAR AND BEYOND", madeWithLove: "Made With Love",
@@ -127,8 +140,9 @@ function goToDashboard2() {
             shipBack: "BACK", shipStart: "START GAME",
             difficultyTitle: "DIFFICULTY",
             difficultyEasy: "EASY", difficultyMedium: "MEDIUM", difficultyHard: "HARD",
-            difficultyEasyMeta: "4–5 ENEMIES / WAVE", difficultyMediumMeta: "6–7 ENEMIES / WAVE", difficultyHardMeta: "8–10 ENEMIES / WAVE",
-            difficultyBandNote: "SPEED: WAVES 1–3 · 4–6 · 7–9 · MAX 10"
+            difficultyEasyMeta: "4–5 ENEMIES · SCORE ×0.6", difficultyMediumMeta: "6–7 ENEMIES · SCORE ×1.0", difficultyHardMeta: "8–10 ENEMIES · SCORE ×1.5",
+            difficultyBandNote: "SPEED: WAVES 1–3 · 4–6 · 7–9 · MAX 10",
+            scoreMode: "MODE", scoreModeLegacy: "LEGACY", pauseButton: "Pause game"
         }
     };
     function updateShipSelectionUI(){
@@ -190,6 +204,10 @@ function goToDashboard2() {
         document.getElementById('btn-scoreboard').innerText = t.scoreboard;
         document.getElementById('ui-mobile-hint').innerText = t.mobileHint;
         updateDifficultySelectorUI();
+        if (pauseBtn) {
+            pauseBtn.setAttribute("aria-label", t.pauseButton);
+            pauseBtn.setAttribute("title", t.pauseButton);
+        }
         
         // Settings Menu
         document.getElementById('ui-settings-title').innerText = t.settings;
@@ -817,7 +835,7 @@ const PIN_RAHASIA_2 = "0199";
         }else if(type==="bomb"){
             const targets=enemies.slice();
             targets.forEach(enemy=>{
-                score+=Math.max(10,enemy.word.length*10);
+                awardScore(Math.max(10,enemy.word.length*10));
                 createExplosion(enemy.x,enemy.y,enemy.word.length,enemy.colorGlow||"#ffbd59");
                 floatingTexts.push(new FloatingText(enemy.x,enemy.y,"BOMB","#ffbd59"));
             });
@@ -946,7 +964,7 @@ const PIN_RAHASIA_2 = "0199";
 
                         let basePoints = activeEnemy.word.length * 10;
                         let finalPoints = basePoints * multiplier;
-                        score += finalPoints;
+                        finalPoints = awardScore(finalPoints);
 
                         triggerScreenShake(activeEnemy.type === 'tank' ? 10 : 5, 8); 
                         createExplosion(activeEnemy.x, activeEnemy.y, activeEnemy.word.length, activeEnemy.colorGlow);
@@ -961,7 +979,7 @@ const PIN_RAHASIA_2 = "0199";
                             
                             enemies.forEach(e => {
                                 if(e !== activeEnemy) {
-                                    score += (e.word.length * 5); 
+                                    awardScore(e.word.length * 5); 
                                     createExplosion(e.x, e.y, e.word.length, e.colorGlow);
                                 }
                             });
@@ -1009,7 +1027,7 @@ const PIN_RAHASIA_2 = "0199";
 
     function saveHighScore(finalScore, finalWave) {
         let scores = JSON.parse(localStorage.getItem('typeShooterScores')) || [];
-        scores.push({ score: finalScore, wave: finalWave, date: new Date().toLocaleDateString('id-ID') });
+        scores.push({ score: finalScore, wave: finalWave, difficulty: selectedDifficulty, scoreMultiplier: getScoreMultiplier(), date: new Date().toLocaleDateString('id-ID') });
         scores.sort((a, b) => b.score - a.score);
         scores = scores.slice(0, 5); 
         localStorage.setItem('typeShooterScores', JSON.stringify(scores));
@@ -1027,14 +1045,19 @@ const PIN_RAHASIA_2 = "0199";
         if(scores.length === 0) {
             contentDiv.innerHTML = `<p style='color:#64748b; margin: 20px 0;'>${t.noScores}</p>`;
         } else {
-            let tableHTML = `<table class='score-table'><tr><th>${t.rank}</th><th>${t.score}</th><th>${t.wave}</th><th>${t.date}</th></tr>`;
+            let tableHTML = `<table class='score-table'><tr><th>${t.rank}</th><th>${t.score}</th><th>${t.scoreMode}</th><th>${t.wave}</th><th>${t.date}</th></tr>`;
+            const scoreModeLabels = { easy:t.difficultyEasy, medium:t.difficultyMedium, hard:t.difficultyHard };
+            const scoreModeColors = { easy:"#6ee7b7", medium:"#7ddfff", hard:"#ffb08b" };
             scores.forEach((item, index) => {
                 let waveDisplay = item.wave ? "W-" + item.wave : "W-1";
+                const scoreMode = scoreModeLabels[item.difficulty] || t.scoreModeLegacy;
+                const scoreModeColor = scoreModeColors[item.difficulty] || "#64748b";
                 tableHTML += `<tr>
                     <td>#${index + 1}</td>
-                    <td style="color:#4ade80; font-weight:bold;">${item.score}</td>
-                    <td style="color:#38bdf8; font-weight:bold;">${waveDisplay}</td>
-                    <td style="color:#64748b; font-size:12px;">${item.date}</td>
+                    <td style="color:#4ade80;font-weight:bold;">${item.score}</td>
+                    <td style="color:${scoreModeColor};font-size:11px;font-weight:900;">${scoreMode}</td>
+                    <td style="color:#38bdf8;font-weight:bold;">${waveDisplay}</td>
+                    <td style="color:#64748b;font-size:12px;">${item.date}</td>
                 </tr>`;
             });
             tableHTML += "</table>";

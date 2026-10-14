@@ -15,7 +15,14 @@
 
     <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
 
-    <div id="pauseBtn" class="pause-btn hidden" onclick="pauseGame()">⏸</div>
+    <button id="pauseBtn" class="pause-btn hidden" type="button" onclick="pauseGame()" aria-label="Pause game" title="Pause game">
+        <svg class="pause-glyph" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+          <defs><linearGradient id="pauseChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e5fbff"/><stop offset=".48" stop-color="#7ce7ff"/><stop offset="1" stop-color="#2798d6"/></linearGradient></defs>
+          <path d="M10 2.5H26L33.5 10V26L26 33.5H10L2.5 26V10Z" fill="rgba(3,18,36,.75)" stroke="#42d8ff" stroke-width="1.25"/>
+          <path d="M11.5 9.5H15.5V26.5H11.5Z M20.5 9.5H24.5V26.5H20.5Z" fill="url(#pauseChrome)"/>
+          <path d="M11.5 9.5H15.5 M20.5 9.5H24.5" stroke="#fff" stroke-opacity=".8" stroke-width=".7"/>
+        </svg>
+    </button>
 
     <canvas id="gameCanvas"></canvas>
     <section id="gameKeyboard" class="game-keyboard hidden" aria-label="Keyboard khusus Type-Shooter">

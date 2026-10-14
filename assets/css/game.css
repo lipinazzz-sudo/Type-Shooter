@@ -733,3 +733,76 @@
 @media(max-width:360px){#difficultyBandNote{max-width:135px;white-space:normal;line-height:1.25}.difficulty-option small{font-size:6.5px}}
 @media(prefers-reduced-motion:reduce){.difficulty-option{transition:none!important}}
 
+
+
+
+/* FINAL POLISH: start screen, pause control visibility, and animated PLAY CTA */
+#mainMenu.ui-layer{
+  background:
+    linear-gradient(180deg,rgba(1,7,19,.24),rgba(1,7,19,.5) 60%,rgba(1,5,15,.78)),
+    radial-gradient(ellipse at 50% 0%,rgba(13,146,236,.2),transparent 50%),
+    url("../backgrounds/space-nebula.png") center center/cover no-repeat!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+#mainMenu .menu-box{
+  background:linear-gradient(150deg,rgba(3,18,38,.76),rgba(2,9,23,.84))!important;
+  border:1px solid rgba(83,202,246,.3)!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.34),inset 0 1px 0 rgba(215,248,255,.06),0 0 32px rgba(14,165,233,.1)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(1.12);
+  backdrop-filter:blur(12px) saturate(1.12);
+}
+#btn-play{
+  position:relative!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  min-height:58px!important;margin:6px 0 10px!important;padding:14px 16px 18px!important;
+  border:0!important;outline:0!important;border-radius:0!important;
+  background:transparent!important;color:#e8faff!important;
+  box-shadow:none!important;
+  font-size:clamp(1rem,4vw,1.14rem)!important;font-weight:900!important;
+  letter-spacing:.2em!important;text-shadow:0 0 8px rgba(70,212,255,.42),0 0 22px rgba(30,144,255,.2)!important;
+  animation:playGameHover 2.6s ease-in-out infinite;
+  transform-origin:50% 60%;
+}
+#btn-play::after{
+  content:"";position:absolute;bottom:7px;left:28%;right:28%;height:1px;
+  background:linear-gradient(90deg,transparent,#51dcff 20%,#b4f5ff 50%,#51dcff 80%,transparent);
+  box-shadow:0 0 8px rgba(56,189,248,.7);opacity:.9;
+  transition:left .2s ease,right .2s ease,opacity .2s ease;
+}
+#btn-play:hover{
+  background:transparent!important;filter:brightness(1.16)!important;
+  color:#fff!important;border:0!important;box-shadow:none!important;
+  text-shadow:0 0 12px rgba(70,212,255,.68),0 0 24px rgba(30,144,255,.28)!important;
+}
+#btn-play:hover::after{left:20%;right:20%;opacity:1}
+#btn-play:active{animation:none;transform:scale(.98)!important;background:transparent!important}
+@keyframes playGameHover{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-3px) scale(1.015)}
+}
+#pauseBtn.pause-btn{
+  position:fixed!important;z-index:35!important;
+  top:10px!important;right:10px!important;
+  display:grid!important;place-items:center!important;
+  width:42px!important;height:44px!important;min-width:0!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;outline:0!important;
+  background:transparent!important;box-shadow:none!important;filter:none!important;
+  -webkit-appearance:none;appearance:none;cursor:pointer;touch-action:manipulation;
+  color:#a8f0ff!important;
+}
+#pauseBtn.pause-btn.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#pauseBtn .pause-glyph{display:block;width:35px;height:35px;overflow:visible;filter:drop-shadow(0 0 4px rgba(56,189,248,.42))}
+#pauseBtn.pause-btn:not(.hidden):active{transform:scale(.94)!important}
+#pauseBtn.pause-btn:focus-visible{outline:1px solid rgba(125,230,255,.85)!important;outline-offset:2px}
+@media(max-width:480px){
+  #mainMenu .menu-box{padding:24px 19px!important}
+  #btn-play{min-height:54px!important;font-size:1rem!important;letter-spacing:.16em!important}
+  #pauseBtn.pause-btn{top:10px!important;right:10px!important;width:42px!important;height:44px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #btn-play{animation:none!important}
+  #btn-play::after{transition:none!important}
+}
+
