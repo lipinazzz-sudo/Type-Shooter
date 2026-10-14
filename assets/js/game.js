@@ -820,12 +820,19 @@ const PIN_RAHASIA_2 = "0199";
     const skillColors={bomb:"#ffbd59",shield:"#58d9ff",clear:"#dbeafe"};
     function updateSkillInventoryUI(){
         const bombCount=document.getElementById("skillCountBombFloating");
+        const shieldCount=document.getElementById("skillCountShieldSpace");
+        const shieldButton=gameKeyboard&&gameKeyboard.querySelector('[data-keyboard-action="shield"]');
         const clearButton=gameKeyboard&&gameKeyboard.querySelector('[data-keyboard-action="clear"]');
         if(bombCount)bombCount.textContent=String(skillInventory.bomb);
+        if(shieldCount)shieldCount.textContent=String(skillInventory.shield);
+        if(shieldButton){
+            shieldButton.disabled=skillInventory.shield<1||shieldActive;
+            shieldButton.setAttribute("aria-label","Gunakan Shield; tersimpan "+skillInventory.shield);
+        }
         if(floatingBombButton){
-            floatingBombButton.disabled=skillInventory.bomb<1&&skillInventory.shield<1;
-            floatingBombButton.setAttribute("aria-label","BOMB tersimpan "+skillInventory.bomb+". Tahan untuk SHIELD.");
-            floatingBombButton.title="Ketuk: Bomb · Tahan: Shield";
+            floatingBombButton.disabled=skillInventory.bomb<1;
+            floatingBombButton.setAttribute("aria-label","Gunakan Bomb; tersimpan "+skillInventory.bomb);
+            floatingBombButton.title="Ledakkan musuh yang terlihat";
         }
         if(clearButton){
             clearButton.disabled=skillInventory.clear<1||!activeEnemy;
@@ -884,7 +891,7 @@ const PIN_RAHASIA_2 = "0199";
     }
     if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
         const button=event.target.closest("button");if(!button||button.disabled)return;
-        if(button.dataset.keyboardAction==="bomb"){useStoredSkill("bomb");return;}
+        if(button.dataset.keyboardAction==="shield"){useStoredSkill("shield");return;}
         if(button.dataset.keyboardAction==="clear"){useStoredSkill("clear");return;}
         if(button.dataset.keyboardMode==="number"){
             nativeNumberEntryActive=true;
@@ -901,12 +908,12 @@ const PIN_RAHASIA_2 = "0199";
         if(button.dataset.key)sendGameCharacter(button.dataset.key);
     });
 
-    // Physical controls mirror the virtual keyboard: Space = Bomb, Backspace = Clear, Shift = Shield.
+    // Physical controls mirror the virtual keyboard: Space = Shield, Backspace = Clear, Shift = Shield.
     document.addEventListener("keydown",event=>{
         if(!gameActive||event.repeat||nativeNumberEntryActive)return;
         if(event.code==="Space"){
             event.preventDefault();
-            useStoredSkill("bomb");
+            useStoredSkill("shield");
         }else if(event.key==="Backspace"){
             event.preventDefault();
             useStoredSkill("clear");
@@ -915,27 +922,9 @@ const PIN_RAHASIA_2 = "0199";
         }
     });
 
-    // The only visible skill button sits outside the keyboard; a hold keeps Shield usable without another button.
-    let bombHoldTimer=null;
-    let suppressNextBombClick=false;
+    // Bomb has its own single-purpose button outside the keyboard.
     if(floatingBombButton){
-        floatingBombButton.addEventListener("pointerdown",event=>{
-            if(event.button!==undefined&&event.button!==0)return;
-            suppressNextBombClick=false;
-            if(bombHoldTimer)clearTimeout(bombHoldTimer);
-            bombHoldTimer=setTimeout(()=>{
-                if(!gameActive)return;
-                suppressNextBombClick=true;
-                useStoredSkill("shield");
-            },520);
-        });
-        ["pointerup","pointercancel","pointerleave"].forEach(type=>{
-            floatingBombButton.addEventListener(type,()=>{
-                if(bombHoldTimer){clearTimeout(bombHoldTimer);bombHoldTimer=null;}
-            });
-        });
         floatingBombButton.addEventListener("click",()=>{
-            if(suppressNextBombClick){suppressNextBombClick=false;return;}
             useStoredSkill("bomb");
         });
     }
