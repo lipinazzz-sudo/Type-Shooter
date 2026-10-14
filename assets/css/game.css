@@ -1294,14 +1294,36 @@
   width:58%!important;
   max-width:58%!important;
   flex:0 0 58%!important;
-  border-color:rgba(255,84,103,.82)!important;
-  background:linear-gradient(180deg,rgba(91,25,43,.98),rgba(35,9,24,.99))!important;
-  color:#ffe8ec!important;
+  gap:8px!important;
+  border-color:rgba(88,217,255,.88)!important;
+  background:linear-gradient(180deg,rgba(8,60,91,.98),rgba(3,19,39,.99))!important;
+  color:#e1faff!important;
   letter-spacing:.16em!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 9px rgba(56,189,248,.12)!important;
 }
 .game-keyboard .game-key-row-space .game-space-key:active{
-  background:linear-gradient(180deg,#d92749,#78142d)!important;
-  box-shadow:0 0 10px rgba(255,43,72,.42)!important;
+  background:linear-gradient(180deg,#087bb4,#07416c)!important;
+  box-shadow:0 0 12px rgba(56,189,248,.42)!important;
+}
+.game-space-key b{
+  display:inline-grid;
+  place-items:center;
+  min-width:18px;
+  height:18px;
+  padding:0 4px;
+  border:1px solid rgba(138,221,255,.4);
+  border-radius:5px;
+  background:rgba(1,8,19,.72);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:0;
+  font-variant-numeric:tabular-nums;
+}
+.game-space-key:disabled{
+  opacity:.42!important;
+  filter:saturate(.45)!important;
+  box-shadow:none!important;
 }
 .game-keyboard .game-backspace-key{
   font-size:clamp(8px,2.45vw,11px)!important;
