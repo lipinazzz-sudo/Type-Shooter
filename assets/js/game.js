@@ -976,6 +976,30 @@ const PIN_RAHASIA_2 = "0199";
         });
     }
 
+    function closeNativeNumberEntry(){
+        if(!nativeNumberEntryActive)return;
+        nativeNumberEntryActive=false;
+        kodeAngka="";
+        hiddenInput.removeAttribute("inputmode");
+        hiddenInput.removeAttribute("pattern");
+        hiddenInput.removeAttribute("enterkeyhint");
+        hiddenInput.style.cssText="";
+        resizeGameCanvas();
+    }
+
+    // If the iOS numeric keyboard is dismissed without entering four digits,
+    // restore the game's own keyboard instead of leaving the controls hidden.
+    hiddenInput.addEventListener("blur",()=>{
+        if(nativeNumberEntryActive)closeNativeNumberEntry();
+    });
+    hiddenInput.addEventListener("keydown",event=>{
+        if(nativeNumberEntryActive&&(event.key==="Enter"||event.key==="Escape")){
+            event.preventDefault();
+            closeNativeNumberEntry();
+            hiddenInput.blur();
+        }
+    });
+
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
@@ -1000,14 +1024,8 @@ const PIN_RAHASIA_2 = "0199";
                     return;
                 }
                 if(nativeNumberEntryActive && kodeAngka.length>=4){
-                    kodeAngka="";
-                    nativeNumberEntryActive=false;
+                    closeNativeNumberEntry();
                     hiddenInput.blur();
-                    hiddenInput.removeAttribute("inputmode");
-                    hiddenInput.removeAttribute("pattern");
-                    hiddenInput.removeAttribute("enterkeyhint");
-                    hiddenInput.style.cssText="";
-                    resizeGameCanvas();
                 }
                 continue; 
             }
