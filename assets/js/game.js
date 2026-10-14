@@ -1173,7 +1173,9 @@ const PIN_RAHASIA_2 = "0199";
                 p.update(); p.draw();
                 if (p.alpha <= 0) particles.splice(index, 1);
             });
-            if (!gameActive && gameOverMenu.classList.contains('hidden')) {
+            // Continue the inactive animation only while the Pause menu is open.
+            // Stop the RAF loop after returning to the main menu or entering Game Over.
+            if (!gameActive && !pauseMenu.classList.contains('hidden')) {
                 loopId = requestAnimationFrame(gameLoop);
             }
             return;
