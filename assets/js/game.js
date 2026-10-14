@@ -934,10 +934,10 @@ const PIN_RAHASIA_2 = "0199";
             const t = translations[langSetting];
 
             // Success means the next expected letter matches; targeting and scoring stay unchanged.
-            const expectedNextCharacter = activeEnemy
-                ? activeEnemy.word[activeEnemy.typed.length]
+            const isExpectedCharacter = activeEnemy
+                ? activeEnemy.word[activeEnemy.typed.length] === key
                 : enemies.some(enemy => enemy.word[enemy.typed.length] === key);
-            flashVirtualKey(key, key === expectedNextCharacter);
+            flashVirtualKey(key, isExpectedCharacter);
 
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
