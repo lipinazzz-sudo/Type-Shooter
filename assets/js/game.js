@@ -512,6 +512,7 @@ function goToDashboard2() {
     let floatingTexts = [];
     let score = 0;
     let gameActive = false;
+    let gameOverTriggered = false;
     let activeEnemy = null;
     let frameCount = 0;
     let loopId = null;
@@ -1071,6 +1072,7 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function startGame() {
+        gameOverTriggered = false;
         enemies=[];lasers=[];particles=[];floatingTexts=[];kodeAngka="";score=0;frameCount=0;activeEnemy=null;
         comboCount=0;maxCombo=0;shakeTimer=0;muzzleFlashAlpha=0;comboPulse=0;playerHP=maxHP;flashRedFrames=0;
         skillInventory.bomb=0;skillInventory.shield=0;skillInventory.clear=0;shieldActive=false;nativeNumberEntryActive=false;hiddenInput.value="";
@@ -1083,6 +1085,8 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function gameOver() {
+        if (gameOverTriggered) return;
+        gameOverTriggered = true;
         gameActive = false;
         pauseBtn.classList.add('hidden');
         resizeGameCanvas(); 
@@ -1487,6 +1491,7 @@ const PIN_RAHASIA_2 = "0199";
                 if (playerHP <= 0) {
                     createExplosion(player.x, player.y, 8, "#ef4444"); 
                     gameOver();
+                    break;
                 }
             }
         }
