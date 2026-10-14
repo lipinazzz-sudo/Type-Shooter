@@ -644,6 +644,25 @@
                 box-shadow:inset 0 0 0 1px rgba(82,217,255,.95),0 0 7px rgba(14,165,233,.17)!important;filter:none!important
             }
         }
+
+        /* FIX: identical width for alphabet keys across the 10/9/7 key rows */
+        @media(max-width:720px) and (orientation:portrait){
+            .game-keyboard-rows{width:100%;min-width:0}
+            .game-key-row{
+                width:100%!important;
+                justify-content:center!important;
+                gap:3px!important;
+            }
+            .game-key-row .game-key{
+                box-sizing:border-box!important;
+                flex:0 0 calc((100% - 27px)/10)!important;
+                width:calc((100% - 27px)/10)!important;
+                min-width:0!important;
+                max-width:none!important;
+                margin:0!important;
+            }
+        }
+
 </style>
 </head>
 <body>
@@ -1859,6 +1878,7 @@ const PIN_RAHASIA_2 = "0199";
         });
     }
     function gameLoop() {
+        const t = translations[langSetting];
         if (!gameActive) {
             ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
             ctx.fillRect(0, 0, gameWidth, gameHeight);
