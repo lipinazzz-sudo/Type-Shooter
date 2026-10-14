@@ -854,6 +854,17 @@ const PIN_RAHASIA_2 = "0199";
         hiddenInput.value=character;
         hiddenInput.dispatchEvent(new Event("input",{bubbles:true}));
     }
+
+    // Mirror typing feedback onto the on-screen key without changing input/game rules.
+    function flashVirtualKey(key,isCorrect){
+        if(!gameKeyboard)return;
+        const button=Array.from(gameKeyboard.querySelectorAll(".game-key[data-key]"))
+            .find(item=>item.dataset.key===key);
+        if(!button)return;
+        button.classList.remove("key-feedback-correct","key-feedback-error");
+        void button.offsetWidth;
+        button.classList.add(isCorrect?"key-feedback-correct":"key-feedback-error");
+    }
     if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
         const button=event.target.closest("button");if(!button||button.disabled)return;
         if(button.dataset.skill){useStoredSkill(button.dataset.skill);return;}
@@ -921,6 +932,12 @@ const PIN_RAHASIA_2 = "0199";
 
             ctx.font = "bold 16px 'Courier New'";
             const t = translations[langSetting];
+
+            // Success means the next expected letter matches; targeting and scoring stay unchanged.
+            const expectedNextCharacter = activeEnemy
+                ? activeEnemy.word[activeEnemy.typed.length]
+                : enemies.some(enemy => enemy.word[enemy.typed.length] === key);
+            flashVirtualKey(key, key === expectedNextCharacter);
 
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
