@@ -505,6 +505,51 @@
         @media(max-width:560px){.ship-select-shell{padding:14px;border-radius:18px}.ship-select-header{align-items:flex-start;gap:8px;margin-bottom:13px}.ship-select-eyebrow{font-size:8px}.ship-select-subtitle{max-width:220px;font-size:10px}.ship-roster-count{padding:8px;font-size:8px}.ship-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ship-card{padding:9px!important;border-radius:12px!important}.ship-card-art{min-height:78px}.ship-card-art img{height:86px}.ship-card-name{font-size:11px}.ship-card-role{font-size:9px}.ship-detail-panel{grid-template-columns:70px minmax(0,1fr);gap:10px;padding:10px;margin-top:11px}.ship-detail-art{min-height:84px}.ship-detail-art img{width:66px;height:86px}.ship-detail-copy h3{font-size:18px}.ship-detail-copy p{font-size:10px}.ship-cosmetic-note{font-size:9px}.ship-select-actions{grid-column:1/-1}.ship-select-actions button{min-height:42px;font-size:10px;padding:10px 8px}}
         @media(prefers-reduced-motion:reduce){.ship-card{transition:none}}
 
+    
+        /* Immersive space style and 2 x 3 portrait ship selection pages */
+        #pauseBtn.pause-btn{width:42px;height:42px;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));display:grid;place-items:center;border:1px solid rgba(92,220,255,.9);border-radius:7px;color:#e8faff;background:linear-gradient(145deg,rgba(7,29,52,.96),rgba(2,10,25,.96));box-shadow:0 0 10px rgba(56,189,248,.4),inset 0 0 8px rgba(56,189,248,.11);font:900 17px/1 Arial,sans-serif;text-shadow:0 0 8px #38bdf8;z-index:30;cursor:pointer;touch-action:manipulation}
+        #pauseBtn.pause-btn:active{transform:scale(.95)}
+        .ship-select-overlay{background:linear-gradient(180deg,rgba(1,7,19,.37),rgba(1,7,20,.72) 75%,rgba(1,5,15,.9)),radial-gradient(ellipse at 50% 100%,rgba(14,165,233,.2),transparent 46%),url("assets/backgrounds/space-nebula.webp") center center/cover no-repeat!important;backdrop-filter:none}
+        .ship-select-shell{border-color:rgba(78,205,255,.66);background:linear-gradient(155deg,rgba(3,16,35,.82),rgba(3,9,22,.88));box-shadow:0 0 32px rgba(14,165,233,.24),inset 0 0 26px rgba(14,165,233,.06);border-radius:12px}
+        .ship-select-header h2{text-shadow:0 0 16px rgba(56,189,248,.52)}
+        .ship-card{border-radius:8px!important;background:linear-gradient(155deg,rgba(7,22,43,.85),rgba(2,8,20,.9))!important;border-color:rgba(66,190,240,.35)!important;box-shadow:inset 0 0 16px rgba(20,128,195,.06),0 0 8px rgba(0,0,0,.16)!important}
+        .ship-card.is-selected{background:linear-gradient(155deg,rgba(10,44,75,.94),rgba(2,9,22,.94))!important;box-shadow:0 0 0 1px var(--ship-accent,#58d9ff) inset,0 0 19px color-mix(in srgb,var(--ship-accent,#58d9ff) 40%,transparent)!important}
+        .ship-card-art{background:radial-gradient(ellipse at 50% 75%,color-mix(in srgb,var(--ship-accent,#58d9ff) 26%,transparent),transparent 72%)}
+        .ship-card-art img{filter:drop-shadow(0 0 9px color-mix(in srgb,var(--ship-accent,#58d9ff) 58%,transparent))}
+        .ship-page-controls{display:flex;align-items:center;justify-content:center;gap:14px;min-height:34px;margin-top:9px;color:#a8edff;font:800 10px ui-monospace,monospace;letter-spacing:.14em}
+        .ship-page-controls button{display:grid;place-items:center;width:32px;height:28px;margin:0;padding:0;border:1px solid rgba(88,217,255,.55);border-radius:5px;background:rgba(4,21,42,.9);color:#c9f7ff;font-size:19px;line-height:1;box-shadow:0 0 8px rgba(14,165,233,.12)}
+        .ship-page-controls button:disabled{opacity:.25;cursor:default}
+        .ship-detail-panel{border-radius:10px;border-color:rgba(88,217,255,.38);background:linear-gradient(95deg,rgba(2,17,35,.9),rgba(2,9,22,.88))}
+        @media(orientation:portrait) and (max-width:720px){
+          .ship-select-overlay{align-items:stretch;padding:max(6px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))}
+          .ship-select-shell{width:100%;max-height:100%;padding:9px;border-radius:10px}
+          .ship-select-header{align-items:center;gap:6px;margin-bottom:7px}
+          .ship-select-eyebrow{font-size:7px;letter-spacing:.14em;margin-bottom:4px}
+          .ship-select-header h2{font-size:clamp(16px,4.5vw,22px);margin-bottom:3px;letter-spacing:.08em}
+          .ship-select-subtitle{font-size:9px;line-height:1.3}
+          .ship-roster-count{padding:6px;font-size:7px;letter-spacing:.05em;border-radius:6px;white-space:normal;max-width:86px;text-align:center}
+          .ship-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+          .ship-card{padding:6px!important;border-radius:7px!important}
+          .ship-card-topline{gap:4px}.ship-card-number{font-size:8px}.ship-card-check{width:15px;height:15px;font-size:9px}
+          .ship-card-art{min-height:58px;height:58px;margin:1px 0;border-radius:5px}
+          .ship-card-art img{height:61px;width:100%}
+          .ship-card-name{font-size:10px;letter-spacing:.06em;margin-top:1px}
+          .ship-card-role{font-size:7px;margin-top:2px;line-height:1.15}
+          .ship-page-controls{min-height:27px;margin-top:5px;gap:12px;font-size:9px}
+          .ship-page-controls button{width:27px;height:24px;font-size:16px}
+          .ship-detail-panel{grid-template-columns:44px minmax(0,1fr) auto;gap:6px;padding:6px;margin-top:5px;border-radius:7px}
+          .ship-detail-art{min-height:49px;border-radius:5px}.ship-detail-art img{width:42px;height:49px}
+          .ship-detail-kicker,.ship-detail-copy p,.ship-cosmetic-note{display:none}
+          .ship-detail-copy h3{font-size:12px;margin:0 0 2px;letter-spacing:.07em}
+          .ship-select-actions{grid-column:auto;flex-direction:column;min-width:72px;gap:4px}
+          .ship-select-actions button{min-height:30px;padding:6px 4px;font-size:8px;border-radius:5px}
+        }
+        @media(orientation:landscape) and (max-height:520px){
+          .ship-select-shell{padding:10px}.ship-select-header{margin-bottom:7px}
+          .ship-card{padding:7px!important}.ship-card-art img{height:72px}
+          .ship-detail-panel{margin-top:8px;padding:8px}.ship-detail-art img{height:78px}
+        }
+
     </style>
 </head>
 <body>
@@ -538,6 +583,7 @@
                 <p id="ship-select-subtitle" class="ship-select-subtitle">Pilih kapal tempur sebelum memulai misi.</p>
             </div><div class="ship-roster-count">08 FIGHTERS / 01 PILOT</div></div>
             <div id="shipGrid" class="ship-grid" role="group" aria-label="Pilih pesawat"></div>
+            <div id="shipPageControls" class="ship-page-controls hidden" aria-label="Navigasi pilihan pesawat"></div>
             <div class="ship-detail-panel">
                 <div class="ship-detail-art"><img id="shipPreviewImage" src="assets/ships/aurora.png" alt="Preview kapal terpilih"></div>
                 <div class="ship-detail-copy"><p id="ship-detail-kicker" class="ship-detail-kicker">KAPAL TERPILIH</p>
@@ -660,6 +706,9 @@ function goToDashboard2() {
     const shipGrid = document.getElementById('shipGrid');
 
     const canvas = document.getElementById('gameCanvas');
+    const gameBackgroundImage = new Image();
+    gameBackgroundImage.decoding = "async";
+    gameBackgroundImage.src = "assets/backgrounds/space-nebula.webp";
     
     let langSetting = localStorage.getItem('langSetting') || 'id';
     let bgmVolume = parseFloat(localStorage.getItem('bgmVolume') ?? 0.5);
@@ -697,11 +746,21 @@ function goToDashboard2() {
         }
     };
 
+    let shipPickerPage = 0;
+    const shipPageControls = document.getElementById("shipPageControls");
+    function isCompactShipPicker(){
+        return !!(window.matchMedia && window.matchMedia("(max-width: 720px) and (orientation: portrait)").matches);
+    }
     function updateShipSelectionUI(){
         if(!shipGrid)return;
-        const t=translations[langSetting]; shipGrid.innerHTML="";
-        SHIP_ROSTER.forEach((ship,index)=>{
-            const card=document.createElement("button"); card.type="button";
+        const t=translations[langSetting];
+        const compact=isCompactShipPicker();
+        const pageStart=compact?(shipPickerPage===0?0:2):0;
+        const visibleShips=compact?SHIP_ROSTER.slice(pageStart,pageStart+6):SHIP_ROSTER;
+        shipGrid.innerHTML="";
+        visibleShips.forEach(ship=>{
+            const index=SHIP_ROSTER.indexOf(ship);
+            const card=document.createElement("button");card.type="button";
             card.className="ship-card"+(ship.id===selectedShipId?" is-selected":"");
             card.style.setProperty("--ship-accent",ship.accent);
             card.setAttribute("aria-pressed",ship.id===selectedShipId?"true":"false");
@@ -714,6 +773,15 @@ function goToDashboard2() {
             const role=document.createElement("span");role.className="ship-card-role";role.textContent=langSetting==="id"?ship.roleId:ship.roleEn;
             card.append(top,art,name,role);card.addEventListener("click",()=>selectShip(ship.id));shipGrid.appendChild(card);
         });
+        if(compact){
+            shipPageControls.classList.remove("hidden");
+            shipPageControls.innerHTML='<button type="button" aria-label="Halaman sebelumnya" data-page="prev">‹</button><span>FLEET '+String(shipPickerPage+1).padStart(2,"0")+' / 02</span><button type="button" aria-label="Halaman berikutnya" data-page="next">›</button>';
+            const previous=shipPageControls.querySelector('[data-page="prev"]');
+            const next=shipPageControls.querySelector('[data-page="next"]');
+            previous.disabled=shipPickerPage===0;next.disabled=shipPickerPage===1;
+            previous.addEventListener("click",()=>{shipPickerPage=0;updateShipSelectionUI();});
+            next.addEventListener("click",()=>{shipPickerPage=1;updateShipSelectionUI();});
+        }else{shipPageControls.classList.add("hidden");shipPageControls.innerHTML="";}
         const selected=SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0];
         const preview=document.getElementById("shipPreviewImage");preview.src="assets/ships/"+selected.id+".png";preview.alt=selected.name+" ship preview";
         preview.parentElement.style.setProperty("--ship-accent",selected.accent);
@@ -732,10 +800,14 @@ function goToDashboard2() {
     }
     function closeShipSelection(){shipSelectMenu.classList.add("hidden");mainMenu.classList.remove("hidden");}
     function selectShip(shipId){
-        if(!SHIP_ROSTER.some(ship=>ship.id===shipId))return;
-        selectedShipId=shipId;try{localStorage.setItem("typeShooterShip",selectedShipId);}catch(error){}
+        const shipIndex=SHIP_ROSTER.findIndex(ship=>ship.id===shipId);
+        if(shipIndex<0)return;
+        selectedShipId=shipId;
+        if(shipIndex<2)shipPickerPage=0;else if(shipIndex>=6)shipPickerPage=1;
+        try{localStorage.setItem("typeShooterShip",selectedShipId);}catch(error){}
         updateShipSelectionUI();
     }
+    window.addEventListener("resize",()=>{if(!shipSelectMenu.classList.contains("hidden"))updateShipSelectionUI();});
     function confirmShipSelection(){
         if(!SHIP_ROSTER.some(ship=>ship.id===selectedShipId))selectedShipId="aurora";
         try{localStorage.setItem("typeShooterShip",selectedShipId);}catch(error){}
@@ -1246,22 +1318,23 @@ const PIN_RAHASIA_2 = "0199";
             this.vy = (dy / distance) * this.speed;
         }
         draw() {
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
-            ctx.strokeStyle = "#ffffff"; 
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 12; ctx.shadowColor = "#0ea5e9";
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(this.x - (this.vx * 0.6), this.y - (this.vy * 0.6));
-            ctx.lineTo(this.x - (this.vx * 1.2), this.y - (this.vy * 1.2));
-            ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
-            ctx.lineWidth = 1.5;
-            ctx.shadowBlur = 0;
-            ctx.stroke();
+            const selected=SHIP_ROSTER.find(ship=>ship.id===selectedShipId);
+            const accent=selected?selected.accent:"#58d9ff";
+            const magnitude=Math.max(1,Math.hypot(this.vx,this.vy));
+            const ux=this.vx/magnitude,uy=this.vy/magnitude,px=-uy,py=ux;
+            ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+            for(const lane of [-2.7,2.7]){
+                const x=this.x+px*lane,y=this.y+py*lane;
+                const tipX=x+ux*6,tipY=y+uy*6;
+                const rearX=x-ux*12,rearY=y-uy*12;
+                const wx=x+px*2.1,wy=y+py*2.1,nx=x-px*2.1,ny=y-py*2.1;
+                ctx.shadowColor=accent;ctx.shadowBlur=16;ctx.fillStyle=accent;ctx.globalAlpha=.92;
+                ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(wx+ux*2,wy+uy*2);ctx.lineTo(rearX+px*1.1,rearY+py*1.1);ctx.lineTo(x-ux*17,y-uy*17);ctx.lineTo(rearX-px*1.1,rearY-py*1.1);ctx.lineTo(nx+ux*2,ny+uy*2);ctx.closePath();ctx.fill();
+                ctx.globalAlpha=1;ctx.shadowBlur=7;ctx.fillStyle="#f8fdff";
+                ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(x+ux*1.5+px*.7,y+uy*1.5+py*.7);ctx.lineTo(x-ux*10+px*.65,y-uy*10+py*.65);ctx.lineTo(x-ux*14,y-uy*14);ctx.lineTo(x-ux*10-px*.65,y-uy*10-py*.65);ctx.lineTo(x+ux*1.5-px*.7,y+uy*1.5-py*.7);ctx.closePath();ctx.fill();
+                const trail=ctx.createLinearGradient(x-ux*11,y-uy*11,x-ux*28,y-uy*28);trail.addColorStop(0,accent);trail.addColorStop(1,"rgba(20,90,170,0)");
+                ctx.strokeStyle=trail;ctx.lineWidth=1.6;ctx.shadowBlur=4;ctx.beginPath();ctx.moveTo(x-ux*9,y-uy*9);ctx.lineTo(x-ux*27,y-uy*27);ctx.stroke();
+            }
             ctx.restore();
         }
         update() { 
@@ -1270,7 +1343,7 @@ const PIN_RAHASIA_2 = "0199";
             
             if (this.vy < 0 && this.y <= this.targetY) {
                 this.hit = true;
-                createExplosion(this.x, this.y, 0.5, "#0ea5e9"); 
+                createExplosion(this.x, this.y, 0.5, (SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0]).accent); 
             }
         }
     }
@@ -1559,6 +1632,34 @@ const PIN_RAHASIA_2 = "0199";
         ctx.restore();
     }
 
+    function drawSpaceBackground(){
+        const w=canvas.width,h=canvas.height;
+        if(gameBackgroundImage.complete&&gameBackgroundImage.naturalWidth>0){
+            const iw=gameBackgroundImage.naturalWidth,ih=gameBackgroundImage.naturalHeight;
+            const scale=Math.max(w/iw,h/ih),sw=w/scale,sh=h/scale;
+            ctx.drawImage(gameBackgroundImage,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);
+            const shade=ctx.createLinearGradient(0,0,0,h);
+            shade.addColorStop(0,"rgba(1,7,21,.48)");shade.addColorStop(.44,"rgba(2,9,24,.12)");shade.addColorStop(1,"rgba(1,6,19,.43)");
+            ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
+        }else{
+            ctx.fillStyle="#020817";ctx.fillRect(0,0,w,h);
+            const nebula=ctx.createRadialGradient(w*.47,h*.4,0,w*.47,h*.4,Math.max(w,h)*.8);
+            nebula.addColorStop(0,"#163e78");nebula.addColorStop(.36,"#0b2851");nebula.addColorStop(1,"#010611");
+            ctx.fillStyle=nebula;ctx.fillRect(0,0,w,h);
+        }
+        const rocks=[[.035,.17,.052],[.095,.35,.067],[.91,.27,.058],[.955,.49,.074],[.055,.65,.047],[.94,.74,.052],[.19,.11,.025],[.84,.57,.028],[.13,.83,.04],[.88,.9,.034]];
+        rocks.forEach((rock,index)=>{
+            const x=w*rock[0],y=h*rock[1],r=Math.min(w,h)*rock[2];
+            ctx.save();ctx.translate(x,y);ctx.rotate(index*1.73);
+            const fill=ctx.createRadialGradient(-r*.3,-r*.34,r*.08,r*.04,r*.06,r*1.15);
+            fill.addColorStop(0,"#465d73");fill.addColorStop(.38,"#1a2c41");fill.addColorStop(1,"#030914");
+            ctx.beginPath();
+            for(let p=0;p<9;p++){const a=2*Math.PI*p/9,wb=.76+.22*Math.abs(Math.sin((index+2)*2.1+p*1.83)),px=Math.cos(a)*r*wb,py=Math.sin(a)*r*wb;if(p===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}
+            ctx.closePath();ctx.fillStyle=fill;ctx.shadowColor="rgba(0,0,0,.65)";ctx.shadowBlur=r*.24;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(115,164,198,.26)";ctx.lineWidth=Math.max(.6,r*.025);ctx.stroke();
+            for(let c=0;c<3;c++){const cx=Math.sin(index+2+c*4.2)*r*.45,cy=Math.cos(index*1.4+c*2.8)*r*.43,cr=r*(.07+.035*(c%2));ctx.beginPath();ctx.ellipse(cx,cy,cr*1.3,cr,.4,0,2*Math.PI);ctx.fillStyle="rgba(0,4,12,.52)";ctx.fill();ctx.strokeStyle="rgba(126,158,185,.19)";ctx.stroke();}
+            ctx.restore();
+        });
+    }
     function gameLoop() {
         if (!gameActive) {
             ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
@@ -1573,8 +1674,7 @@ const PIN_RAHASIA_2 = "0199";
             return;
         }
         
-        ctx.fillStyle = "#070a13";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawSpaceBackground();
 
         // BACKGROUND SCI-FI GRID WITH PARALLAX
         ctx.save();
@@ -1639,101 +1739,38 @@ const PIN_RAHASIA_2 = "0199";
         ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke();
         ctx.shadowBlur = 0; 
 
-        // HUD IN-GAME — compact premium layout with responsive spacing
+        // Cinematic HUD: screenshot-style wave/score panel, red lives and combo.
         const t = translations[langSetting];
         const compactHud = canvas.width < 360;
-        const hudLeftX = compactHud ? 12 : 16;
-        const hudTopY = 14;
-        const hudLeftWidth = compactHud ? 112 : (canvas.width < 480 ? 154 : 206);
-        const hudLeftHeight = 70;
-        const hudDividerX = hudLeftX + Math.round(hudLeftWidth * 0.49);
-        const hudScoreX = hudDividerX + (compactHud ? 6 : 10);
-        const hudAccent = "rgba(88, 217, 255, 0.28)";
+        const hudLeftX = 12;
+        const hudTopY = Math.max(12,(window.visualViewport&&window.visualViewport.offsetTop)||12);
+        const hudLeftWidth = compactHud ? 140 : (canvas.width < 520 ? 166 : 190);
+        const hudLeftHeight = 58;
+        drawHudPanel(hudLeftX,hudTopY,hudLeftWidth,hudLeftHeight,"rgba(69,207,255,.78)");
+        ctx.save();ctx.textAlign="left";ctx.fillStyle="#76e5ff";ctx.font="800 10px ui-monospace,monospace";
+        ctx.fillText("WAVE "+String(currentWave),hudLeftX+11,hudTopY+21);
+        ctx.fillStyle="#f2f9ff";ctx.shadowColor="rgba(56,189,248,.35)";ctx.shadowBlur=7;
+        ctx.font="900 "+(compactHud?13:15)+"px ui-monospace,monospace";
+        ctx.fillText("SCORE "+score.toLocaleString("en-US"),hudLeftX+11,hudTopY+43,hudLeftWidth-18);ctx.restore();
 
-        drawHudPanel(hudLeftX, hudTopY, hudLeftWidth, hudLeftHeight, hudAccent);
-
+        const lifePanelWidth=canvas.width<420?82:102,lifePanelHeight=42,lifePanelY=hudTopY;
+        const lifePanelX=Math.max(hudLeftX+hudLeftWidth+7,canvas.width-57-lifePanelWidth);
+        const lowLife=playerHP===1;
+        drawHudPanel(lifePanelX,lifePanelY,lifePanelWidth,lifePanelHeight,lowLife?(Math.floor(frameCount/18)%2?"rgba(248,113,113,.88)":"rgba(248,113,113,.42)"):"rgba(69,207,255,.78)");
+        function traceLifeHeart(x,y,size){
+            ctx.beginPath();ctx.moveTo(x,y+size*.78);
+            ctx.bezierCurveTo(x-size*1.15,y+size*.02,x-size*1.02,y-size*.68,x-size*.42,y-size*.54);
+            ctx.bezierCurveTo(x-size*.14,y-size*.5,x,y-size*.24,x,y-size*.24);
+            ctx.bezierCurveTo(x+size*.20,y-size*.59,x+size*.65,y-size*.72,x+size*.98,y-size*.35);
+            ctx.bezierCurveTo(x+size*1.40,y+size*.20,x+size*.56,y+size*.69,x,y+size*.78);ctx.closePath();
+        }
         ctx.save();
-        ctx.textAlign = "left";
-        ctx.fillStyle = "#8ba6c8";
-        ctx.font = "bold 9px 'Courier New'";
-        ctx.fillText("WAVE", hudLeftX + 10, hudTopY + 19);
-        ctx.fillText(langSetting === "id" ? "SKOR" : "SCORE", hudScoreX, hudTopY + 19);
-
-        ctx.strokeStyle = "rgba(148, 185, 220, 0.17)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(hudDividerX, hudTopY + 12);
-        ctx.lineTo(hudDividerX, hudTopY + hudLeftHeight - 12);
-        ctx.stroke();
-
-        const waveText = String(currentWave);
-        const scoreText = String(score);
-        const waveFontSize = compactHud ? 17 : 21;
-        const scoreColumnWidth = hudLeftX + hudLeftWidth - hudScoreX - 8;
-        const scoreFontSize = Math.max(
-            10,
-            Math.min(compactHud ? 12 : 18, scoreColumnWidth / Math.max(2.8, scoreText.length * 0.66))
-        );
-
-        ctx.fillStyle = "#eff9ff";
-        ctx.shadowColor = "rgba(88, 217, 255, 0.22)";
-        ctx.shadowBlur = 7;
-        ctx.font = "bold " + waveFontSize + "px 'Courier New'";
-        ctx.fillText(waveText, hudLeftX + 10, hudTopY + 49, Math.max(30, hudDividerX - hudLeftX - 17));
-
-        ctx.fillStyle = "#f4fbff";
-        ctx.font = "bold " + scoreFontSize + "px 'Courier New'";
-        ctx.fillText(scoreText, hudScoreX, hudTopY + 49, Math.max(24, scoreColumnWidth));
-        ctx.shadowBlur = 0;
-        ctx.restore();
-
-        // Life panel berada di kiri tombol pause dengan jarak aman.
-        const lifePanelWidth = compactHud ? 78 : (canvas.width < 520 ? 102 : 126);
-        const lifeRightInset = compactHud ? 62 : 74;
-        const lifePanelX = Math.max(
-            hudLeftX + hudLeftWidth + 8,
-            canvas.width - lifeRightInset - lifePanelWidth
-        );
-        const lifePanelY = 14;
-        const lifePanelHeight = 58;
-        const lowLife = playerHP === 1;
-        const lifeAccent = lowLife
-            ? (Math.floor(frameCount / 18) % 2 ? "rgba(248, 113, 113, 0.52)" : "rgba(248, 113, 113, 0.25)")
-            : "rgba(52, 211, 153, 0.3)";
-
-        drawHudPanel(lifePanelX, lifePanelY, lifePanelWidth, lifePanelHeight, lifeAccent);
-
-        ctx.save();
-        ctx.textAlign = "left";
-        ctx.fillStyle = lowLife ? "#fda4af" : "#9ab7d1";
-        ctx.font = "bold 9px 'Courier New'";
-        ctx.fillText(compactHud ? "HP" : "LIFE", lifePanelX + 9, lifePanelY + 16);
-
-        const lifeCenterY = lifePanelY + 39;
-        const lifeSpacing = compactHud ? 17 : 20;
-        const lifeCenterX = lifePanelX + lifePanelWidth / 2;
-        for (let i = 0; i < maxHP; i++) {
-            const hpX = lifeCenterX + (i - (maxHP - 1) / 2) * lifeSpacing;
-            const hpY = lifeCenterY;
-            ctx.beginPath();
-            ctx.moveTo(hpX, hpY - 6);
-            ctx.lineTo(hpX - 6, hpY + 5);
-            ctx.lineTo(hpX + 6, hpY + 5);
-            ctx.closePath();
-
-            if (i < playerHP) {
-                ctx.fillStyle = lowLife ? "#fb7185" : "#5eead4";
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = lowLife ? "#fb7185" : "#2dd4bf";
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            } else {
-                ctx.fillStyle = "rgba(71, 85, 105, 0.16)";
-                ctx.fill();
-                ctx.strokeStyle = "rgba(148, 163, 184, 0.48)";
-                ctx.lineWidth = 1.2;
-                ctx.stroke();
-            }
+        const heartSize=canvas.width<420?6.7:8,heartGap=canvas.width<420?22:27;
+        const heartStart=lifePanelX+lifePanelWidth/2-(maxHP-1)*heartGap/2;
+        for(let i=0;i<maxHP;i++){
+            const hx=heartStart+i*heartGap,hy=lifePanelY+22;traceLifeHeart(hx,hy,heartSize);
+            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor=lowLife?"#ff2948":"#ff415b";ctx.shadowBlur=lowLife?12:7;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
+            else{ctx.fillStyle="rgba(71,85,105,.14)";ctx.fill();ctx.strokeStyle="rgba(148,163,184,.46)";ctx.lineWidth=1;ctx.stroke();}
         }
         ctx.restore();
 
