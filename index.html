@@ -563,6 +563,41 @@
             mask-image:linear-gradient(to bottom,transparent 0%,black 25%,black 100%);
         }
         .ship-select-shell{position:relative;z-index:1}
+
+        /* Compact mobile keyboard, crisp HUD and one-screen ship selection */
+        .game-keyboard{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;flex-direction:column;gap:6px;height:clamp(206px,35dvh,292px);padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border-top:1px solid rgba(62,205,255,.86);background:linear-gradient(180deg,rgba(2,14,31,.99),rgba(1,6,18,1));box-shadow:0 -5px 18px rgba(0,0,0,.35),0 -1px 7px rgba(0,174,255,.12);touch-action:manipulation;user-select:none}
+        .game-skill-tray{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex:0 0 34px}
+        .game-keyboard button{width:auto;min-width:0;margin:0;padding:0;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1;border-radius:6px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+        .game-skill{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 5px!important;border:1px solid rgba(87,201,255,.7)!important;background:linear-gradient(135deg,rgba(8,50,86,.96),rgba(3,17,36,.98))!important;color:#c9f6ff!important;font-size:10px!important;font-weight:900;letter-spacing:.04em}
+        .game-skill b{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:5px;background:rgba(1,8,19,.82);border:1px solid rgba(138,221,255,.33);font-size:10px;color:#fff}
+        .game-skill.skill-bomb{border-color:rgba(255,179,77,.8)!important;color:#ffd18a!important;background:linear-gradient(135deg,rgba(91,43,5,.85),rgba(24,14,8,.98))!important}
+        .game-skill.skill-clear{border-color:rgba(183,195,218,.65)!important;color:#e4edff!important}
+        .game-skill:disabled{opacity:.36;filter:saturate(.45);box-shadow:none}
+        .game-keyboard-rows{display:flex;flex-direction:column;gap:5px;flex:1;min-height:0;justify-content:center}
+        .game-key-row{display:flex;justify-content:center;gap:4px;min-height:0;flex:1}
+        .game-key{flex:1 1 0;padding:0!important;max-width:42px;border:1px solid rgba(80,194,255,.62)!important;background:linear-gradient(180deg,rgba(12,39,70,.99),rgba(3,14,31,.99))!important;color:#f1f9ff!important;font-size:clamp(12px,3.3vw,17px)!important;font-weight:900;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.24)}
+        .game-key:active{transform:scale(.94);background:linear-gradient(180deg,#087bb4,#07416c)!important}
+        .game-keyboard-status{flex:0 0 11px;text-align:center;overflow:hidden;color:#76dfff;font:800 8px/11px ui-monospace,monospace;letter-spacing:.12em;white-space:nowrap;text-overflow:ellipsis}
+        @media(max-width:390px) and (orientation:portrait){.game-keyboard{gap:5px;padding-top:6px}.game-skill-tray{flex-basis:32px;gap:4px}.game-skill{font-size:9px!important;gap:4px}.game-key-row{gap:3px}.game-key{border-radius:5px;font-size:14px!important}}
+        @media(min-width:721px),(orientation:landscape){.game-keyboard{display:none!important}}
+        @media(max-width:720px) and (orientation:portrait){
+          #gameCanvas{inset:0 auto auto 0}
+          #pauseBtn.pause-btn{top:max(7px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));width:38px;height:38px}
+          .ship-select-overlay{padding:max(6px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left)}
+          .ship-select-shell{width:100%;max-height:100%;padding:8px;border-radius:10px}
+          .ship-select-header{gap:5px;margin-bottom:6px}.ship-select-eyebrow{font-size:7px;letter-spacing:.12em;margin-bottom:3px}
+          .ship-select-header h2{font-size:clamp(16px,4.3vw,21px);margin:0 0 3px}.ship-select-subtitle{font-size:8px;line-height:1.25}
+          .ship-roster-count{font-size:7px;padding:5px;max-width:88px;white-space:normal;text-align:center}
+          .ship-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.ship-card{padding:5px!important;border-radius:7px!important}
+          .ship-card-number{font-size:8px}.ship-card-check{width:14px;height:14px;font-size:8px}
+          .ship-card-art{min-height:48px;height:48px;margin:1px 0;border-radius:5px}.ship-card-art img{height:50px;width:100%}
+          .ship-card-name{font-size:10px;margin-top:0}.ship-card-role{font-size:7px;line-height:1.15;margin-top:2px}
+          .ship-detail-panel{grid-template-columns:38px minmax(0,1fr) auto;gap:5px;padding:5px;margin-top:6px;border-radius:6px}
+          .ship-detail-art{min-height:43px;border-radius:5px}.ship-detail-art img{width:36px;height:43px}
+          .ship-detail-kicker,.ship-detail-copy p,.ship-cosmetic-note{display:none}.ship-detail-copy h3{font-size:11px;letter-spacing:.05em;margin:0}
+          .ship-select-actions{grid-column:auto;min-width:69px;gap:3px;flex-direction:column}.ship-select-actions button{min-height:27px;padding:4px 3px;font-size:8px;letter-spacing:.02em;border-radius:5px}
+        }
+
 </style>
 </head>
 <body>
@@ -574,6 +609,19 @@
     <div id="pauseBtn" class="pause-btn hidden" onclick="pauseGame()">⏸</div>
 
     <canvas id="gameCanvas"></canvas>
+    <section id="gameKeyboard" class="game-keyboard hidden" aria-label="Keyboard khusus Type-Shooter">
+      <div class="game-skill-tray">
+        <button type="button" class="game-skill skill-shield" data-skill="shield" title="Simpan untuk menahan satu tabrakan">SHIELD <b id="skillCountShield">0</b></button>
+        <button type="button" class="game-skill skill-bomb" data-skill="bomb" title="Ledakkan musuh yang terlihat">BOMB <b id="skillCountBomb">0</b></button>
+        <button type="button" class="game-skill skill-clear" data-skill="clear" title="Lepaskan target aktif">CLEAR <b id="skillCountClear">0</b></button>
+      </div>
+      <div class="game-keyboard-rows" role="group" aria-label="Huruf untuk mengetik kata musuh">
+        <div class="game-key-row"><button type="button" class="game-key" data-key="Q">Q</button><button type="button" class="game-key" data-key="W">W</button><button type="button" class="game-key" data-key="E">E</button><button type="button" class="game-key" data-key="R">R</button><button type="button" class="game-key" data-key="T">T</button><button type="button" class="game-key" data-key="Y">Y</button><button type="button" class="game-key" data-key="U">U</button><button type="button" class="game-key" data-key="I">I</button><button type="button" class="game-key" data-key="O">O</button><button type="button" class="game-key" data-key="P">P</button></div>
+        <div class="game-key-row game-key-row-middle"><button type="button" class="game-key" data-key="A">A</button><button type="button" class="game-key" data-key="S">S</button><button type="button" class="game-key" data-key="D">D</button><button type="button" class="game-key" data-key="F">F</button><button type="button" class="game-key" data-key="G">G</button><button type="button" class="game-key" data-key="H">H</button><button type="button" class="game-key" data-key="J">J</button><button type="button" class="game-key" data-key="K">K</button><button type="button" class="game-key" data-key="L">L</button></div>
+        <div class="game-key-row game-key-row-short"><button type="button" class="game-key" data-key="Z">Z</button><button type="button" class="game-key" data-key="X">X</button><button type="button" class="game-key" data-key="C">C</button><button type="button" class="game-key" data-key="V">V</button><button type="button" class="game-key" data-key="B">B</button><button type="button" class="game-key" data-key="N">N</button><button type="button" class="game-key" data-key="M">M</button></div>
+      </div>
+      <div id="gameKeyboardStatus" class="game-keyboard-status">KETIK HURUF PADA KATA MUSUH</div>
+    </section>
 
     <div id="mainMenu" class="ui-layer">
         <div class="menu-box">
@@ -594,9 +642,8 @@
                 <p class="ship-select-eyebrow">TYPE-SHOOTER / FLEET HANGAR</p>
                 <h2 id="ship-select-title">PILIH PESAWAT</h2>
                 <p id="ship-select-subtitle" class="ship-select-subtitle">Pilih kapal tempur sebelum memulai misi.</p>
-            </div><div class="ship-roster-count">08 FIGHTERS / 01 PILOT</div></div>
+            </div><div class="ship-roster-count">06 FIGHTERS / 01 PILOT</div></div>
             <div id="shipGrid" class="ship-grid" role="group" aria-label="Pilih pesawat"></div>
-            <div id="shipPageControls" class="ship-page-controls hidden" aria-label="Navigasi pilihan pesawat"></div>
             <div class="ship-detail-panel">
                 <div class="ship-detail-art"><img id="shipPreviewImage" src="assets/ships/aurora.png" alt="Preview kapal terpilih"></div>
                 <div class="ship-detail-copy"><p id="ship-detail-kicker" class="ship-detail-kicker">KAPAL TERPILIH</p>
@@ -698,11 +745,11 @@ function goToDashboard2() {
     const SHIP_ROSTER = [
         {id:"aurora",name:"AURORA",roleId:"PESAWAT SERBAGUNA",roleEn:"BALANCED FIGHTER",descId:"Fighter serbaguna dengan pelindung putih, detail cyan, dan mesin bercahaya.",descEn:"A versatile fighter with white armor, cyan detailing, and luminous engines.",accent:"#58d9ff"},
         {id:"valkyrie",name:"VALKYRIE",roleId:"PENYERANG CEPAT",roleEn:"SPEED FIGHTER",descId:"Desain tajam merah-perak dengan sayap menyapu dan siluet agresif.",descEn:"A sharp red-and-silver craft with swept wings and an aggressive silhouette.",accent:"#fb5267"},
-        {id:"nova",name:"NOVA",roleId:"KAPAL SERBU",roleEn:"ASSAULT SHIP",descId:"Rangka kokoh dengan pelat armor bersudut dan pendorong jingga.",descEn:"A sturdy frame with angular armor plates and orange thrusters.",accent:"#ffad4d"},
+
         {id:"shadow",name:"SHADOW",roleId:"PESAWAT SILUMAN",roleEn:"STEALTH FIGHTER",descId:"Siluet gelap, bilah sayap ramping, dan inti energi ungu.",descEn:"A dark, razor-thin silhouette with violet energy accents.",accent:"#bd6cff"},
         {id:"orion",name:"ORION",roleId:"KAPAL BERAT",roleEn:"HEAVY FIGHTER",descId:"Bodi lebar dan berlapis dengan tampilan kapal tempur berat.",descEn:"A broad, layered hull with the presence of a heavy fighter.",accent:"#fbbf55"},
         {id:"phoenix",name:"PHOENIX",roleId:"FIGHTER PREMIUM",roleEn:"PREMIUM FIGHTER",descId:"Pelindung putih-emas dengan garis elegan dan mesin emas terang.",descEn:"Elegant white-and-gold armor with bright golden engine cores.",accent:"#ffd36a"},
-        {id:"blade",name:"BLADE",roleId:"FIGHTER AGRESIF",roleEn:"AGGRESSIVE FIGHTER",descId:"Sayap seperti bilah, lapisan gelap, dan energi merah.",descEn:"Blade-like wings, dark plating, and sharp red energy lines.",accent:"#ff475d"},
+
         {id:"nebula",name:"NEBULA",roleId:"FIGHTER ENERGI",roleEn:"ENERGY FIGHTER",descId:"Kapal futuristik dengan pod energi ganda dan cahaya biru elektrik.",descEn:"A futuristic craft with twin energy pods and electric-blue glow.",accent:"#39e6ff"}
     ];
     let selectedShipId = localStorage.getItem("typeShooterShip") || "aurora";
@@ -758,43 +805,23 @@ function goToDashboard2() {
             shipBack: "BACK", shipStart: "START GAME"
         }
     };
-
-    let shipPickerPage = 0;
-    const shipPageControls = document.getElementById("shipPageControls");
-    function isCompactShipPicker(){
-        return !!(window.matchMedia && window.matchMedia("(max-width: 720px) and (orientation: portrait)").matches);
-    }
     function updateShipSelectionUI(){
         if(!shipGrid)return;
-        const t=translations[langSetting];
-        const compact=isCompactShipPicker();
-        const pageStart=compact?(shipPickerPage===0?0:2):0;
-        const visibleShips=compact?SHIP_ROSTER.slice(pageStart,pageStart+6):SHIP_ROSTER;
-        shipGrid.innerHTML="";
-        visibleShips.forEach(ship=>{
-            const index=SHIP_ROSTER.indexOf(ship);
+        const t=translations[langSetting];shipGrid.innerHTML="";
+        SHIP_ROSTER.forEach((ship,index)=>{
             const card=document.createElement("button");card.type="button";
             card.className="ship-card"+(ship.id===selectedShipId?" is-selected":"");
             card.style.setProperty("--ship-accent",ship.accent);
             card.setAttribute("aria-pressed",ship.id===selectedShipId?"true":"false");
             card.setAttribute("aria-label",ship.name+" — "+(langSetting==="id"?ship.roleId:ship.roleEn));
             const top=document.createElement("span");top.className="ship-card-topline";
-            top.innerHTML='<span class="ship-card-number">'+String(index+1).padStart(2,"0")+' / 08</span><span class="ship-card-check" aria-hidden="true">✓</span>';
+            top.innerHTML='<span class="ship-card-number">'+String(index+1).padStart(2,"0")+' / 06</span><span class="ship-card-check" aria-hidden="true">✓</span>';
             const art=document.createElement("span");art.className="ship-card-art";
             const img=document.createElement("img");img.src="assets/ships/"+ship.id+".png";img.alt="";img.loading="eager";img.decoding="async";art.appendChild(img);
             const name=document.createElement("span");name.className="ship-card-name";name.textContent=ship.name;
             const role=document.createElement("span");role.className="ship-card-role";role.textContent=langSetting==="id"?ship.roleId:ship.roleEn;
             card.append(top,art,name,role);card.addEventListener("click",()=>selectShip(ship.id));shipGrid.appendChild(card);
         });
-        if(compact){
-            shipPageControls.classList.remove("hidden");
-            shipPageControls.innerHTML='<button type="button" aria-label="Halaman sebelumnya" data-page="prev">‹</button><span>FLEET '+String(shipPickerPage+1).padStart(2,"0")+' / 02</span><button type="button" aria-label="Halaman berikutnya" data-page="next">›</button>';
-            const previous=shipPageControls.querySelector('[data-page="prev"]');
-            const next=shipPageControls.querySelector('[data-page="next"]');
-            previous.disabled=shipPickerPage===0;next.disabled=shipPickerPage===1;
-            previous.addEventListener("click",()=>{shipPickerPage=0;updateShipSelectionUI();});
-            next.addEventListener("click",()=>{shipPickerPage=1;updateShipSelectionUI();});
-        }else{shipPageControls.classList.add("hidden");shipPageControls.innerHTML="";}
         const selected=SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0];
         const preview=document.getElementById("shipPreviewImage");preview.src="assets/ships/"+selected.id+".png";preview.alt=selected.name+" ship preview";
         preview.parentElement.style.setProperty("--ship-accent",selected.accent);
@@ -813,14 +840,11 @@ function goToDashboard2() {
     }
     function closeShipSelection(){shipSelectMenu.classList.add("hidden");mainMenu.classList.remove("hidden");}
     function selectShip(shipId){
-        const shipIndex=SHIP_ROSTER.findIndex(ship=>ship.id===shipId);
-        if(shipIndex<0)return;
+        if(!SHIP_ROSTER.some(ship=>ship.id===shipId))return;
         selectedShipId=shipId;
-        if(shipIndex<2)shipPickerPage=0;else if(shipIndex>=6)shipPickerPage=1;
         try{localStorage.setItem("typeShooterShip",selectedShipId);}catch(error){}
         updateShipSelectionUI();
     }
-    window.addEventListener("resize",()=>{if(!shipSelectMenu.classList.contains("hidden"))updateShipSelectionUI();});
     function confirmShipSelection(){
         if(!SHIP_ROSTER.some(ship=>ship.id===selectedShipId))selectedShipId="aurora";
         try{localStorage.setItem("typeShooterShip",selectedShipId);}catch(error){}
@@ -1052,35 +1076,51 @@ function goToDashboard2() {
     }
 
     function pauseGame() {
-        if (!gameActive) return;
-        gameActive = false; 
-        pauseBtn.classList.add('hidden');
-        pauseMenu.classList.remove('hidden');
-        hiddenInput.blur();
-        stopBGM();
+        if(!gameActive)return;
+        gameActive=false;pauseBtn.classList.add('hidden');pauseMenu.classList.remove('hidden');hiddenInput.blur();
+        resizeGameCanvas();stopBGM();
     }
 
     function resumeGame() {
-        pauseMenu.classList.add('hidden');
-        pauseBtn.classList.remove('hidden');
-        gameActive = true;
-        hiddenInput.focus();
-        startBGM();
-        cancelAnimationFrame(loopId);
-        gameLoop(); 
+        pauseMenu.classList.add('hidden');pauseBtn.classList.remove('hidden');gameActive=true;resizeGameCanvas();
+        if(!isMobilePortraitGame())hiddenInput.focus();else hiddenInput.blur();
+        startBGM();cancelAnimationFrame(loopId);gameLoop();
     }
 
     function exitToMenu() {
         pauseMenu.classList.add('hidden');
         pauseBtn.classList.add('hidden');
+        gameActive = false;
+        resizeGameCanvas();
         mainMenu.classList.remove('hidden');
         stopBGM();
         enemies = []; lasers = []; particles = []; floatingTexts = []; activeEnemy = null;
     }
 
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    let gameWidth = window.innerWidth;
+    let gameHeight = window.innerHeight;
+    let canvasScale = 1;
+    gameWidth = window.innerWidth;
+    gameHeight = window.innerHeight;
+    const gameKeyboard = document.getElementById("gameKeyboard");
+    const gameKeyboardStatus = document.getElementById("gameKeyboardStatus");
+    function isMobilePortraitGame(){
+        return !!(window.matchMedia && window.matchMedia("(max-width: 720px) and (orientation: portrait)").matches);
+    }
+    function resizeGameCanvas(){
+        gameWidth=Math.max(240,window.innerWidth);
+        const keyboardActive=gameActive&&isMobilePortraitGame();
+        const keyboardHeight=keyboardActive?Math.min(292,Math.max(206,Math.round(window.innerHeight*.35))):0;
+        gameHeight=Math.max(220,window.innerHeight-keyboardHeight);
+        canvasScale=Math.min(window.devicePixelRatio||1,3);
+        canvas.width=Math.round(gameWidth*canvasScale);
+        canvas.height=Math.round(gameHeight*canvasScale);
+        canvas.style.width=gameWidth+"px";canvas.style.height=gameHeight+"px";
+        ctx.setTransform(canvasScale,0,0,canvasScale,0,0);
+        if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
+        updatePlayerPosition();initStars();
+    }
 
     const wordsList = {
     id: [
@@ -1140,6 +1180,9 @@ function goToDashboard2() {
     let enemiesLeftToSpawn = 0;
     let waveSpawnTimer = 0;
     let waveClearMessageTimer = 0;
+    const skillInventory={bomb:0,shield:0,clear:0};
+    const maxStoredSkills=3;
+    let shieldActive=false;
 
     let shakeTimer = 0;
     let shakeIntensity = 0;
@@ -1149,22 +1192,22 @@ function goToDashboard2() {
         shakeTimer = duration;
     }
 
-    const player = { x: canvas.width / 2, y: canvas.height - 100, size: 12.5 };
+    const player = { x: gameWidth / 2, y: gameHeight - 100, size: 12.5 };
     let kodeAngka = ""; 
 const PIN_RAHASIA = "0189"; 
 const PIN_RAHASIA_2 = "0199"; 
 
     function updatePlayerPosition() {
-        player.x = canvas.width / 2;
+        player.x = gameWidth / 2;
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        const isPortrait = canvas.height > canvas.width;
+        const isPortrait = gameHeight > gameWidth;
 
         if (isTouchDevice && isPortrait) {
-            player.y = canvas.height - 300; 
+            player.y = gameHeight - 300; 
         } else if (isTouchDevice && !isPortrait) {
-            player.y = canvas.height - 180;
+            player.y = gameHeight - 180;
         } else {
-            player.y = canvas.height - 50;
+            player.y = gameHeight - 50;
         }
     }
 
@@ -1179,8 +1222,8 @@ const PIN_RAHASIA_2 = "0199";
             else { size = 2.5; speed = 1.8; alpha = 1.0; } 
             
             stars.push({ 
-                x: Math.random() * canvas.width, 
-                y: Math.random() * canvas.height, 
+                x: Math.random() * gameWidth, 
+                y: Math.random() * gameHeight, 
                 size: size, 
                 baseSpeed: speed, 
                 alpha: alpha,
@@ -1244,7 +1287,7 @@ const PIN_RAHASIA_2 = "0199";
             this.typed = "";
             this.wordWidth = ctx.measureText(this.word).width;
             
-            let maxSpawnX = canvas.width - this.wordWidth - 40;
+            let maxSpawnX = gameWidth - this.wordWidth - 40;
             this.x = Math.random() * (maxSpawnX - 30) + 30;
             if (this.x < 30) this.x = 30;
             
@@ -1400,6 +1443,66 @@ const PIN_RAHASIA_2 = "0199";
         waveClearMessageTimer = 90; 
     }
 
+
+    const skillLabels={bomb:"BOMB",shield:"SHIELD",clear:"CLEAR"};
+    const skillColors={bomb:"#ffbd59",shield:"#58d9ff",clear:"#dbeafe"};
+    function updateSkillInventoryUI(){
+        const ids={shield:"skillCountShield",bomb:"skillCountBomb",clear:"skillCountClear"};
+        Object.keys(ids).forEach(type=>{
+            const countNode=document.getElementById(ids[type]);
+            const button=gameKeyboard&&gameKeyboard.querySelector('[data-skill="'+type+'"]');
+            if(countNode)countNode.textContent=String(skillInventory[type]);
+            if(button){
+                button.disabled=skillInventory[type]<1||(type==="shield"&&shieldActive)||(type==="clear"&&!activeEnemy);
+                button.setAttribute("aria-label",skillLabels[type]+", tersimpan "+skillInventory[type]);
+            }
+        });
+        if(gameKeyboardStatus)gameKeyboardStatus.textContent=shieldActive?"SHIELD AKTIF — MENAHAN 1 TABRAKAN":"KETIK HURUF PADA KATA MUSUH";
+    }
+    function grantRandomSkill(enemy){
+        if(Math.random()>=.14)return;
+        const types=Object.keys(skillInventory).filter(type=>skillInventory[type]<maxStoredSkills);
+        if(!types.length)return;
+        const type=types[Math.floor(Math.random()*types.length)];
+        skillInventory[type]++;
+        floatingTexts.push(new FloatingText(enemy.x,enemy.y-20,skillLabels[type]+" STORED",skillColors[type],true));
+        updateSkillInventoryUI();
+    }
+    function useStoredSkill(type){
+        if(!gameActive||!Object.prototype.hasOwnProperty.call(skillInventory,type)||skillInventory[type]<1)return;
+        if(type==="shield"&&shieldActive)return;
+        if(type==="clear"&&!activeEnemy)return;
+        skillInventory[type]--;
+        if(type==="shield"){
+            shieldActive=true;
+            floatingTexts.push(new FloatingText(player.x,player.y-45,"SHIELD READY","#58d9ff",true));
+        }else if(type==="bomb"){
+            const targets=enemies.slice();
+            targets.forEach(enemy=>{
+                score+=Math.max(10,enemy.word.length*10);
+                createExplosion(enemy.x,enemy.y,enemy.word.length,enemy.colorGlow||"#ffbd59");
+                floatingTexts.push(new FloatingText(enemy.x,enemy.y,"BOMB","#ffbd59"));
+            });
+            enemies=[];activeEnemy=null;comboCount=0;hiddenInput.value="";
+            triggerScreenShake(8,12);playExplosionSound(true);
+            floatingTexts.push(new FloatingText(gameWidth/2,gameHeight*.38,"AREA BOMB","#ffbd59",true));
+        }else if(type==="clear"){
+            activeEnemy.typed="";activeEnemy=null;hiddenInput.value="";comboCount=0;
+            floatingTexts.push(new FloatingText(player.x,player.y-45,"TARGET CLEARED","#dbeafe",true));
+        }
+        updateSkillInventoryUI();
+    }
+    function sendGameCharacter(character){
+        if(!gameActive||!/^[a-z]$/i.test(character))return;
+        hiddenInput.value=character;
+        hiddenInput.dispatchEvent(new Event("input",{bubbles:true}));
+    }
+    if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
+        const button=event.target.closest("button");if(!button||button.disabled)return;
+        if(button.dataset.skill){useStoredSkill(button.dataset.skill);return;}
+        if(button.dataset.key)sendGameCharacter(button.dataset.key);
+    });
+
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
         let val = hiddenInput.value;
@@ -1449,7 +1552,7 @@ const PIN_RAHASIA_2 = "0199";
                 } else {
                     comboCount = 0;
                     playErrorSound();
-                    floatingTexts.push(new FloatingText(canvas.width/2 - 20, player.y - 50, t.miss, "#ef4444", true));
+                    floatingTexts.push(new FloatingText(gameWidth/2 - 20, player.y - 50, t.miss, "#ef4444", true));
                 }
             } else {
                 let nextChar = activeEnemy.word[activeEnemy.typed.length];
@@ -1480,10 +1583,11 @@ const PIN_RAHASIA_2 = "0199";
                         playExplosionSound(activeEnemy.type === 'tank');
 
                         floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
+                        grantRandomSkill(activeEnemy);
 
                         if (activeEnemy.type === 'emp') {
                             triggerScreenShake(20, 20);
-                            floatingTexts.push(new FloatingText(canvas.width/2 - 50, canvas.height/2, "EMP DETONATED!", "#06b6d4", true));
+                            floatingTexts.push(new FloatingText(gameWidth/2 - 50, gameHeight/2, "EMP DETONATED!", "#06b6d4", true));
                             
                             enemies.forEach(e => {
                                 if(e !== activeEnemy) {
@@ -1501,7 +1605,7 @@ const PIN_RAHASIA_2 = "0199";
                             let splitCount = Math.random() > 0.5 ? 2 : 3;
                             floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y - 20, `SPLIT ${splitCount}!`, "#c084fc"));
                             
-                            let segmentWidth = canvas.width / splitCount;
+                            let segmentWidth = gameWidth / splitCount;
                             
                             for(let k = 0; k < splitCount; k++) {
                                 let miniEn = new Enemy(currentWave, 'mini');
@@ -1572,34 +1676,20 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function startGame() {
-        enemies = []; lasers = []; particles = []; floatingTexts = []; kodeAngka = ""; score = 0; frameCount = 0; activeEnemy = null;
-        comboCount = 0; maxCombo = 0; shakeTimer = 0; muzzleFlashAlpha = 0; comboPulse = 0;
-        playerHP = maxHP;
-        flashRedFrames = 0;
-        
-        initAudio(); 
-        startWave(1);
-        updatePlayerPosition();
-        initStars();
-        gameActive = true;
-        
-        mainMenu.classList.add('hidden');
-        shipSelectMenu.classList.add('hidden');
-        gameOverMenu.classList.add('hidden');
-        pauseMenu.classList.add('hidden');
-        pauseBtn.classList.remove('hidden'); 
-        
-        hiddenInput.value = "";
-        hiddenInput.focus();
-        
-        startBGM();
-        cancelAnimationFrame(loopId);
-        gameLoop();
+        enemies=[];lasers=[];particles=[];floatingTexts=[];kodeAngka="";score=0;frameCount=0;activeEnemy=null;
+        comboCount=0;maxCombo=0;shakeTimer=0;muzzleFlashAlpha=0;comboPulse=0;playerHP=maxHP;flashRedFrames=0;
+        skillInventory.bomb=0;skillInventory.shield=0;skillInventory.clear=0;shieldActive=false;hiddenInput.value="";
+        initAudio();startWave(1);gameActive=true;
+        mainMenu.classList.add('hidden');shipSelectMenu.classList.add('hidden');gameOverMenu.classList.add('hidden');pauseMenu.classList.add('hidden');pauseBtn.classList.remove('hidden');
+        resizeGameCanvas();updateSkillInventoryUI();
+        if(!isMobilePortraitGame())hiddenInput.focus();else hiddenInput.blur();
+        startBGM();cancelAnimationFrame(loopId);gameLoop();
     }
 
     function gameOver() {
         gameActive = false;
-        pauseBtn.classList.add('hidden'); 
+        pauseBtn.classList.add('hidden');
+        resizeGameCanvas(); 
         triggerScreenShake(20, 40);
         stopBGM();
         
@@ -1616,7 +1706,7 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     canvas.addEventListener('click', () => {
-        if (gameActive) hiddenInput.focus();
+        if(gameActive&&!isMobilePortraitGame())hiddenInput.focus();
     });
 
     function drawHudPanel(x, y, width, height, accent) {
@@ -1646,7 +1736,7 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function drawSpaceBackground(){
-        const w=canvas.width,h=canvas.height;
+        const w=gameWidth,h=gameHeight;
         if(gameBackgroundImage.complete&&gameBackgroundImage.naturalWidth>0){
             const iw=gameBackgroundImage.naturalWidth,ih=gameBackgroundImage.naturalHeight;
             const scale=Math.max(w/iw,h/ih),sw=w/scale,sh=h/scale;
@@ -1676,8 +1766,14 @@ const PIN_RAHASIA_2 = "0199";
     function gameLoop() {
         if (!gameActive) {
             ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, index) => {
+            ctx.fillRect(0, 0, gameWidth, gameHeight);
+            if(shieldActive){
+            ctx.save();ctx.globalAlpha=.78+Math.sin(frameCount*.12)*.12;
+            ctx.strokeStyle="#58d9ff";ctx.fillStyle="rgba(56,189,248,.05)";ctx.lineWidth=2;ctx.shadowColor="#38bdf8";ctx.shadowBlur=5;
+            ctx.beginPath();ctx.ellipse(player.x,player.y,player.size*3.15,player.size*3.8,0,0,Math.PI*2);
+            ctx.fill();ctx.stroke();ctx.restore();
+        }
+        particles.forEach((p, index) => {
                 p.update(); p.draw();
                 if (p.alpha <= 0) particles.splice(index, 1);
             });
@@ -1693,18 +1789,18 @@ const PIN_RAHASIA_2 = "0199";
         ctx.save();
         ctx.strokeStyle = "rgba(56, 189, 248, 0.04)";
         ctx.lineWidth = 1;
-        for(let i = 0; i < canvas.width; i += 60) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        for(let i = 0; i < gameWidth; i += 60) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, gameHeight); ctx.stroke();
         }
-        for(let j = 0; j < canvas.height; j += 60) {
-            let yOffset = (j + frameCount * 0.3) % canvas.height;
-            ctx.beginPath(); ctx.moveTo(0, yOffset); ctx.lineTo(canvas.width, yOffset); ctx.stroke();
+        for(let j = 0; j < gameHeight; j += 60) {
+            let yOffset = (j + frameCount * 0.3) % gameHeight;
+            ctx.beginPath(); ctx.moveTo(0, yOffset); ctx.lineTo(gameWidth, yOffset); ctx.stroke();
         }
         ctx.restore();
 
         if (flashRedFrames > 0) {
             ctx.fillStyle = `rgba(239, 68, 68, ${flashRedFrames * 0.02})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, gameWidth, gameHeight);
             flashRedFrames--;
         }
 
@@ -1727,11 +1823,11 @@ const PIN_RAHASIA_2 = "0199";
             }
 
             star.y += currentSpeed;
-            if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
+            if (star.y > gameHeight) { star.y = 0; star.x = Math.random() * gameWidth; }
         });
         ctx.globalAlpha = 1.0;
 
-        let closestDistance = canvas.height;
+        let closestDistance = gameHeight;
         enemies.forEach(en => {
             let dist = (player.y + 22) - en.y;
             if (dist > 0 && dist < closestDistance) closestDistance = dist;
@@ -1749,15 +1845,15 @@ const PIN_RAHASIA_2 = "0199";
         ctx.lineWidth = 2;
         ctx.shadowBlur = lineShadow;
         ctx.shadowColor = "#ef4444";
-        ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(canvas.width, player.y + 22); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(gameWidth, player.y + 22); ctx.stroke();
         ctx.shadowBlur = 0; 
 
         // Cinematic HUD: screenshot-style wave/score panel, red lives and combo.
         const t = translations[langSetting];
-        const compactHud = canvas.width < 360;
+        const compactHud = gameWidth < 360;
         const hudLeftX = 12;
         const hudTopY = Math.max(12,(window.visualViewport&&window.visualViewport.offsetTop)||12);
-        const hudLeftWidth = compactHud ? 140 : (canvas.width < 520 ? 166 : 190);
+        const hudLeftWidth = compactHud ? 140 : (gameWidth < 520 ? 166 : 190);
         const hudLeftHeight = 58;
         drawHudPanel(hudLeftX,hudTopY,hudLeftWidth,hudLeftHeight,"rgba(69,207,255,.78)");
         ctx.save();ctx.textAlign="left";ctx.fillStyle="#76e5ff";ctx.font="800 10px ui-monospace,monospace";
@@ -1766,8 +1862,8 @@ const PIN_RAHASIA_2 = "0199";
         ctx.font="900 "+(compactHud?13:15)+"px ui-monospace,monospace";
         ctx.fillText("SCORE "+score.toLocaleString("en-US"),hudLeftX+11,hudTopY+43,hudLeftWidth-18);ctx.restore();
 
-        const lifePanelWidth=canvas.width<420?82:102,lifePanelHeight=42,lifePanelY=hudTopY;
-        const lifePanelX=Math.max(hudLeftX+hudLeftWidth+7,canvas.width-57-lifePanelWidth);
+        const lifePanelWidth=gameWidth<420?82:102,lifePanelHeight=42,lifePanelY=hudTopY;
+        const lifePanelX=Math.max(hudLeftX+hudLeftWidth+7,gameWidth-57-lifePanelWidth);
         const lowLife=playerHP===1;
         drawHudPanel(lifePanelX,lifePanelY,lifePanelWidth,lifePanelHeight,lowLife?(Math.floor(frameCount/18)%2?"rgba(248,113,113,.88)":"rgba(248,113,113,.42)"):"rgba(69,207,255,.78)");
         function traceLifeHeart(x,y,size){
@@ -1778,7 +1874,7 @@ const PIN_RAHASIA_2 = "0199";
             ctx.bezierCurveTo(x+size*1.40,y+size*.20,x+size*.56,y+size*.69,x,y+size*.78);ctx.closePath();
         }
         ctx.save();
-        const heartSize=canvas.width<420?6.7:8,heartGap=canvas.width<420?22:27;
+        const heartSize=gameWidth<420?6.7:8,heartGap=gameWidth<420?22:27;
         const heartStart=lifePanelX+lifePanelWidth/2-(maxHP-1)*heartGap/2;
         for(let i=0;i<maxHP;i++){
             const hx=heartStart+i*heartGap,hy=lifePanelY+22;traceLifeHeart(hx,hy,heartSize);
@@ -1802,7 +1898,7 @@ const PIN_RAHASIA_2 = "0199";
             ctx.save();
             ctx.font = "bold " + (comboFontSize + Math.min(comboPulse * 0.15, 2)) + "px 'Courier New'";
             const comboPanelWidth = Math.min(
-                canvas.width - hudLeftX * 2,
+                gameWidth - hudLeftX * 2,
                 Math.ceil(ctx.measureText(comboText).width + 24)
             );
             const comboAccent = mult > 1 ? "rgba(167, 139, 250, 0.42)" : "rgba(88, 217, 255, 0.24)";
@@ -1832,7 +1928,7 @@ const PIN_RAHASIA_2 = "0199";
             ctx.fillStyle = "#38bdf8";
             ctx.font = "bold 32px 'Courier New'"; ctx.textAlign = "center";
             ctx.shadowBlur = 10; ctx.shadowColor = "#38bdf8";
-            ctx.fillText(t.incomingWave + currentWave, canvas.width / 2, canvas.height / 2.5);
+            ctx.fillText(t.incomingWave + currentWave, gameWidth / 2, gameHeight / 2.5);
             ctx.shadowBlur = 0; ctx.textAlign = "left"; 
         }
 
@@ -1958,7 +2054,7 @@ const PIN_RAHASIA_2 = "0199";
 
         lasers.forEach((l, index) => {
             l.update(); l.draw();
-            if (l.hit || l.y < -50 || l.x < -50 || l.x > canvas.width + 50) lasers.splice(index, 1);
+            if (l.hit || l.y < -50 || l.x < -50 || l.x > gameWidth + 50) lasers.splice(index, 1);
         });
 
         for (let i = enemies.length - 1; i >= 0; i--) {
@@ -1966,7 +2062,14 @@ const PIN_RAHASIA_2 = "0199";
             en.update(); 
             en.draw();
             
-            if (en.y > player.y + 22) { 
+            if(en.y>player.y+22){
+                if(shieldActive){
+                    shieldActive=false;createExplosion(en.x,en.y,en.word.length,"#58d9ff");
+                    floatingTexts.push(new FloatingText(en.x,en.y,"SHIELD BLOCKED","#58d9ff",true));
+                    enemies.splice(i,1);
+                    if(activeEnemy===en){activeEnemy=null;hiddenInput.value="";}
+                    updateSkillInventoryUI();continue;
+                }
                 playerHP--;
                 flashRedFrames = 15;
                 triggerScreenShake(15, 10);
@@ -1991,12 +2094,12 @@ const PIN_RAHASIA_2 = "0199";
         loopId = requestAnimationFrame(gameLoop);
     }
 
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        updatePlayerPosition(); initStars(); 
+    window.addEventListener('resize',()=>{
+        resizeGameCanvas();
+        if(!shipSelectMenu.classList.contains('hidden'))updateShipSelectionUI();
     });
-    
-    updatePlayerPosition();
+    resizeGameCanvas();
+    updateSkillInventoryUI();
 </script>
 </body>
 </html>
