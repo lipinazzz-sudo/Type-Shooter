@@ -1260,3 +1260,29 @@
   }
   .game-key-row-space{gap:0!important}
 }
+
+
+/* PAUSE BUTTON ALIGNMENT — KEEP HUD BORDER VISIBLE */
+/* Keep the pause glyph fully inside the dedicated HUD segment, leaving the outline visible. */
+#pauseBtn.pause-btn{
+  top:19px!important;
+  right:18px!important;
+  width:38px!important;
+  height:40px!important;
+}
+#pauseBtn .pause-glyph{
+  width:31px!important;
+  height:31px!important;
+}
+@media(max-width:519px){
+  #pauseBtn.pause-btn{
+    top:13px!important;
+    right:13px!important;
+    width:36px!important;
+    height:38px!important;
+  }
+  #pauseBtn .pause-glyph{
+    width:29px!important;
+    height:29px!important;
+  }
+}
