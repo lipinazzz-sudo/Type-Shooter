@@ -806,3 +806,198 @@
   #btn-play::after{transition:none!important}
 }
 
+
+
+
+/* FINAL MENU + KEYBOARD SCALE PASS
+   Keep gameplay geometry in JS untouched; this patch changes presentation only. */
+#mainMenu.ui-layer{
+  background:
+    linear-gradient(180deg,rgba(1,6,18,.16),rgba(1,7,19,.42) 58%,rgba(1,5,15,.75)),
+    radial-gradient(ellipse at 50% 0%,rgba(13,146,236,.17),transparent 52%),
+    url("../backgrounds/space-nebula.png") center center/cover no-repeat!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#mainMenu .menu-box{
+  width:min(560px,calc(100vw - 28px))!important;
+  max-width:100%!important;
+  max-height:none!important;
+  overflow:visible!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:clamp(20px,5vh,42px) clamp(12px,4vw,24px)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  animation:premiumMenuEnter 520ms cubic-bezier(.2,.75,.25,1) both;
+}
+#mainMenu .menu-box::before,
+#mainMenu .menu-box::after{display:none!important;content:none!important}
+#mainMenu .menu-box>#ui-title{
+  width:100%;
+  margin:0 0 4px!important;
+  font-size:clamp(2.1rem,9.2vw,3.6rem)!important;
+  line-height:1.04!important;
+  letter-spacing:clamp(.06em,.7vw,.12em)!important;
+  font-weight:950!important;
+  text-align:center!important;
+  overflow-wrap:normal!important;
+  white-space:nowrap;
+  filter:drop-shadow(0 0 17px rgba(56,189,248,.22))!important;
+}
+#mainMenu #ui-subtitle{
+  margin:10px 0 3px!important;
+  font-size:clamp(.68rem,2.5vw,.82rem)!important;
+  letter-spacing:clamp(.13em,.5vw,.23em)!important;
+  color:#83e7ff!important;
+  text-shadow:0 0 12px rgba(56,189,248,.24);
+}
+#mainMenu #ui-credits{
+  margin:2px 0 25px!important;
+  color:rgba(201,221,240,.68)!important;
+  font-size:.72rem!important;
+  letter-spacing:.09em!important;
+  font-style:normal!important;
+}
+#mainMenu .menu-box>button{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:min(100%,330px)!important;
+  min-height:48px!important;
+  margin:2px 0!important;
+  padding:11px 18px 14px!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-family:inherit!important;
+  font-size:clamp(.88rem,3.4vw,1rem)!important;
+  font-weight:850!important;
+  letter-spacing:.19em!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  transform:none;
+  transition:color .18s ease,filter .18s ease,text-shadow .18s ease,transform .18s ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+#mainMenu #btn-play{
+  width:min(100%,360px)!important;
+  min-height:58px!important;
+  margin:1px 0 8px!important;
+  padding:13px 18px 18px!important;
+  font-size:clamp(1rem,4vw,1.16rem)!important;
+  font-weight:950!important;
+  letter-spacing:.22em!important;
+  color:#effcff!important;
+  text-shadow:0 0 9px rgba(70,212,255,.46),0 0 24px rgba(30,144,255,.22)!important;
+  animation:playGameHover 2.6s ease-in-out infinite!important;
+}
+#mainMenu #btn-settings,
+#mainMenu #btn-scoreboard{
+  color:rgba(216,239,250,.88)!important;
+  font-size:clamp(.82rem,3.2vw,.94rem)!important;
+  font-weight:800!important;
+  letter-spacing:.2em!important;
+  animation:menuTextBreathe 4.2s ease-in-out infinite;
+}
+#mainMenu #btn-settings::after,
+#mainMenu #btn-scoreboard::after{
+  content:"";
+  position:absolute;
+  bottom:6px;
+  left:43%;right:43%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,222,255,.92),transparent);
+  opacity:.42;
+  transition:left .2s ease,right .2s ease,opacity .2s ease;
+}
+#mainMenu #btn-settings:hover,
+#mainMenu #btn-scoreboard:hover{
+  color:#f2fcff!important;
+  filter:brightness(1.13)!important;
+  text-shadow:0 0 12px rgba(56,189,248,.28)!important;
+  transform:translateY(-2px)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#mainMenu #btn-settings:hover::after,
+#mainMenu #btn-scoreboard:hover::after{left:30%;right:30%;opacity:1}
+#mainMenu #btn-play:hover{
+  filter:brightness(1.16)!important;
+  transform:translateY(-1px)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#mainMenu #btn-play:active,
+#mainMenu #btn-settings:active,
+#mainMenu #btn-scoreboard:active{transform:scale(.98)!important;background:transparent!important}
+#mainMenu #ui-mobile-hint{
+  max-width:290px;
+  margin:23px auto 0!important;
+  color:rgba(173,197,219,.62)!important;
+  font-size:.68rem!important;
+  line-height:1.6!important;
+  letter-spacing:.015em;
+}
+@keyframes menuTextBreathe{
+  0%,100%{opacity:.82}
+  50%{opacity:1}
+}
+@media(max-width:480px){
+  #mainMenu .menu-box{width:100%!important;padding:clamp(18px,5vh,32px) 10px!important}
+  #mainMenu .menu-box>#ui-title{font-size:clamp(2rem,9vw,2.65rem)!important;letter-spacing:.055em!important}
+  #mainMenu #ui-subtitle{letter-spacing:.12em!important}
+  #mainMenu #ui-credits{margin-bottom:22px!important}
+  #mainMenu .menu-box>button{min-height:45px!important}
+  #mainMenu #btn-play{min-height:53px!important;font-size:1rem!important;letter-spacing:.17em!important}
+  #mainMenu #btn-settings,#mainMenu #btn-scoreboard{font-size:.84rem!important}
+  #mainMenu #ui-mobile-hint{margin-top:19px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #mainMenu #btn-play,#mainMenu #btn-settings,#mainMenu #btn-scoreboard{animation:none!important}
+  #mainMenu .menu-box>button{transition:none!important}
+}
+
+/* +15% keyboard scale relative to the current mobile sizes.
+   No ship-coordinate, playfield-geometry, or danger-line JavaScript is changed. */
+@media(max-width:720px) and (orientation:portrait){
+  .game-keyboard{
+    height:clamp(191px,26.45vh,223px)!important;
+    height:clamp(191px,26.45dvh,223px)!important;
+    max-height:28.75vh!important;
+    gap:3.5px!important;
+    padding:6px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+  }
+  .game-skill-tray{flex:0 0 27px!important;gap:4.6px!important}
+  .game-skill{font-size:9.2px!important;gap:3.5px!important;padding:0 3.5px!important}
+  .game-skill b{min-width:15px!important;height:15px!important;font-size:9.2px!important;padding:0 3.5px!important}
+  .game-keyboard-rows{gap:3.5px!important}
+  .game-key-row{gap:3.45px!important}
+  .game-key-row .game-key{
+    font-size:clamp(12.5px,3.45vw,16.1px)!important;
+    border-radius:5.75px!important;
+  }
+  .game-number-key,.game-backspace-key{font-size:clamp(10.4px,3.1vw,13.8px)!important}
+  .game-key-row-space{flex:0 0 25.3px!important;min-height:25.3px!important}
+  .game-space-key{font-size:10.35px!important;letter-spacing:.14em!important}
+}
+@media(max-width:390px) and (orientation:portrait){
+  .game-keyboard{
+    height:clamp(188px,25.3vh,212px)!important;
+    height:clamp(188px,25.3dvh,212px)!important;
+    max-height:28.2vh!important;
+  }
+  .game-skill-tray{flex-basis:25.3px!important}
+  .game-key-row-space{flex-basis:24.15px!important;min-height:24.15px!important}
+  .game-key-row .game-key{font-size:clamp(12.3px,3.4vw,15.5px)!important}
+}
+
