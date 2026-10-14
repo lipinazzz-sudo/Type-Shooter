@@ -1234,3 +1234,29 @@
   .game-key.key-feedback-correct,
   .game-key.key-feedback-error{animation:none!important}
 }
+
+
+/* KEYBOARD ERGONOMICS PASS — 25PX BOTTOM GAP AND WIDER KEY SPACING */
+/* Keep 25px clear below the keyboard; reserve the same gap in resizeGameCanvas(). */
+@media(max-width:720px) and (orientation:portrait){
+  .game-keyboard{
+    bottom:25px!important;
+    gap:5px!important;
+  }
+  .game-keyboard-rows{
+    gap:5px!important;
+  }
+  .game-key-row{
+    gap:5px!important;
+  }
+  /* Ten equal key-width units leave exactly 5px between the ten-key row keys. */
+  .game-key-row .game-key{
+    flex:0 0 calc((100% - 45px)/10)!important;
+    width:calc((100% - 45px)/10)!important;
+  }
+  .game-key-row-short>button{
+    flex:0 0 calc((100% - 45px)/10)!important;
+    width:calc((100% - 45px)/10)!important;
+  }
+  .game-key-row-space{gap:0!important}
+}
