@@ -1454,3 +1454,12 @@
   .game-over-stat{min-height:62px;padding:8px 4px}
   .game-over-stat span{letter-spacing:.015em}
 }
+
+
+/* READABILITY PASS — slight background softening is handled on the canvas.
+   Keep keyboard controls 15px farther from the bottom edge on portrait phones. */
+@media(max-width:720px) and (orientation:portrait){
+  .game-keyboard{
+    bottom:40px!important;
+  }
+}
