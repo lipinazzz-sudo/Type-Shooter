@@ -1200,3 +1200,12 @@
   #scoreboardMenu .menu-box button,
   #gameOverMenu .menu-box button{transition:none!important}
 }
+
+
+/* KEYBOARD FLOATING GAP — 15PX FROM SCREEN BOTTOM */
+/* Keep the custom keyboard comfortably above the bottom edge on portrait phones. */
+@media(max-width:720px) and (orientation:portrait){
+  .game-keyboard{
+    bottom:15px!important;
+  }
+}
