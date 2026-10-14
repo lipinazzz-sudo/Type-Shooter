@@ -1286,3 +1286,102 @@
     height:29px!important;
   }
 }
+
+
+/* TARGET RED GLOW + EXTERNAL BOMB CONTROL */
+/* Active target: high-contrast red outline comes from the gameplay canvas; keyboard controls are styled here. */
+.game-keyboard .game-key-row-space .game-space-key{
+  width:58%!important;
+  max-width:58%!important;
+  flex:0 0 58%!important;
+  border-color:rgba(255,84,103,.82)!important;
+  background:linear-gradient(180deg,rgba(91,25,43,.98),rgba(35,9,24,.99))!important;
+  color:#ffe8ec!important;
+  letter-spacing:.16em!important;
+}
+.game-keyboard .game-key-row-space .game-space-key:active{
+  background:linear-gradient(180deg,#d92749,#78142d)!important;
+  box-shadow:0 0 10px rgba(255,43,72,.42)!important;
+}
+.game-keyboard .game-backspace-key{
+  font-size:clamp(8px,2.45vw,11px)!important;
+  letter-spacing:.015em!important;
+  white-space:nowrap!important;
+  padding:0 2px!important;
+}
+.game-keyboard .game-backspace-key:disabled{
+  opacity:.38!important;
+  filter:saturate(.35)!important;
+  box-shadow:none!important;
+}
+.floating-bomb-button{
+  position:fixed!important;
+  z-index:29!important;
+  top:0;
+  right:max(10px,env(safe-area-inset-right))!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  width:auto!important;
+  min-width:92px!important;
+  max-width:42vw!important;
+  height:36px!important;
+  min-height:36px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  border:1px solid rgba(255,177,83,.9)!important;
+  border-radius:7px!important;
+  background:linear-gradient(180deg,rgba(105,49,8,.98),rgba(43,20,7,.99))!important;
+  color:#ffe0a9!important;
+  font:900 10px/1 ui-monospace,monospace!important;
+  letter-spacing:.14em!important;
+  box-shadow:0 0 12px rgba(255,145,43,.18),inset 0 1px 0 rgba(255,255,255,.1)!important;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.floating-bomb-button.hidden,
+#floatingBombBtn.hidden{display:none!important}
+.floating-bomb-button b{
+  display:inline-grid;
+  place-items:center;
+  min-width:18px;
+  height:18px;
+  padding:0 4px;
+  border:1px solid rgba(255,218,163,.4);
+  border-radius:5px;
+  background:rgba(17,9,3,.6);
+  color:#fff5df;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:0;
+  font-variant-numeric:tabular-nums;
+}
+.floating-bomb-button:disabled{
+  opacity:.43!important;
+  filter:saturate(.5)!important;
+  box-shadow:none!important;
+}
+.floating-bomb-button:not(:disabled):active{
+  transform:scale(.97)!important;
+  box-shadow:0 0 15px rgba(255,145,43,.32),inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+.floating-bomb-button:focus-visible{
+  outline:2px solid #ffe0a9!important;
+  outline-offset:2px;
+}
+@media(max-width:390px) and (orientation:portrait){
+  .floating-bomb-button{
+    min-width:84px!important;
+    height:33px!important;
+    min-height:33px!important;
+    gap:6px!important;
+    padding:0 8px!important;
+    font-size:9px!important;
+  }
+  .floating-bomb-button b{min-width:16px;height:16px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .floating-bomb-button{transition:none!important}
+}
