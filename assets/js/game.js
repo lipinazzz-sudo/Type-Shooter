@@ -115,6 +115,7 @@ function goToDashboard2() {
             topScores: "TOP 5 HIGH SCORES", noScores: "Belum ada rekor skor.",
             rank: "Rank", score: "Skor", wave: "Wave", date: "Tanggal",
             gameOver: "GAME OVER", tryAgain: "TRY AGAIN", reachedWave: "Mencapai: Wave ",
+            gameOverStats: "STATISTIK MISI", statAccuracy: "AKURASI", statDestroyed: "MUSUH DIHANCURKAN", statBestCombo: "COMBO TERBAIK", statDuration: "DURASI AKTIF",
             incomingWave: "WAVE DATANG ", miss: "LUPUT!", bad: "SALAH!",
             shipSelectTitle: "PILIH PESAWAT", shipSelectSubtitle: "Pilih kapal tempur sebelum memulai misi.",
             shipSelected: "KAPAL TERPILIH", shipCosmeticNote: "Pilihan visual saja — aturan dan kemampuan game tetap sama.",
@@ -134,6 +135,7 @@ function goToDashboard2() {
             topScores: "TOP 5 HIGH SCORES", noScores: "No high scores recorded yet.",
             rank: "Rank", score: "Score", wave: "Wave", date: "Date",
             gameOver: "GAME OVER", tryAgain: "TRY AGAIN", reachedWave: "Reached: Wave ",
+            gameOverStats: "RUN STATISTICS", statAccuracy: "ACCURACY", statDestroyed: "ENEMIES DESTROYED", statBestCombo: "BEST COMBO", statDuration: "ACTIVE TIME",
             incomingWave: "INCOMING WAVE ", miss: "MISS!", bad: "BAD!",
             shipSelectTitle: "SELECT YOUR SHIP", shipSelectSubtitle: "Choose your fighter before starting the mission.",
             shipSelected: "SELECTED SHIP", shipCosmeticNote: "Visual choice only — game rules and abilities remain unchanged.",
@@ -423,11 +425,16 @@ function goToDashboard2() {
 
     function pauseGame() {
         if(!gameActive)return;
+        runPausedAt = Date.now();
         gameActive=false;pauseBtn.classList.add('hidden');pauseMenu.classList.remove('hidden');hiddenInput.blur();
         resizeGameCanvas();stopBGM();
     }
 
     function resumeGame() {
+        if (runPausedAt > 0) {
+            accumulatedPauseMs += Date.now() - runPausedAt;
+            runPausedAt = 0;
+        }
         pauseMenu.classList.add('hidden');pauseBtn.classList.remove('hidden');gameActive=true;resizeGameCanvas();
         if(!isMobilePortraitGame())hiddenInput.focus();else hiddenInput.blur();
         startBGM();cancelAnimationFrame(loopId);gameLoop();
@@ -533,6 +540,11 @@ function goToDashboard2() {
     let comboCount = 0;
     let maxCombo = 0;
     let comboPulse = 0; 
+    let runStats = { correctCharacters: 0, incorrectCharacters: 0, enemiesDestroyed: 0, bestCombo: 0 };
+    let runStartedAt = 0;
+    let runPausedAt = 0;
+    let accumulatedPauseMs = 0;
+    let lastRunDurationMs = 0;
     let muzzleFlashAlpha = 0; 
 
     let currentWave = 1;
@@ -859,6 +871,7 @@ const PIN_RAHASIA_2 = "0199";
             floatingTexts.push(new FloatingText(player.x,player.y-45,"SHIELD READY","#58d9ff",true));
         }else if(type==="bomb"){
             const targets=enemies.slice();
+            runStats.enemiesDestroyed += targets.length;
             targets.forEach(enemy=>{
                 awardScore(Math.max(10,enemy.word.length*10));
                 createExplosion(enemy.x,enemy.y,enemy.word.length,enemy.colorGlow||"#ffbd59");
@@ -975,6 +988,8 @@ const PIN_RAHASIA_2 = "0199";
                 ? activeEnemy.word[activeEnemy.typed.length] === key
                 : enemies.some(enemy => enemy.word[enemy.typed.length] === key);
             flashVirtualKey(key, isExpectedCharacter);
+            if (isExpectedCharacter) runStats.correctCharacters++;
+            else runStats.incorrectCharacters++;
 
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
@@ -986,6 +1001,7 @@ const PIN_RAHASIA_2 = "0199";
                     activeEnemy.shakeFrames = 6; 
                     
                     comboCount++;
+                    runStats.bestCombo = Math.max(runStats.bestCombo, comboCount);
                     comboPulse = 8; 
                     muzzleFlashAlpha = 1.0; 
                     playLaserSound();
@@ -1003,6 +1019,7 @@ const PIN_RAHASIA_2 = "0199";
                     activeEnemy.typed += key;
                     activeEnemy.shakeFrames = 6; 
                     comboCount++;
+                    runStats.bestCombo = Math.max(runStats.bestCombo, comboCount);
                     comboPulse = 8; 
                     muzzleFlashAlpha = 1.0; 
                     playLaserSound();
@@ -1027,6 +1044,7 @@ const PIN_RAHASIA_2 = "0199";
 
                         floatingTexts.push(new FloatingText(activeEnemy.x, activeEnemy.y, `+${finalPoints}`, multiplier > 1 ? "#38bdf8" : "#4ade80", multiplier > 1));
                         grantRandomSkill(activeEnemy);
+                        runStats.enemiesDestroyed++;
 
                         if (activeEnemy.type === 'emp') {
                             triggerScreenShake(20, 20);
@@ -1034,6 +1052,7 @@ const PIN_RAHASIA_2 = "0199";
                             
                             enemies.forEach(e => {
                                 if(e !== activeEnemy) {
+                                    runStats.enemiesDestroyed++;
                                     awardScore(e.word.length * 5); 
                                     createExplosion(e.x, e.y, e.word.length, e.colorGlow);
                                 }
@@ -1127,6 +1146,11 @@ const PIN_RAHASIA_2 = "0199";
 
     function startGame() {
         gameOverTriggered = false;
+        runStats = { correctCharacters: 0, incorrectCharacters: 0, enemiesDestroyed: 0, bestCombo: 0 };
+        runStartedAt = Date.now();
+        runPausedAt = 0;
+        accumulatedPauseMs = 0;
+        lastRunDurationMs = 0;
         enemies=[];lasers=[];particles=[];floatingTexts=[];kodeAngka="";score=0;frameCount=0;activeEnemy=null;
         comboCount=0;maxCombo=0;shakeTimer=0;muzzleFlashAlpha=0;comboPulse=0;playerHP=maxHP;flashRedFrames=0;
         skillInventory.bomb=0;skillInventory.shield=0;skillInventory.clear=0;shieldActive=false;nativeNumberEntryActive=false;hiddenInput.value="";
@@ -1141,6 +1165,7 @@ const PIN_RAHASIA_2 = "0199";
     function gameOver() {
         if (gameOverTriggered) return;
         gameOverTriggered = true;
+        lastRunDurationMs = Math.max(0, Date.now() - runStartedAt - accumulatedPauseMs);
         gameActive = false;
         pauseBtn.classList.add('hidden');
         resizeGameCanvas(); 
@@ -1152,6 +1177,26 @@ const PIN_RAHASIA_2 = "0199";
         const t = translations[langSetting];
         document.getElementById('finalScoreText').innerText = "Score: " + score;
         document.getElementById('finalWaveText').innerText = t.reachedWave + currentWave;
+        const totalCharacters = runStats.correctCharacters + runStats.incorrectCharacters;
+        const typingAccuracy = totalCharacters > 0
+            ? Math.round((runStats.correctCharacters / totalCharacters) * 100)
+            : 0;
+        const totalSeconds = Math.floor(lastRunDurationMs / 1000);
+        const durationHours = Math.floor(totalSeconds / 3600);
+        const durationMinutes = Math.floor((totalSeconds % 3600) / 60);
+        const durationSeconds = totalSeconds % 60;
+        const formattedDuration = durationHours > 0
+            ? durationHours + ":" + String(durationMinutes).padStart(2, "0") + ":" + String(durationSeconds).padStart(2, "0")
+            : durationMinutes + ":" + String(durationSeconds).padStart(2, "0");
+        document.getElementById("gameOverStats").setAttribute("aria-label", t.gameOverStats);
+        document.getElementById("statAccuracyLabel").textContent = t.statAccuracy;
+        document.getElementById("statAccuracyValue").textContent = typingAccuracy + "%";
+        document.getElementById("statDestroyedLabel").textContent = t.statDestroyed;
+        document.getElementById("statDestroyedValue").textContent = runStats.enemiesDestroyed.toLocaleString("en-US");
+        document.getElementById("statBestComboLabel").textContent = t.statBestCombo;
+        document.getElementById("statBestComboValue").textContent = runStats.bestCombo.toLocaleString("en-US");
+        document.getElementById("statDurationLabel").textContent = t.statDuration;
+        document.getElementById("statDurationValue").textContent = formattedDuration;
         
         // Show the end-state immediately; do not leave the player staring at a frozen playfield for one second.
         gameOverMenu.classList.remove('hidden');
