@@ -469,19 +469,25 @@ function goToDashboard2() {
         gameWidth=Math.max(240,window.innerWidth);
         // Safari iOS shrinks visualViewport for its native keyboard, then may restore it late.
         // Use the layout viewport for canvas geometry so the playfield cannot remain compressed.
-        const visibleHeight=Math.round(window.innerHeight);
+        const layoutHeight=Math.round(window.innerHeight||document.documentElement.clientHeight||0);
         const keyboardActive=gameActive&&isMobilePortraitGame()&&!nativeNumberEntryActive;
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
         if(floatingBombButton)floatingBombButton.classList.toggle("hidden",!keyboardActive);
+        // Measure the keyboard after visibility changes. Its top edge is the actual
+        // lower boundary of the playfield, independent of Safari/PWA viewport quirks.
         const keyboardRect=keyboardActive&&gameKeyboard?gameKeyboard.getBoundingClientRect():null;
         if(floatingBombButton&&keyboardRect){
             const controlHeight=floatingBombButton.offsetHeight||36;
             floatingBombButton.style.top=Math.max(8,keyboardRect.top-controlHeight-8)+"px";
         }
-        const keyboardHeight=keyboardRect?Math.round(keyboardRect.height):0;
-        // Reserve a 40px gap below the floating keyboard (25px baseline + 15px requested).
-        const keyboardBottomGap=keyboardActive?40:0;
-        gameHeight=Math.max(220,visibleHeight-keyboardHeight-keyboardBottomGap);
+        const canvasRect=canvas.getBoundingClientRect();
+        if(keyboardRect){
+            gameHeight=Math.max(220,Math.round(keyboardRect.top-canvasRect.top));
+        }else{
+            const viewportHeight=Math.round((window.visualViewport&&window.visualViewport.height)||layoutHeight);
+            const viewportTop=Math.round((window.visualViewport&&window.visualViewport.offsetTop)||0);
+            gameHeight=Math.max(220,Math.round(viewportHeight+viewportTop-canvasRect.top));
+        }
         canvasScale=Math.min(window.devicePixelRatio||1,3);
         canvas.width=Math.round(gameWidth*canvasScale);
         canvas.height=Math.round(gameHeight*canvasScale);
@@ -1715,13 +1721,20 @@ const PIN_RAHASIA_2 = "0199";
         loopId = requestAnimationFrame(gameLoop);
     }
 
-    window.addEventListener('resize',()=>{
+    function handleViewportRefresh(){
         resizeGameCanvas();
         if(!shipSelectMenu.classList.contains('hidden'))updateShipSelectionUI();
+    }
+    window.addEventListener('resize',handleViewportRefresh);
+    window.addEventListener('pageshow',handleViewportRefresh);
+    document.addEventListener('visibilitychange',()=>{
+        if(!document.hidden)handleViewportRefresh();
     });
-    // Recover from iOS Safari's delayed visualViewport updates when the native number pad closes.
+    // iOS Safari and installed PWAs can report visual viewport changes later than
+    // the keyboard animation; listen to both resize and scroll and recalculate from
+    // the actual visible bounds instead of assuming innerHeight has changed.
     if(window.visualViewport){
-        window.visualViewport.addEventListener("resize",()=>{
+        const handleVisualViewportChange=()=>{
             const viewportHeight=Math.round(window.visualViewport.height);
             if(nativeNumberEntryActive&&numberEntryBaselineViewportHeight>0){
                 if(viewportHeight<numberEntryBaselineViewportHeight-100){
@@ -1730,8 +1743,10 @@ const PIN_RAHASIA_2 = "0199";
                     closeNativeNumberEntry();
                 }
             }
-            resizeGameCanvas();
-        });
+            handleViewportRefresh();
+        };
+        window.visualViewport.addEventListener("resize",handleVisualViewportChange);
+        window.visualViewport.addEventListener("scroll",handleVisualViewportChange);
     }
     resizeGameCanvas();
     updateSkillInventoryUI();
