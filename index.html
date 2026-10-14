@@ -663,6 +663,24 @@
             }
         }
 
+
+        /* Compact bottom controls and connected five-segment HUD */
+        @media(max-width:720px) and (orientation:portrait){
+          .game-keyboard{height:clamp(166px,23dvh,194px)!important;max-height:25vh!important;gap:3px!important;padding:5px max(7px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))!important}
+          .game-skill-tray{flex:0 0 23px!important;gap:4px!important}.game-skill{font-size:8px!important;gap:3px!important;padding:0 3px!important;letter-spacing:.015em!important}
+          .game-skill b{min-width:13px!important;height:13px!important;font-size:8px!important;padding:0 3px!important}
+          .game-keyboard-rows{width:100%;min-width:0;gap:3px!important}
+          .game-key-row{width:100%!important;justify-content:center!important;gap:3px!important;flex:1 1 0!important;min-height:0!important}
+          .game-key-row .game-key{box-sizing:border-box!important;flex:0 0 calc((100% - 27px)/10)!important;width:calc((100% - 27px)/10)!important;min-width:0!important;max-width:none!important;margin:0!important;border-radius:5px!important;font-size:clamp(11px,3vw,14px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.055)!important}
+          .game-key-row-short{flex:1 1 0!important}
+          .game-key-row-short>button{box-sizing:border-box!important;flex:0 0 calc((100% - 27px)/10)!important;width:calc((100% - 27px)/10)!important;min-width:0!important;max-width:none!important;height:100%!important;margin:0!important}
+          .game-number-key,.game-backspace-key{font-size:clamp(9px,2.7vw,12px)!important;font-weight:900!important;letter-spacing:0!important}
+          .game-key-row-space{flex:0 0 22px!important;min-height:22px!important;gap:0!important}
+          .game-space-key{flex:0 0 58%!important;width:58%!important;max-width:58%!important;margin:0 auto!important;font-size:9px!important;letter-spacing:.12em!important}
+          #pauseBtn.pause-btn{top:max(10px,env(safe-area-inset-top))!important;right:10px!important;width:42px!important;height:44px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:0!important;border-radius:0!important;outline:0!important;clip-path:none!important;background:transparent!important;box-shadow:none!important;filter:none!important;color:#80eaff!important;font-size:29px!important;font-weight:900!important;text-shadow:0 0 5px rgba(56,189,248,.42)!important}
+        }
+        @media(max-width:390px) and (orientation:portrait){.game-keyboard{height:clamp(164px,22dvh,184px)!important;max-height:24.5vh!important}.game-skill-tray{flex-basis:22px!important}.game-key-row-space{flex-basis:21px!important;min-height:21px!important}}
+
 </style>
 </head>
 <body>
@@ -683,11 +701,13 @@
       <div class="game-keyboard-rows" role="group" aria-label="Huruf untuk mengetik kata musuh">
         <div class="game-key-row"><button type="button" class="game-key" data-key="Q">Q</button><button type="button" class="game-key" data-key="W">W</button><button type="button" class="game-key" data-key="E">E</button><button type="button" class="game-key" data-key="R">R</button><button type="button" class="game-key" data-key="T">T</button><button type="button" class="game-key" data-key="Y">Y</button><button type="button" class="game-key" data-key="U">U</button><button type="button" class="game-key" data-key="I">I</button><button type="button" class="game-key" data-key="O">O</button><button type="button" class="game-key" data-key="P">P</button></div>
         <div class="game-key-row game-key-row-middle"><button type="button" class="game-key" data-key="A">A</button><button type="button" class="game-key" data-key="S">S</button><button type="button" class="game-key" data-key="D">D</button><button type="button" class="game-key" data-key="F">F</button><button type="button" class="game-key" data-key="G">G</button><button type="button" class="game-key" data-key="H">H</button><button type="button" class="game-key" data-key="J">J</button><button type="button" class="game-key" data-key="K">K</button><button type="button" class="game-key" data-key="L">L</button></div>
-        <div class="game-key-row game-key-row-short"><button type="button" class="game-key" data-key="Z">Z</button><button type="button" class="game-key" data-key="X">X</button><button type="button" class="game-key" data-key="C">C</button><button type="button" class="game-key" data-key="V">V</button><button type="button" class="game-key" data-key="B">B</button><button type="button" class="game-key" data-key="N">N</button><button type="button" class="game-key" data-key="M">M</button></div>
-        <div class="game-key-row game-key-row-bottom">
-          <button type="button" class="game-special-key game-number-key" data-keyboard-mode="number">123</button>
-          <button type="button" class="game-special-key game-space-key" data-key=" ">SPACE</button>
+        <div class="game-key-row game-key-row-short">
+          <button type="button" class="game-special-key game-number-key" data-keyboard-mode="number" aria-label="Buka keyboard angka">123</button>
+          <button type="button" class="game-key" data-key="Z">Z</button><button type="button" class="game-key" data-key="X">X</button><button type="button" class="game-key" data-key="C">C</button><button type="button" class="game-key" data-key="V">V</button><button type="button" class="game-key" data-key="B">B</button><button type="button" class="game-key" data-key="N">N</button><button type="button" class="game-key" data-key="M">M</button>
           <button type="button" class="game-special-key game-backspace-key" data-keyboard-action="backspace" aria-label="Hapus satu karakter">⌫</button>
+        </div>
+        <div class="game-key-row game-key-row-bottom game-key-row-space">
+          <button type="button" class="game-special-key game-space-key" data-key=" ">SPACE</button>
         </div>
       </div>
     </section>
@@ -1963,35 +1983,35 @@ const PIN_RAHASIA_2 = "0199";
         ctx.beginPath(); ctx.moveTo(0, player.y + 22); ctx.lineTo(gameWidth, player.y + 22); ctx.stroke();
         ctx.shadowBlur = 0; 
 
-        // Single-row sci-fi HUD, proportioned for the supplied mobile mockup.
+        // One shared HUD plate split into WAVE / SCORE / COMBO / LIFE / PAUSE.
         const compactHud=gameWidth<520;
         const hudTopY=Math.max(10,(window.visualViewport&&window.visualViewport.offsetTop)||10);
-        const gap=4, left=10, reservePause=compactHud?47:54;
-        const usable=gameWidth-left*2-reservePause-gap*3;
-        const waveW=compactHud?Math.max(39,Math.round(usable*.15)):70;
-        const scoreW=compactHud?Math.max(83,Math.round(usable*.35)):170;
-        const comboW=compactHud?Math.max(58,Math.round(usable*.23)):100;
-        const lifeW=Math.max(57,usable-waveW-scoreW-comboW);
-        const panelH=compactHud?43:58;
-        const waveX=left,scoreX=waveX+waveW+gap,comboX=scoreX+scoreW+gap,lifeX=comboX+comboW+gap;
-        drawHudPanel(waveX,hudTopY,waveW,panelH,"rgba(69,207,255,.9)");
-        drawHudPanel(scoreX,hudTopY,scoreW,panelH,"rgba(69,207,255,.9)");
-        drawHudPanel(comboX,hudTopY,comboW,panelH,"rgba(255,184,72,.9)");
-        drawHudPanel(lifeX,hudTopY,lifeW,panelH,playerHP===1?(Math.floor(frameCount/18)%2?"rgba(248,113,113,.9)":"rgba(248,113,113,.45)"):"rgba(69,207,255,.9)");
-        ctx.save();ctx.textAlign="center";ctx.fillStyle="#76e5ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
+        const hudFrameX=10,hudFrameW=Math.max(240,gameWidth-20),panelH=compactHud?44:58;
+        const pauseW=compactHud?42:54,contentW=hudFrameW-pauseW;
+        const waveW=Math.round(contentW*.15),scoreW=Math.round(contentW*.30),comboW=Math.round(contentW*.21);
+        const lifeW=contentW-waveW-scoreW-comboW;
+        const waveX=hudFrameX,scoreX=waveX+waveW,comboX=scoreX+scoreW,lifeX=comboX+comboW,pauseX=lifeX+lifeW;
+        drawHudPanel(hudFrameX,hudTopY,hudFrameW,panelH,
+            playerHP===1&&Math.floor(frameCount/18)%2?"rgba(248,113,113,.95)":"rgba(69,207,255,.92)");
+        ctx.save();
+        [{x:scoreX,color:"rgba(69,207,255,.78)"},{x:comboX,color:"rgba(69,207,255,.78)"},{x:lifeX,color:"rgba(255,184,72,.9)"},{x:pauseX,color:"rgba(69,207,255,.9)"}].forEach(separator=>{
+            ctx.beginPath();ctx.moveTo(separator.x,hudTopY+7);ctx.lineTo(separator.x,hudTopY+panelH-7);
+            ctx.strokeStyle=separator.color;ctx.lineWidth=1;ctx.stroke();
+        });
+        ctx.textAlign="center";ctx.fillStyle="#78e8ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
         ctx.fillText("WAVE",waveX+waveW/2,hudTopY+(compactHud?12:17));
         ctx.fillStyle="#f2f9ff";ctx.font="900 "+(compactHud?15:22)+"px ui-monospace,monospace";
         ctx.fillText(String(currentWave).padStart(2,"0"),waveX+waveW/2,hudTopY+(compactHud?32:43));
-        ctx.textAlign="left";ctx.fillStyle="#76e5ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
+        ctx.textAlign="left";ctx.fillStyle="#78e8ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
         ctx.fillText("SCORE",scoreX+8,hudTopY+(compactHud?12:17));
         ctx.fillStyle="#f2f9ff";ctx.font="900 "+(compactHud?14:22)+"px ui-monospace,monospace";
         ctx.fillText(score.toLocaleString("en-US"),scoreX+8,hudTopY+(compactHud?32:43),scoreW-14);
-        let hudMult=comboCount>=25?5:comboCount>=18?4:comboCount>=10?3:comboCount>=5?2:1;
+        const hudMult=comboCount>=25?5:comboCount>=18?4:comboCount>=10?3:comboCount>=5?2:1;
         ctx.textAlign="center";ctx.fillStyle="#ffd18a";ctx.font="800 "+(compactHud?7:10)+"px ui-monospace,monospace";
         ctx.fillText("COMBO",comboX+comboW/2,hudTopY+(compactHud?12:17));
         ctx.fillStyle="#fff4d8";ctx.font="900 "+(compactHud?13:20)+"px ui-monospace,monospace";
         ctx.fillText(String(comboCount)+" ×"+hudMult,comboX+comboW/2,hudTopY+(compactHud?32:43));
-        const heartSize=compactHud?5.3:8,heartGap=compactHud?lifeW/4:27;
+        const heartSize=compactHud?5.3:8,heartCount=maxHP,heartGap=lifeW/(heartCount+1);
         function traceLifeHeart(x,y,size){
             ctx.beginPath();ctx.moveTo(x,y+size*.78);
             ctx.bezierCurveTo(x-size*1.15,y+size*.02,x-size*1.02,y-size*.68,x-size*.42,y-size*.54);
@@ -1999,12 +2019,19 @@ const PIN_RAHASIA_2 = "0199";
             ctx.bezierCurveTo(x+size*.20,y-size*.59,x+size*.65,y-size*.72,x+size*.98,y-size*.35);
             ctx.bezierCurveTo(x+size*1.40,y+size*.20,x+size*.56,y+size*.69,x,y+size*.78);ctx.closePath();
         }
-        const heartsTotal=playerHP>maxHP?maxHP:maxHP;
-        const heartStart=lifeX+lifeW/2-(heartsTotal-1)*heartGap/2;
-        for(let i=0;i<heartsTotal;i++){
-            const hx=heartStart+i*heartGap,hy=hudTopY+panelH/2+2;traceLifeHeart(hx,hy,heartSize);
-            if(i<playerHP){const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");ctx.fillStyle=heart;ctx.shadowColor="#ff415b";ctx.shadowBlur=compactHud?2:4;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();}
-            else{ctx.fillStyle="rgba(71,85,105,.14)";ctx.fill();ctx.strokeStyle="rgba(148,163,184,.46)";ctx.lineWidth=1;ctx.stroke();}
+        ctx.fillStyle="#78e8ff";ctx.font="800 "+(compactHud?8:11)+"px ui-monospace,monospace";
+        ctx.fillText("LIFE",lifeX+lifeW/2,hudTopY+(compactHud?11:16));
+        for(let i=0;i<heartCount;i++){
+            const hx=lifeX+heartGap*(i+1),hy=hudTopY+(compactHud?29:39);traceLifeHeart(hx,hy,heartSize);
+            if(i<playerHP){
+                const heart=ctx.createLinearGradient(hx,hy-heartSize,hx,hy+heartSize);
+                heart.addColorStop(0,"#ff777e");heart.addColorStop(.65,"#f52b43");heart.addColorStop(1,"#9f102c");
+                ctx.fillStyle=heart;ctx.shadowColor="#ff415b";ctx.shadowBlur=compactHud?2:4;ctx.fill();ctx.shadowBlur=0;
+                ctx.strokeStyle="rgba(255,212,218,.86)";ctx.lineWidth=.7;ctx.stroke();
+            }else{
+                ctx.fillStyle="rgba(71,85,105,.14)";ctx.fill();
+                ctx.strokeStyle="rgba(148,163,184,.46)";ctx.lineWidth=1;ctx.stroke();
+            }
         }
         ctx.restore();
 
