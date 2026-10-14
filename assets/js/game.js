@@ -911,8 +911,8 @@ const PIN_RAHASIA_2 = "0199";
         void button.offsetWidth;
         button.classList.add(isCorrect?"key-feedback-correct":"key-feedback-error");
     }
-    if(gameKeyboard)gameKeyboard.addEventListener("click",event=>{
-        const button=event.target.closest("button");if(!button||button.disabled)return;
+    function handleGameKeyboardButton(button){
+        if(!button||button.disabled)return;
         if(button.dataset.keyboardAction==="shield"){useStoredSkill("shield");return;}
         if(button.dataset.keyboardAction==="clear"){useStoredSkill("clear");return;}
         if(button.dataset.keyboardMode==="number"){
@@ -928,7 +928,32 @@ const PIN_RAHASIA_2 = "0199";
             return;
         }
         if(button.dataset.key)sendGameCharacter(button.dataset.key);
-    });
+    }
+
+    if(gameKeyboard){
+        if("PointerEvent" in window){
+            // Process touchscreen taps on pointerdown rather than waiting for click synthesis.
+            // This improves rapid repeated-letter input and avoids compatibility-click delays.
+            gameKeyboard.addEventListener("pointerdown",event=>{
+                const button=event.target.closest("button");
+                if(!button||button.disabled||!event.isPrimary)return;
+                if(event.pointerType==="mouse"&&event.button!==0)return;
+                event.preventDefault();
+                handleGameKeyboardButton(button);
+            },{passive:false});
+
+            // Keep keyboard / assistive-technology activation working without double-processing pointer taps.
+            gameKeyboard.addEventListener("click",event=>{
+                if(event.detail!==0)return;
+                handleGameKeyboardButton(event.target.closest("button"));
+            });
+        }else{
+            // Compatibility fallback for older browsers without Pointer Events.
+            gameKeyboard.addEventListener("click",event=>{
+                handleGameKeyboardButton(event.target.closest("button"));
+            });
+        }
+    }
 
     // Physical controls mirror the virtual keyboard: Space = Shield, Backspace = Clear, Shift = Shield.
     document.addEventListener("keydown",event=>{
