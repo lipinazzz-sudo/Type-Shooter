@@ -42,6 +42,9 @@ function goToDashboard2() {
     const gameBackgroundImage = new Image();
     gameBackgroundImage.decoding = "async";
     gameBackgroundImage.src = "assets/backgrounds/space-nebula.png";
+    // Cache the expensive filtered backdrop so every frame only blits one bitmap.
+    let spaceBackgroundCache = null;
+    let spaceBackgroundCacheKey = "";
     
     let langSetting = localStorage.getItem('langSetting') || 'id';
     let bgmVolume = parseFloat(localStorage.getItem('bgmVolume') ?? 0.5);
@@ -488,7 +491,10 @@ function goToDashboard2() {
             const viewportTop=Math.round((window.visualViewport&&window.visualViewport.offsetTop)||0);
             gameHeight=Math.max(220,Math.round(viewportHeight+viewportTop-canvasRect.top));
         }
-        canvasScale=Math.min(window.devicePixelRatio||1,3);
+        // Mobile DPR 3 can multiply per-frame canvas work by 9. 2x remains
+        // crisp on phones while giving the main thread more time for touch input.
+        const touchOrMobileViewport = isMobilePortraitGame() || (navigator.maxTouchPoints||0)>0;
+        canvasScale=Math.min(window.devicePixelRatio||1,touchOrMobileViewport?2:3);
         canvas.width=Math.round(gameWidth*canvasScale);
         canvas.height=Math.round(gameHeight*canvasScale);
         canvas.style.width=gameWidth+"px";canvas.style.height=gameHeight+"px";
@@ -1333,28 +1339,61 @@ const PIN_RAHASIA_2 = "0199";
         ctx.restore();
     }
 
-    function drawSpaceBackground(){
-        const w=gameWidth,h=gameHeight;
-        if(gameBackgroundImage.complete&&gameBackgroundImage.naturalWidth>0){
+    function ensureSpaceBackgroundCache(){
+        const w=gameWidth,h=gameHeight,scale=canvasScale;
+        const imageReady=gameBackgroundImage.complete&&gameBackgroundImage.naturalWidth>0;
+        const imageKey=imageReady
+            ?gameBackgroundImage.naturalWidth+"x"+gameBackgroundImage.naturalHeight
+            :"fallback";
+        const key=[Math.ceil(w*scale),Math.ceil(h*scale),w,h,scale,imageKey].join(":");
+        if(spaceBackgroundCache&&spaceBackgroundCacheKey===key)return;
+
+        const cache=document.createElement("canvas");
+        cache.width=Math.max(1,Math.ceil(w*scale));
+        cache.height=Math.max(1,Math.ceil(h*scale));
+        const bgCtx=cache.getContext("2d",{alpha:false});
+        if(!bgCtx)return;
+        bgCtx.setTransform(scale,0,0,scale,0,0);
+        if(imageReady){
             const iw=gameBackgroundImage.naturalWidth,ih=gameBackgroundImage.naturalHeight;
-            const scale=Math.max(w/iw,h/ih),sw=w/scale,sh=h/scale;
-            // Keep a dark base under the lightly softened image to avoid bright edges.
-            ctx.fillStyle="#030916";
-            ctx.fillRect(0,0,w,h);
-            ctx.save();
-            ctx.filter="blur(1px) brightness(.84) saturate(.84)";
-            ctx.drawImage(gameBackgroundImage,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);
-            ctx.restore();
-            const shade=ctx.createLinearGradient(0,0,0,h);
-            shade.addColorStop(0,"rgba(1,7,21,.25)");shade.addColorStop(.44,"rgba(2,9,24,.13)");shade.addColorStop(1,"rgba(1,6,19,.30)");
-            ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
+            const coverScale=Math.max(w/iw,h/ih),sw=iw/coverScale,sh=ih/coverScale;
+            bgCtx.fillStyle="#030916";
+            bgCtx.fillRect(0,0,w,h);
+            bgCtx.filter="blur(1px) brightness(.84) saturate(.84)";
+            bgCtx.drawImage(gameBackgroundImage,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);
+            bgCtx.filter="none";
+            const shade=bgCtx.createLinearGradient(0,0,0,h);
+            shade.addColorStop(0,"rgba(1,7,21,.25)");
+            shade.addColorStop(.44,"rgba(2,9,24,.13)");
+            shade.addColorStop(1,"rgba(1,6,19,.30)");
+            bgCtx.fillStyle=shade;
+            bgCtx.fillRect(0,0,w,h);
         }else{
-            ctx.fillStyle="#020817";ctx.fillRect(0,0,w,h);
-            const nebula=ctx.createRadialGradient(w*.47,h*.4,0,w*.47,h*.4,Math.max(w,h)*.8);
-            nebula.addColorStop(0,"#163e78");nebula.addColorStop(.36,"#0b2851");nebula.addColorStop(1,"#010611");
-            ctx.fillStyle=nebula;ctx.fillRect(0,0,w,h);
+            bgCtx.fillStyle="#020817";
+            bgCtx.fillRect(0,0,w,h);
+            const nebula=bgCtx.createRadialGradient(w*.47,h*.4,0,w*.47,h*.4,Math.max(w,h)*.8);
+            nebula.addColorStop(0,"#163e78");
+            nebula.addColorStop(.36,"#0b2851");
+            nebula.addColorStop(1,"#010611");
+            bgCtx.fillStyle=nebula;
+            bgCtx.fillRect(0,0,w,h);
+        }
+        spaceBackgroundCache=cache;
+        spaceBackgroundCacheKey=key;
+    }
+
+    function drawSpaceBackground(){
+        ensureSpaceBackgroundCache();
+        if(spaceBackgroundCache){
+            // Backdrop blur, color adjustment, and gradient are precomputed; frame drawing
+            // now copies the cached image instead of filtering the full canvas every tick.
+            ctx.drawImage(spaceBackgroundCache,0,0,gameWidth,gameHeight);
+        }else{
+            ctx.fillStyle="#020817";
+            ctx.fillRect(0,0,gameWidth,gameHeight);
         }
     }
+
     function gameLoop() {
         const t = translations[langSetting];
         if (!gameActive) {
