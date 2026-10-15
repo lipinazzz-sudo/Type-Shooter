@@ -1221,12 +1221,17 @@ const PIN_RAHASIA_2 = "0199";
             const target=event.target;
             const button=target instanceof Element?target.closest("button"):null;
             if(!button||button.disabled)return;
+            let matchedPointer=false;
             if(button.matches(".game-key[data-key]")){
                 const d=inputDiagnostics;
                 d.clicks++;
                 if(event.detail>0){
-                    if(d.pendingPointers.length){
-                        const pointer=d.pendingPointers.shift();
+                    // Match this click to the pointerdown for the SAME key.
+                    // A global FIFO can pair fast taps on different keys incorrectly.
+                    const pointerIndex=d.pendingPointers.findIndex(pointer=>pointer.button===button);
+                    if(pointerIndex>=0){
+                        const pointer=d.pendingPointers.splice(pointerIndex,1)[0];
+                        matchedPointer=true;
                         const delay=Math.max(0,performance.now()-pointer.at);
                         d.clickDelayTotal+=delay;d.clickDelaySamples++;
                         d.clickDelayMax=Math.max(d.clickDelayMax,delay);
@@ -1235,9 +1240,13 @@ const PIN_RAHASIA_2 = "0199";
                     }
                 }
             }
-            // Pointer actions for letters/skills already ran synchronously above.
-            // Use click only for 123 native-keyboard focus and non-pointer accessibility activation.
+            // PointerDown normally dispatches letters immediately. If iOS/browser
+            // delivers a trusted click without a matching PointerDown for this key,
+            // use the click as a fallback instead of silently dropping the character.
+            // A click paired with PointerDown must NOT dispatch twice.
             if(button.dataset.keyboardMode==="number"||event.detail===0){
+                handleGameKeyboardButton(button);
+            }else if(event.detail>0&&button.matches(".game-key[data-key]")&&!matchedPointer){
                 handleGameKeyboardButton(button);
             }
         });
