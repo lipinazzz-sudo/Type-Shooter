@@ -936,6 +936,7 @@ const PIN_RAHASIA_2 = "0199";
         pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
+        eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
         keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
         lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
     };
@@ -950,6 +951,7 @@ const PIN_RAHASIA_2 = "0199";
             pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
             dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
+            eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
             keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
             lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
         });
@@ -968,6 +970,8 @@ const PIN_RAHASIA_2 = "0199";
         const keyMin=Number.isFinite(d.keyIntervalMin)?d.keyIntervalMin.toFixed(1):"—";
         const clickAvg=d.clickDelaySamples?(d.clickDelayTotal/d.clickDelaySamples).toFixed(1):"—";
         const clickMax=d.clickDelaySamples?d.clickDelayMax.toFixed(1):"—";
+        const queueAvg=d.eventQueueDelaySamples?(d.eventQueueDelayTotal/d.eventQueueDelaySamples).toFixed(2):"—";
+        const queueMax=d.eventQueueDelaySamples?d.eventQueueDelayMax.toFixed(2):"—";
         inputDiagnosticsOutput.textContent=[
             "INPUT DIAGNOSTICS (sementara)",
             "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
@@ -979,7 +983,8 @@ const PIN_RAHASIA_2 = "0199";
             "Huruf diterima / diproses: "+d.inputLettersReceived+" / "+d.processedLetters,
             "Cocok / MISS: "+d.matches+" / "+d.misses,
             "Jeda ketikan rata-rata / tercepat: "+keyAvg+" / "+keyMin+" ms",
-            "Jeda PointerDown -> Click rata-rata / maks: "+clickAvg+" / "+clickMax+" ms",
+            "Jeda sentuhan -> handler rata-rata / maks: "+queueAvg+" / "+queueMax+" ms",
+            "Jeda PointerDown -> Click browser (bukan jalur input): "+clickAvg+" / "+clickMax+" ms",
             "FPS perkiraan: "+(d.fps||"—")+" | frame >33ms: "+d.lateFrames33+" | >50ms: "+d.lateFrames50,
             "Jeda frame maksimum: "+(d.maxFrameGap?d.maxFrameGap.toFixed(1):"—")+" ms"
         ].join("\n");
@@ -1037,18 +1042,31 @@ const PIN_RAHASIA_2 = "0199";
     if(gameKeyboard){
         gameKeyboard.addEventListener("pointerdown",event=>{
             const target=event.target;
-            const button=target instanceof Element?target.closest(".game-key[data-key]"):null;
-            if(!button)return;
-            const at=performance.now();
-            const type=event.pointerType||"unknown";
-            inputDiagnostics.pointerDowns++;
-            if(type==="touch")inputDiagnostics.touchDowns++;
-            else if(type==="mouse")inputDiagnostics.mouseDowns++;
-            inputDiagnostics.pendingPointers.push({at,type});
-            // Bound memory in case the browser emits pointerdown without a click.
-            if(inputDiagnostics.pendingPointers.length>100){
-                inputDiagnostics.pendingPointers.shift();
-                inputDiagnostics.pointerWithoutClick++;
+            const button=target instanceof Element?target.closest("button"):null;
+            if(!button||button.disabled||!event.isPrimary)return;
+            if(event.pointerType==="mouse"&&event.button!==0)return;
+
+            // Keep the 123 pad on click: iOS requires its trusted click activation
+            // to focus the numeric input reliably. Letter/skill keys act immediately
+            // on pointerdown, so they never wait for delayed compatibility clicks.
+            if(button.dataset.keyboardMode!=="number"){
+                if(button.matches(".game-key[data-key]")){
+                    const now=performance.now();
+                    const type=event.pointerType||"unknown";
+                    inputDiagnostics.pointerDowns++;
+                    if(type==="touch")inputDiagnostics.touchDowns++;
+                    else if(type==="mouse")inputDiagnostics.mouseDowns++;
+                    const eventDelay=Math.max(0,now-event.timeStamp);
+                    inputDiagnostics.eventQueueDelayTotal+=eventDelay;
+                    inputDiagnostics.eventQueueDelaySamples++;
+                    inputDiagnostics.eventQueueDelayMax=Math.max(inputDiagnostics.eventQueueDelayMax,eventDelay);
+                    inputDiagnostics.pendingPointers.push({at:now,type,button});
+                    if(inputDiagnostics.pendingPointers.length>100){
+                        inputDiagnostics.pendingPointers.shift();
+                        inputDiagnostics.pointerWithoutClick++;
+                    }
+                }
+                handleGameKeyboardButton(button);
             }
         },{passive:true});
     }
@@ -1143,7 +1161,11 @@ const PIN_RAHASIA_2 = "0199";
                     }
                 }
             }
-            handleGameKeyboardButton(button);
+            // Pointer actions for letters/skills already ran synchronously above.
+            // Use click only for 123 native-keyboard focus and non-pointer accessibility activation.
+            if(button.dataset.keyboardMode==="number"||event.detail===0){
+                handleGameKeyboardButton(button);
+            }
         });
     }
 
