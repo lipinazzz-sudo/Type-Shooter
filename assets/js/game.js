@@ -798,7 +798,7 @@ const PIN_RAHASIA_2 = "0199";
             
             if (this.vy < 0 && this.y <= this.targetY) {
                 this.hit = true;
-                createExplosion(this.x, this.y, 0.5, (SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0]).accent); 
+                createImpactSpark(this.x, this.y, (SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0]).accent); 
             }
         }
     }
@@ -828,12 +828,31 @@ const PIN_RAHASIA_2 = "0199";
                 ctx.stroke();ctx.globalAlpha=this.alpha;
             }
             ctx.beginPath();ctx.arc(this.x,this.y,Math.max(.7,this.size*.48),0,Math.PI*2);
-            ctx.fillStyle=this.color;ctx.shadowColor=this.color;ctx.shadowBlur=2.5;ctx.fill();
-            ctx.shadowBlur=0;ctx.restore();
+            ctx.fillStyle=this.color;
+            ctx.shadowColor=this.color;
+            // Fade out the expensive canvas blur early; the bright core and trail remain.
+            ctx.shadowBlur=this.alpha>.72?1.1:0;
+            ctx.fill();
+            ctx.shadowBlur=0;
+            ctx.restore();
         }
         update() {
             this.x += this.vx; this.y += this.vy;
             this.alpha -= this.decay;
+        }
+    }
+
+    function createImpactSpark(x,y,themeColor){
+        // Light contact feedback for each typed character: 4 short-lived sparks
+        // instead of triggering a full explosion on every successful letter.
+        for(let i=0;i<4;i++){
+            const p=new Particle(x,y,themeColor);
+            p.size*=.62;
+            p.vx*=.62;
+            p.vy*=.62;
+            p.alpha=.86;
+            p.decay=Math.max(p.decay,.06);
+            particles.push(p);
         }
     }
 
@@ -1734,20 +1753,40 @@ const PIN_RAHASIA_2 = "0199";
 
         }
 
-        particles.forEach((p, index) => {
-            p.update(); p.draw();
-            if (p.alpha <= 0) particles.splice(index, 1);
-        });
+        // Compact effect arrays in-place after each update. Removing items inside
+        // forEach/splice shifts indexes and causes unnecessary skipped work.
+        let particleWrite=0;
+        for(let i=0;i<particles.length;i++){
+            const p=particles[i];
+            p.update();
+            if(p.alpha>0){
+                p.draw();
+                particles[particleWrite++]=p;
+            }
+        }
+        particles.length=particleWrite;
 
-        floatingTexts.forEach((ft, index) => {
-            ft.update(); ft.draw();
-            if (ft.alpha <= 0) floatingTexts.splice(index, 1);
-        });
+        let floatingTextWrite=0;
+        for(let i=0;i<floatingTexts.length;i++){
+            const ft=floatingTexts[i];
+            ft.update();
+            if(ft.alpha>0){
+                ft.draw();
+                floatingTexts[floatingTextWrite++]=ft;
+            }
+        }
+        floatingTexts.length=floatingTextWrite;
 
-        lasers.forEach((l, index) => {
-            l.update(); l.draw();
-            if (l.hit || l.y < -50 || l.x < -50 || l.x > gameWidth + 50) lasers.splice(index, 1);
-        });
+        let laserWrite=0;
+        for(let i=0;i<lasers.length;i++){
+            const laser=lasers[i];
+            laser.update();
+            laser.draw();
+            if(!laser.hit&&laser.y>=-50&&laser.x>=-50&&laser.x<=gameWidth+50){
+                lasers[laserWrite++]=laser;
+            }
+        }
+        lasers.length=laserWrite;
 
         for (let i = enemies.length - 1; i >= 0; i--) {
             let en = enemies[i];
