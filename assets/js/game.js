@@ -473,7 +473,7 @@ function goToDashboard2() {
         // Safari iOS shrinks visualViewport for its native keyboard, then may restore it late.
         // Use the layout viewport for canvas geometry so the playfield cannot remain compressed.
         const layoutHeight=Math.round(window.innerHeight||document.documentElement.clientHeight||0);
-        const keyboardActive=gameActive&&isMobilePortraitGame()&&!nativeNumberEntryActive;
+        const keyboardActive=gameActive&&isMobilePortraitGame()&&(!nativeNumberEntryActive||!numberEntryViewportShrunk);
         if(gameKeyboard)gameKeyboard.classList.toggle("hidden",!keyboardActive);
         if(floatingBombButton)floatingBombButton.classList.toggle("hidden",!keyboardActive);
         // Measure the keyboard after visibility changes. Its top edge is the actual
@@ -1999,7 +1999,10 @@ const PIN_RAHASIA_2 = "0199";
             const viewportHeight=Math.round(window.visualViewport.height);
             if(nativeNumberEntryActive&&numberEntryBaselineViewportHeight>0){
                 if(viewportHeight<numberEntryBaselineViewportHeight-100){
-                    numberEntryViewportShrunk=true;
+                    if(!numberEntryViewportShrunk){
+                        numberEntryViewportShrunk=true;
+                        handleViewportRefresh();
+                    }
                 }else if(numberEntryViewportShrunk&&viewportHeight>=numberEntryBaselineViewportHeight-80){
                     closeNativeNumberEntry();
                 }
