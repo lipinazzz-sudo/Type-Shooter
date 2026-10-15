@@ -934,7 +934,7 @@ const PIN_RAHASIA_2 = "0199";
     // Temporary low-overhead diagnostics to pinpoint losses in the touch -> click ->
     // dispatch -> input -> game pipeline. UI refresh and frame sampling run only while open.
     const inputDiagnostics={
-        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
+        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
         eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1005,7 +1005,7 @@ const PIN_RAHASIA_2 = "0199";
 
     function resetInputDiagnostics(){
         Object.assign(inputDiagnostics,{
-            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
+            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
             dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
             eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1035,6 +1035,7 @@ const PIN_RAHASIA_2 = "0199";
         inputDiagnosticsOutput.textContent=[
             "INPUT DIAGNOSTICS (sementara)",
             "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
+            "Sentuhan sekunder: terdeteksi / diproses "+d.nonPrimaryTouchDowns+" / "+d.nonPrimaryTouchProcessed,
             "Click huruf: "+d.clicks,
             "PointerDown tanpa Click >1.2s: "+d.pointerWithoutClick,
             "Click tanpa PointerDown: "+d.clickWithoutPointer,
@@ -1105,7 +1106,7 @@ const PIN_RAHASIA_2 = "0199";
         gameKeyboard.addEventListener("pointerdown",event=>{
             const target=event.target;
             const button=target instanceof Element?target.closest("button"):null;
-            if(!button||button.disabled||!event.isPrimary)return;
+            if(!button||button.disabled)return;
             if(event.pointerType==="mouse"&&event.button!==0)return;
 
             // Keep the 123 pad on click: iOS requires its trusted click activation
@@ -1116,8 +1117,10 @@ const PIN_RAHASIA_2 = "0199";
                     const now=performance.now();
                     const type=event.pointerType||"unknown";
                     inputDiagnostics.pointerDowns++;
-                    if(type==="touch")inputDiagnostics.touchDowns++;
-                    else if(type==="mouse")inputDiagnostics.mouseDowns++;
+                    if(type==="touch"){
+                        inputDiagnostics.touchDowns++;
+                        if(!event.isPrimary)inputDiagnostics.nonPrimaryTouchDowns++;
+                    }else if(type==="mouse")inputDiagnostics.mouseDowns++;
                     const eventDelay=Math.max(0,now-event.timeStamp);
                     inputDiagnostics.eventQueueDelayTotal+=eventDelay;
                     inputDiagnostics.eventQueueDelaySamples++;
@@ -1129,6 +1132,9 @@ const PIN_RAHASIA_2 = "0199";
                     }
                 }
                 handleGameKeyboardButton(button);
+                if(event.pointerType==="touch"&&!event.isPrimary&&button.matches(".game-key[data-key]")&&gameActive){
+                    inputDiagnostics.nonPrimaryTouchProcessed++;
+                }
             }
         },{passive:true});
     }
