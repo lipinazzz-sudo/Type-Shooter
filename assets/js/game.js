@@ -931,7 +931,7 @@ const PIN_RAHASIA_2 = "0199";
         updateSkillInventoryUI();
     }
     // Temporary low-overhead diagnostics to pinpoint losses in the touch -> click ->
-    // dispatch -> input -> game pipeline. Sampling/display only runs while panel is open.
+    // dispatch -> input -> game pipeline. UI refresh and frame sampling run only while open.
     const inputDiagnostics={
         pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
@@ -990,11 +990,18 @@ const PIN_RAHASIA_2 = "0199";
         inputDiagnosticsPanel.classList.toggle("hidden",!opening);
         if(buildVersionLabel)buildVersionLabel.setAttribute("aria-expanded",opening?"true":"false");
         if(opening){
+            inputDiagnostics.lastFrameAt=0;
+            inputDiagnostics.frameWindowStart=0;
+            inputDiagnostics.frameWindowCount=0;
             updateInputDiagnosticsUI();
             inputDiagnosticsRefreshTimer=window.setInterval(updateInputDiagnosticsUI,250);
-        }else if(inputDiagnosticsRefreshTimer){
-            clearInterval(inputDiagnosticsRefreshTimer);
-            inputDiagnosticsRefreshTimer=null;
+        }else{
+            inputDiagnostics.lastFrameAt=0;
+            inputDiagnostics.frameWindowStart=0;
+            if(inputDiagnosticsRefreshTimer){
+                clearInterval(inputDiagnosticsRefreshTimer);
+                inputDiagnosticsRefreshTimer=null;
+            }
         }
     }
 
@@ -1532,22 +1539,26 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function gameLoop() {
-        const diagFrameNow=performance.now();
-        const diag=inputDiagnostics;
-        if(diag.lastFrameAt>0){
-            const frameGap=Math.max(0,diagFrameNow-diag.lastFrameAt);
-            diag.maxFrameGap=Math.max(diag.maxFrameGap,frameGap);
-            if(frameGap>33.3)diag.lateFrames33++;
-            if(frameGap>50)diag.lateFrames50++;
-        }
-        diag.lastFrameAt=diagFrameNow;
-        if(!diag.frameWindowStart)diag.frameWindowStart=diagFrameNow;
-        diag.frameWindowCount++;
-        const frameWindowElapsed=diagFrameNow-diag.frameWindowStart;
-        if(frameWindowElapsed>=1000){
-            diag.fps=Math.round(diag.frameWindowCount*1000/frameWindowElapsed);
-            diag.frameWindowCount=0;
-            diag.frameWindowStart=diagFrameNow;
+        // Frame timing is sampled only while diagnostics is visibly open, so the
+        // diagnostic build adds no per-frame timing work during ordinary play.
+        if(inputDiagnosticsPanel&&!inputDiagnosticsPanel.classList.contains("hidden")){
+            const diagFrameNow=performance.now();
+            const diag=inputDiagnostics;
+            if(diag.lastFrameAt>0){
+                const frameGap=Math.max(0,diagFrameNow-diag.lastFrameAt);
+                diag.maxFrameGap=Math.max(diag.maxFrameGap,frameGap);
+                if(frameGap>33.3)diag.lateFrames33++;
+                if(frameGap>50)diag.lateFrames50++;
+            }
+            diag.lastFrameAt=diagFrameNow;
+            if(!diag.frameWindowStart)diag.frameWindowStart=diagFrameNow;
+            diag.frameWindowCount++;
+            const frameWindowElapsed=diagFrameNow-diag.frameWindowStart;
+            if(frameWindowElapsed>=1000){
+                diag.fps=Math.round(diag.frameWindowCount*1000/frameWindowElapsed);
+                diag.frameWindowCount=0;
+                diag.frameWindowStart=diagFrameNow;
+            }
         }
         const t = translations[langSetting];
         if (!gameActive) {
