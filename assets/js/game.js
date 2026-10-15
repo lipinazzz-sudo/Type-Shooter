@@ -943,6 +943,7 @@ const PIN_RAHASIA_2 = "0199";
     const inputDiagnosticsOutput=document.getElementById("inputDiagnosticsOutput");
     const buildVersionLabel=document.getElementById("buildVersion");
     let inputDiagnosticsRefreshTimer=null;
+    let inputDiagnosticsActive=false;
 
     function resetInputDiagnostics(){
         Object.assign(inputDiagnostics,{
@@ -990,18 +991,16 @@ const PIN_RAHASIA_2 = "0199";
         inputDiagnosticsPanel.classList.toggle("hidden",!opening);
         if(buildVersionLabel)buildVersionLabel.setAttribute("aria-expanded",opening?"true":"false");
         if(opening){
-            inputDiagnostics.lastFrameAt=0;
-            inputDiagnostics.frameWindowStart=0;
-            inputDiagnostics.frameWindowCount=0;
+            inputDiagnosticsActive=true;
             updateInputDiagnosticsUI();
-            inputDiagnosticsRefreshTimer=window.setInterval(updateInputDiagnosticsUI,250);
-        }else{
-            inputDiagnostics.lastFrameAt=0;
-            inputDiagnostics.frameWindowStart=0;
-            if(inputDiagnosticsRefreshTimer){
-                clearInterval(inputDiagnosticsRefreshTimer);
-                inputDiagnosticsRefreshTimer=null;
+            if(!inputDiagnosticsRefreshTimer){
+                inputDiagnosticsRefreshTimer=window.setInterval(updateInputDiagnosticsUI,250);
             }
+        }else if(inputDiagnosticsRefreshTimer){
+            // Hide the overlay so it cannot cover enemies during the typing test.
+            // Counters and frame sampling keep running until STOP TEST is tapped.
+            clearInterval(inputDiagnosticsRefreshTimer);
+            inputDiagnosticsRefreshTimer=null;
         }
     }
 
@@ -1022,6 +1021,18 @@ const PIN_RAHASIA_2 = "0199";
     const inputDiagnosticsClose=document.getElementById("inputDiagnosticsClose");
     if(inputDiagnosticsReset)inputDiagnosticsReset.addEventListener("click",resetInputDiagnostics);
     if(inputDiagnosticsClose)inputDiagnosticsClose.addEventListener("click",toggleInputDiagnostics);
+    const inputDiagnosticsStop=document.getElementById("inputDiagnosticsStop");
+    if(inputDiagnosticsStop)inputDiagnosticsStop.addEventListener("click",()=>{
+        inputDiagnosticsActive=false;
+        if(inputDiagnosticsPanel&&!inputDiagnosticsPanel.classList.contains("hidden")){
+            inputDiagnosticsPanel.classList.add("hidden");
+            if(buildVersionLabel)buildVersionLabel.setAttribute("aria-expanded","false");
+        }
+        if(inputDiagnosticsRefreshTimer){
+            clearInterval(inputDiagnosticsRefreshTimer);
+            inputDiagnosticsRefreshTimer=null;
+        }
+    });
 
     if(gameKeyboard){
         gameKeyboard.addEventListener("pointerdown",event=>{
@@ -1539,9 +1550,8 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function gameLoop() {
-        // Frame timing is sampled only while diagnostics is visibly open, so the
-        // diagnostic build adds no per-frame timing work during ordinary play.
-        if(inputDiagnosticsPanel&&!inputDiagnosticsPanel.classList.contains("hidden")){
+        // Frame timing is sampled only during an explicitly started diagnostic run.
+        if(inputDiagnosticsActive){
             const diagFrameNow=performance.now();
             const diag=inputDiagnostics;
             if(diag.lastFrameAt>0){
