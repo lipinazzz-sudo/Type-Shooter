@@ -911,15 +911,33 @@ const PIN_RAHASIA_2 = "0199";
         hiddenInput.dispatchEvent(new Event("input",{bubbles:true}));
     }
 
-    // Mirror typing feedback onto the on-screen key without changing input/game rules.
+    // Cache virtual keys and animate feedback without forcing synchronous layout.
+    // A forced offsetWidth read on every keystroke can stall rapid taps on iOS/PWA.
+    const virtualKeyButtons=new Map();
+    const virtualKeyFeedbackAnimations=new WeakMap();
+    const reduceKeyMotion=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    if(gameKeyboard){
+        gameKeyboard.querySelectorAll(".game-key[data-key]").forEach(button=>{
+            virtualKeyButtons.set(button.dataset.key,button);
+        });
+    }
     function flashVirtualKey(key,isCorrect){
-        if(!gameKeyboard)return;
-        const button=Array.from(gameKeyboard.querySelectorAll(".game-key[data-key]"))
-            .find(item=>item.dataset.key===key);
-        if(!button)return;
-        button.classList.remove("key-feedback-correct","key-feedback-error");
-        void button.offsetWidth;
-        button.classList.add(isCorrect?"key-feedback-correct":"key-feedback-error");
+        if(!gameKeyboard||reduceKeyMotion)return;
+        const button=virtualKeyButtons.get(key);
+        if(!button||typeof button.animate!=="function")return;
+        const current=virtualKeyFeedbackAnimations.get(button);
+        // Do not restart feedback on each fast repeat; all characters are still processed.
+        if(current&&current.playState==="running")return;
+        const frames=isCorrect
+            ?[{transform:"scale(1)",filter:"brightness(1)"},{transform:"scale(.94)",filter:"brightness(1.3)"},{transform:"scale(1)",filter:"brightness(1)"}]
+            :[{transform:"translateX(0)",filter:"brightness(1)"},{transform:"translateX(-1px)",filter:"brightness(1.22) saturate(1.2)"},{transform:"translateX(1px)",filter:"brightness(1.18) saturate(1.15)"},{transform:"translateX(0)",filter:"brightness(1)"}];
+        const animation=button.animate(frames,{duration:isCorrect?150:180,easing:"ease-out"});
+        virtualKeyFeedbackAnimations.set(button,animation);
+        animation.onfinish=()=>{
+            if(virtualKeyFeedbackAnimations.get(button)===animation){
+                virtualKeyFeedbackAnimations.delete(button);
+            }
+        };
     }
     function handleGameKeyboardButton(button){
         if(!button||button.disabled)return;
