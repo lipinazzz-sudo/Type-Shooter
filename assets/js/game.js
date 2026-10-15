@@ -758,11 +758,12 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     class Laser {
-        constructor(targetX, targetY) {
+        constructor(targetX, targetY, isMiss = false) {
             this.x = player.x; 
             this.y = player.y - (player.size * 1.2); 
             this.speed = 35; 
             this.targetY = targetY; 
+            this.isMiss = !!isMiss;
             this.hit = false;
 
             let dx = targetX - this.x;
@@ -774,7 +775,7 @@ const PIN_RAHASIA_2 = "0199";
         }
         draw() {
             const selected=SHIP_ROSTER.find(ship=>ship.id===selectedShipId);
-            const accent=selected?selected.accent:"#58d9ff";
+            const accent=this.isMiss?"#ff536f":(selected?selected.accent:"#58d9ff");
             const magnitude=Math.max(1,Math.hypot(this.vx,this.vy));
             const ux=this.vx/magnitude,uy=this.vy/magnitude,px=-uy,py=ux;
             ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
@@ -796,7 +797,7 @@ const PIN_RAHASIA_2 = "0199";
             this.x += this.vx; 
             this.y += this.vy; 
             
-            if (this.vy < 0 && this.y <= this.targetY) {
+            if (!this.isMiss && this.vy < 0 && this.y <= this.targetY) {
                 this.hit = true;
                 createImpactSpark(this.x, this.y, (SHIP_ROSTER.find(ship=>ship.id===selectedShipId)||SHIP_ROSTER[0]).accent); 
             }
@@ -934,7 +935,7 @@ const PIN_RAHASIA_2 = "0199";
     // dispatch -> input -> game pipeline. UI refresh and frame sampling run only while open.
     const inputDiagnostics={
         pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
-        dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
+        dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
         eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
         inputToFrameTotal:0,inputToFrameSamples:0,inputToFrameMax:0,pendingRenderInputs:[],
@@ -947,10 +948,65 @@ const PIN_RAHASIA_2 = "0199";
     let inputDiagnosticsRefreshTimer=null;
     let inputDiagnosticsActive=false;
 
+    function getMissProjectileTarget(){
+        const startX=player.x;
+        const startY=player.y-(player.size*1.2);
+        const endY=-90;
+        const blockers=enemies.filter(enemy=>enemy.y+5> endY&&enemy.y-24<startY);
+        const sampleCount=Math.max(36,Math.min(84,Math.ceil(gameWidth/7)));
+        let bestX=Math.max(0,Math.min(gameWidth,startX));
+        let bestScore=Infinity;
+
+        function scorePath(targetX){
+            let score=0;
+            const denominator=startY-endY;
+            for(const enemy of blockers){
+                const topY=Math.max(endY,enemy.y-24);
+                const bottomY=Math.min(startY,enemy.y+5);
+                const xAt=(y)=>startX+(targetX-startX)*((startY-y)/denominator);
+                const x1=xAt(topY),x2=xAt(bottomY);
+                const pathLeft=Math.min(x1,x2),pathRight=Math.max(x1,x2);
+                const enemyLeft=enemy.x-18;
+                const enemyRight=enemy.x+enemy.wordWidth+18;
+                if(pathRight>=enemyLeft&&pathLeft<=enemyRight)score+=100+Math.max(0,enemy.wordWidth);
+            }
+            return score;
+        }
+
+        // Prefer an entirely clear trajectory inside the playfield.
+        for(let i=0;i<=sampleCount;i++){
+            const targetX=gameWidth*i/sampleCount;
+            const score=scorePath(targetX);
+            if(score<bestScore){bestScore=score;bestX=targetX;}
+            if(score===0)return {x:targetX,y:endY};
+        }
+
+        // If enemies occupy every on-screen lane, continue past the playfield edge.
+        const extendedSamples=sampleCount;
+        for(let i=0;i<=extendedSamples;i++){
+            const targetX=-gameWidth*.55+(gameWidth*2.1*i/extendedSamples);
+            const score=scorePath(targetX);
+            if(score<bestScore){bestScore=score;bestX=targetX;}
+            if(score===0)return {x:targetX,y:endY};
+        }
+        return {x:bestX,y:endY};
+    }
+
+    function fireHitProjectile(targetX,targetY){
+        lasers.push(new Laser(targetX,targetY));
+        inputDiagnostics.hitProjectiles++;
+    }
+
+    function fireMissProjectile(){
+        const target=getMissProjectileTarget();
+        lasers.push(new Laser(target.x,target.y,true));
+        inputDiagnostics.missProjectiles++;
+    }
+
     function resetInputDiagnostics(){
         Object.assign(inputDiagnostics,{
             pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
-            dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
+            dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
             eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
             inputToFrameTotal:0,inputToFrameSamples:0,inputToFrameMax:0,pendingRenderInputs:[],
@@ -986,6 +1042,7 @@ const PIN_RAHASIA_2 = "0199";
             "Event input diterima: "+d.inputEvents,
             "Huruf diterima / diproses: "+d.inputLettersReceived+" / "+d.processedLetters,
             "Cocok / MISS: "+d.matches+" / "+d.misses,
+            "Projectile HIT / MISS / TOTAL: "+d.hitProjectiles+" / "+d.missProjectiles+" / "+(d.hitProjectiles+d.missProjectiles),
             "Jeda ketikan rata-rata / tercepat: "+keyAvg+" / "+keyMin+" ms",
             "Jeda sentuhan -> handler rata-rata / maks: "+queueAvg+" / "+queueMax+" ms",
             "Jeda input -> frame game rata-rata / maks: "+inputFrameAvg+" / "+inputFrameMax+" ms",
@@ -1276,6 +1333,7 @@ const PIN_RAHASIA_2 = "0199";
             } else {
                 inputDiagnostics.misses++;
                 runStats.incorrectCharacters++;
+                fireMissProjectile();
             }
 
             if (!activeEnemy) {
@@ -1294,7 +1352,7 @@ const PIN_RAHASIA_2 = "0199";
                     playLaserSound();
 
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
-                    lasers.push(new Laser(targetX, activeEnemy.y));
+                    fireHitProjectile(targetX, activeEnemy.y);
                 } else {
                     comboCount = 0;
                     playErrorSound();
@@ -1312,7 +1370,7 @@ const PIN_RAHASIA_2 = "0199";
                     playLaserSound();
                     
                     let targetX = activeEnemy.x + ctx.measureText(activeEnemy.typed).width - 6;
-                    lasers.push(new Laser(targetX, activeEnemy.y));
+                    fireHitProjectile(targetX, activeEnemy.y);
                     
                     if (activeEnemy.typed === activeEnemy.word) {
                         let multiplier = 1;
