@@ -937,6 +937,7 @@ const PIN_RAHASIA_2 = "0199";
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
         eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
+        inputToFrameTotal:0,inputToFrameSamples:0,inputToFrameMax:0,pendingRenderInputs:[],
         keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
         lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
     };
@@ -952,6 +953,7 @@ const PIN_RAHASIA_2 = "0199";
             dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
             eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
+            inputToFrameTotal:0,inputToFrameSamples:0,inputToFrameMax:0,pendingRenderInputs:[],
             keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
             lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
         });
@@ -972,6 +974,8 @@ const PIN_RAHASIA_2 = "0199";
         const clickMax=d.clickDelaySamples?d.clickDelayMax.toFixed(1):"—";
         const queueAvg=d.eventQueueDelaySamples?(d.eventQueueDelayTotal/d.eventQueueDelaySamples).toFixed(2):"—";
         const queueMax=d.eventQueueDelaySamples?d.eventQueueDelayMax.toFixed(2):"—";
+        const inputFrameAvg=d.inputToFrameSamples?(d.inputToFrameTotal/d.inputToFrameSamples).toFixed(2):"—";
+        const inputFrameMax=d.inputToFrameSamples?d.inputToFrameMax.toFixed(2):"—";
         inputDiagnosticsOutput.textContent=[
             "INPUT DIAGNOSTICS (sementara)",
             "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
@@ -984,6 +988,7 @@ const PIN_RAHASIA_2 = "0199";
             "Cocok / MISS: "+d.matches+" / "+d.misses,
             "Jeda ketikan rata-rata / tercepat: "+keyAvg+" / "+keyMin+" ms",
             "Jeda sentuhan -> handler rata-rata / maks: "+queueAvg+" / "+queueMax+" ms",
+            "Jeda input -> frame game rata-rata / maks: "+inputFrameAvg+" / "+inputFrameMax+" ms",
             "Jeda PointerDown -> Click browser (bukan jalur input): "+clickAvg+" / "+clickMax+" ms",
             "FPS perkiraan: "+(d.fps||"—")+" | frame >33ms: "+d.lateFrames33+" | >50ms: "+d.lateFrames50,
             "Jeda frame maksimum: "+(d.maxFrameGap?d.maxFrameGap.toFixed(1):"—")+" ms"
@@ -1075,6 +1080,10 @@ const PIN_RAHASIA_2 = "0199";
         if(!gameActive||!(/^[a-z]$/i.test(character)||character===" "))return;
         const now=performance.now();
         inputDiagnostics.dispatchedChars++;
+        if(inputDiagnosticsActive){
+            inputDiagnostics.pendingRenderInputs.push(now);
+            if(inputDiagnostics.pendingRenderInputs.length>100)inputDiagnostics.pendingRenderInputs.shift();
+        }
         if(inputDiagnostics.lastDispatchAt>0){
             const gap=Math.max(0,now-inputDiagnostics.lastDispatchAt);
             inputDiagnostics.keyIntervalTotal+=gap;
@@ -1103,9 +1112,11 @@ const PIN_RAHASIA_2 = "0199";
         const current=virtualKeyFeedbackAnimations.get(button);
         // Do not restart feedback on each fast repeat; all characters are still processed.
         if(current&&current.playState==="running")return;
+        // Avoid animated CSS filters on every mobile keypress; these can compete
+        // with the full-screen canvas for GPU time. Keep feedback transform-only.
         const frames=isCorrect
-            ?[{transform:"scale(1)",filter:"brightness(1)"},{transform:"scale(.94)",filter:"brightness(1.3)"},{transform:"scale(1)",filter:"brightness(1)"}]
-            :[{transform:"translateX(0)",filter:"brightness(1)"},{transform:"translateX(-1px)",filter:"brightness(1.22) saturate(1.2)"},{transform:"translateX(1px)",filter:"brightness(1.18) saturate(1.15)"},{transform:"translateX(0)",filter:"brightness(1)"}];
+            ?[{transform:"scale(1)"},{transform:"scale(.94)"},{transform:"scale(1)"}]
+            :[{transform:"translateX(0)"},{transform:"translateX(-1px)"},{transform:"translateX(1px)"},{transform:"translateX(0)"}];
         const animation=button.animate(frames,{duration:isCorrect?150:180,easing:"ease-out"});
         virtualKeyFeedbackAnimations.set(button,animation);
         animation.onfinish=()=>{
@@ -1591,6 +1602,17 @@ const PIN_RAHASIA_2 = "0199";
                 diag.frameWindowCount=0;
                 diag.frameWindowStart=diagFrameNow;
             }
+        }
+        if(inputDiagnosticsActive&&inputDiagnostics.pendingRenderInputs.length){
+            const frameAt=performance.now();
+            const pending=inputDiagnostics.pendingRenderInputs;
+            for(let i=0;i<pending.length;i++){
+                const delay=Math.max(0,frameAt-pending[i]);
+                inputDiagnostics.inputToFrameTotal+=delay;
+                inputDiagnostics.inputToFrameSamples++;
+                inputDiagnostics.inputToFrameMax=Math.max(inputDiagnostics.inputToFrameMax,delay);
+            }
+            pending.length=0;
         }
         const t = translations[langSetting];
         if (!gameActive) {
