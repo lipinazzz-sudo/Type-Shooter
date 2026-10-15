@@ -930,8 +930,122 @@ const PIN_RAHASIA_2 = "0199";
         }
         updateSkillInventoryUI();
     }
+    // Temporary low-overhead diagnostics to pinpoint losses in the touch -> click ->
+    // dispatch -> input -> game pipeline. Sampling/display only runs while panel is open.
+    const inputDiagnostics={
+        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
+        dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
+        pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
+        keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
+        lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
+    };
+    const inputDiagnosticsPanel=document.getElementById("inputDiagnosticsPanel");
+    const inputDiagnosticsOutput=document.getElementById("inputDiagnosticsOutput");
+    const buildVersionLabel=document.getElementById("buildVersion");
+    let inputDiagnosticsRefreshTimer=null;
+
+    function resetInputDiagnostics(){
+        Object.assign(inputDiagnostics,{
+            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,
+            dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,
+            pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
+            keyIntervalTotal:0,keyIntervalSamples:0,keyIntervalMin:Infinity,lastDispatchAt:0,
+            lastFrameAt:0,frameWindowStart:0,frameWindowCount:0,fps:0,lateFrames33:0,lateFrames50:0,maxFrameGap:0
+        });
+        updateInputDiagnosticsUI();
+    }
+
+    function updateInputDiagnosticsUI(){
+        if(!inputDiagnosticsPanel||inputDiagnosticsPanel.classList.contains("hidden"))return;
+        const now=performance.now();
+        while(inputDiagnostics.pendingPointers.length&&now-inputDiagnostics.pendingPointers[0].at>1200){
+            inputDiagnostics.pendingPointers.shift();
+            inputDiagnostics.pointerWithoutClick++;
+        }
+        const d=inputDiagnostics;
+        const keyAvg=d.keyIntervalSamples?(d.keyIntervalTotal/d.keyIntervalSamples).toFixed(1):"—";
+        const keyMin=Number.isFinite(d.keyIntervalMin)?d.keyIntervalMin.toFixed(1):"—";
+        const clickAvg=d.clickDelaySamples?(d.clickDelayTotal/d.clickDelaySamples).toFixed(1):"—";
+        const clickMax=d.clickDelaySamples?d.clickDelayMax.toFixed(1):"—";
+        inputDiagnosticsOutput.textContent=[
+            "INPUT DIAGNOSTICS (sementara)",
+            "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
+            "Click huruf: "+d.clicks,
+            "PointerDown tanpa Click >1.2s: "+d.pointerWithoutClick,
+            "Click tanpa PointerDown: "+d.clickWithoutPointer,
+            "Karakter dikirim handler: "+d.dispatchedChars,
+            "Event input diterima: "+d.inputEvents,
+            "Huruf diterima / diproses: "+d.inputLettersReceived+" / "+d.processedLetters,
+            "Cocok / MISS: "+d.matches+" / "+d.misses,
+            "Jeda ketikan rata-rata / tercepat: "+keyAvg+" / "+keyMin+" ms",
+            "Jeda PointerDown -> Click rata-rata / maks: "+clickAvg+" / "+clickMax+" ms",
+            "FPS perkiraan: "+(d.fps||"—")+" | frame >33ms: "+d.lateFrames33+" | >50ms: "+d.lateFrames50,
+            "Jeda frame maksimum: "+(d.maxFrameGap?d.maxFrameGap.toFixed(1):"—")+" ms"
+        ].join("\n");
+    }
+
+    function toggleInputDiagnostics(){
+        if(!inputDiagnosticsPanel)return;
+        const opening=inputDiagnosticsPanel.classList.contains("hidden");
+        inputDiagnosticsPanel.classList.toggle("hidden",!opening);
+        if(buildVersionLabel)buildVersionLabel.setAttribute("aria-expanded",opening?"true":"false");
+        if(opening){
+            updateInputDiagnosticsUI();
+            inputDiagnosticsRefreshTimer=window.setInterval(updateInputDiagnosticsUI,250);
+        }else if(inputDiagnosticsRefreshTimer){
+            clearInterval(inputDiagnosticsRefreshTimer);
+            inputDiagnosticsRefreshTimer=null;
+        }
+    }
+
+    if(buildVersionLabel){
+        buildVersionLabel.setAttribute("role","button");
+        buildVersionLabel.setAttribute("tabindex","0");
+        buildVersionLabel.setAttribute("aria-label","Buka diagnostik input");
+        buildVersionLabel.setAttribute("aria-expanded","false");
+        buildVersionLabel.addEventListener("click",toggleInputDiagnostics);
+        buildVersionLabel.addEventListener("keydown",event=>{
+            if(event.key==="Enter"||event.key===" "){
+                event.preventDefault();
+                toggleInputDiagnostics();
+            }
+        });
+    }
+    const inputDiagnosticsReset=document.getElementById("inputDiagnosticsReset");
+    const inputDiagnosticsClose=document.getElementById("inputDiagnosticsClose");
+    if(inputDiagnosticsReset)inputDiagnosticsReset.addEventListener("click",resetInputDiagnostics);
+    if(inputDiagnosticsClose)inputDiagnosticsClose.addEventListener("click",toggleInputDiagnostics);
+
+    if(gameKeyboard){
+        gameKeyboard.addEventListener("pointerdown",event=>{
+            const target=event.target;
+            const button=target instanceof Element?target.closest(".game-key[data-key]"):null;
+            if(!button)return;
+            const at=performance.now();
+            const type=event.pointerType||"unknown";
+            inputDiagnostics.pointerDowns++;
+            if(type==="touch")inputDiagnostics.touchDowns++;
+            else if(type==="mouse")inputDiagnostics.mouseDowns++;
+            inputDiagnostics.pendingPointers.push({at,type});
+            // Bound memory in case the browser emits pointerdown without a click.
+            if(inputDiagnostics.pendingPointers.length>100){
+                inputDiagnostics.pendingPointers.shift();
+                inputDiagnostics.pointerWithoutClick++;
+            }
+        },{passive:true});
+    }
+
     function sendGameCharacter(character){
         if(!gameActive||!(/^[a-z]$/i.test(character)||character===" "))return;
+        const now=performance.now();
+        inputDiagnostics.dispatchedChars++;
+        if(inputDiagnostics.lastDispatchAt>0){
+            const gap=Math.max(0,now-inputDiagnostics.lastDispatchAt);
+            inputDiagnostics.keyIntervalTotal+=gap;
+            inputDiagnostics.keyIntervalSamples++;
+            inputDiagnostics.keyIntervalMin=Math.min(inputDiagnostics.keyIntervalMin,gap);
+        }
+        inputDiagnostics.lastDispatchAt=now;
         hiddenInput.value=character;
         hiddenInput.dispatchEvent(new Event("input",{bubbles:true}));
     }
@@ -997,6 +1111,20 @@ const PIN_RAHASIA_2 = "0199";
             const target=event.target;
             const button=target instanceof Element?target.closest("button"):null;
             if(!button||button.disabled)return;
+            if(button.matches(".game-key[data-key]")){
+                const d=inputDiagnostics;
+                d.clicks++;
+                if(event.detail>0){
+                    if(d.pendingPointers.length){
+                        const pointer=d.pendingPointers.shift();
+                        const delay=Math.max(0,performance.now()-pointer.at);
+                        d.clickDelayTotal+=delay;d.clickDelaySamples++;
+                        d.clickDelayMax=Math.max(d.clickDelayMax,delay);
+                    }else{
+                        d.clickWithoutPointer++;
+                    }
+                }
+            }
             handleGameKeyboardButton(button);
         });
     }
@@ -1050,9 +1178,11 @@ const PIN_RAHASIA_2 = "0199";
 
     hiddenInput.addEventListener('input', (e) => {
         if (!gameActive) return;
+        inputDiagnostics.inputEvents++;
         let val = hiddenInput.value;
         hiddenInput.value = ''; 
         if (val.length === 0) return;
+        inputDiagnostics.inputLettersReceived+=(val.match(/[a-z]/gi)||[]).length;
 
         for (let i = 0; i < val.length; i++) {
             let karakter = val.charAt(i);
@@ -1079,6 +1209,7 @@ const PIN_RAHASIA_2 = "0199";
             }
             let key = karakter.toUpperCase();
             if (!/^[A-Z]$/.test(key)) continue;
+            inputDiagnostics.processedLetters++;
 
             ctx.font = "bold 16px 'Courier New'";
             const t = translations[langSetting];
@@ -1088,8 +1219,13 @@ const PIN_RAHASIA_2 = "0199";
                 ? activeEnemy.word[activeEnemy.typed.length] === key
                 : enemies.some(enemy => enemy.word[enemy.typed.length] === key);
             flashVirtualKey(key, isExpectedCharacter);
-            if (isExpectedCharacter) runStats.correctCharacters++;
-            else runStats.incorrectCharacters++;
+            if (isExpectedCharacter) {
+                inputDiagnostics.matches++;
+                runStats.correctCharacters++;
+            } else {
+                inputDiagnostics.misses++;
+                runStats.incorrectCharacters++;
+            }
 
             if (!activeEnemy) {
                 let targets = enemies.filter(en => en.word[en.typed.length] === key);
@@ -1396,6 +1532,23 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     function gameLoop() {
+        const diagFrameNow=performance.now();
+        const diag=inputDiagnostics;
+        if(diag.lastFrameAt>0){
+            const frameGap=Math.max(0,diagFrameNow-diag.lastFrameAt);
+            diag.maxFrameGap=Math.max(diag.maxFrameGap,frameGap);
+            if(frameGap>33.3)diag.lateFrames33++;
+            if(frameGap>50)diag.lateFrames50++;
+        }
+        diag.lastFrameAt=diagFrameNow;
+        if(!diag.frameWindowStart)diag.frameWindowStart=diagFrameNow;
+        diag.frameWindowCount++;
+        const frameWindowElapsed=diagFrameNow-diag.frameWindowStart;
+        if(frameWindowElapsed>=1000){
+            diag.fps=Math.round(diag.frameWindowCount*1000/frameWindowElapsed);
+            diag.frameWindowCount=0;
+            diag.frameWindowStart=diagFrameNow;
+        }
         const t = translations[langSetting];
         if (!gameActive) {
             ctx.fillStyle = "rgba(7, 10, 19, 0.2)";
