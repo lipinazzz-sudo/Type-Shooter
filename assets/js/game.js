@@ -988,35 +988,17 @@ const PIN_RAHASIA_2 = "0199";
     }
 
     if(gameKeyboard){
-        if("PointerEvent" in window){
-            // Process touchscreen taps on pointerdown rather than waiting for click synthesis.
-            // This improves rapid repeated-letter input and avoids compatibility-click delays.
-            gameKeyboard.addEventListener("pointerdown",event=>{
-                const button=event.target.closest("button");
-                if(!button||button.disabled||!event.isPrimary)return;
-                if(event.pointerType==="mouse"&&event.button!==0)return;
-                // Opening the iOS native number pad must run from a normal click:
-                // cancelling pointerdown can prevent or immediately dismiss focus.
-                if(button.dataset.keyboardMode==="number")return;
-                event.preventDefault();
-                handleGameKeyboardButton(button);
-            },{passive:false});
-
-            // Keep keyboard / assistive-technology activation working without double-processing pointer taps.
-            gameKeyboard.addEventListener("click",event=>{
-                const button=event.target.closest("button");
-                if(!button)return;
-                // Native number entry needs the trusted click on iOS Safari/PWA.
-                // Other keys already ran on pointerdown; detail=0 is accessibility input.
-                if(event.detail!==0&&button.dataset.keyboardMode!=="number")return;
-                handleGameKeyboardButton(button);
-            });
-        }else{
-            // Compatibility fallback for older browsers without Pointer Events.
-            gameKeyboard.addEventListener("click",event=>{
-                handleGameKeyboardButton(event.target.closest("button"));
-            });
-        }
+        // Route every virtual key through the browser's completed click event.
+        // The earlier pointerdown path could process only part of very rapid tap
+        // sequences on some iOS Safari/PWA sessions, while its click event was
+        // deliberately ignored. Click-only handling gives each completed tap one
+        // consistent activation and also preserves trusted focus for the native 123 pad.
+        gameKeyboard.addEventListener("click",event=>{
+            const target=event.target;
+            const button=target instanceof Element?target.closest("button"):null;
+            if(!button||button.disabled)return;
+            handleGameKeyboardButton(button);
+        });
     }
 
     // Physical controls mirror the virtual keyboard: Space = Shield, Backspace = Clear, Shift = Shield.
