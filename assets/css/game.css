@@ -1643,3 +1643,35 @@
     margin-right:auto!important;
   }
 }
+
+
+/* DJ Game Hub return links — navigation only; gameplay logic unchanged. */
+#mainMenu #btn-hub-return{
+  color:rgba(216,239,250,.76)!important;
+  font-size:clamp(.72rem,2.8vw,.82rem)!important;
+  font-weight:800!important;
+  letter-spacing:.16em!important;
+  min-height:39px!important;
+  margin-top:7px!important;
+  animation:menuTextBreathe 4.2s ease-in-out infinite;
+}
+#mainMenu #btn-hub-return::after{
+  content:"";
+  position:absolute;
+  bottom:4px;
+  left:43%;right:43%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,222,255,.92),transparent);
+  opacity:.4;
+  transition:left .2s ease,right .2s ease,opacity .2s ease;
+}
+#mainMenu #btn-hub-return:hover{
+  color:#f2fcff!important;
+  filter:brightness(1.13)!important;
+  text-shadow:0 0 12px rgba(56,189,248,.28)!important;
+  transform:translateY(-2px)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#mainMenu #btn-hub-return:hover::after{left:30%;right:30%;opacity:1}
+#mainMenu #btn-hub-return:active{transform:scale(.98)!important;background:transparent!important}
