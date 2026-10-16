@@ -934,7 +934,7 @@ const PIN_RAHASIA_2 = "0199";
     // Temporary low-overhead diagnostics to pinpoint losses in the touch -> click ->
     // dispatch -> input -> game pipeline. UI refresh and frame sampling run only while open.
     const inputDiagnostics={
-        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,touchStartChars:0,touchStartDuplicateSuppressions:0,
+        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
         eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1005,7 +1005,7 @@ const PIN_RAHASIA_2 = "0199";
 
     function resetInputDiagnostics(){
         Object.assign(inputDiagnostics,{
-            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,touchStartChars:0,touchStartDuplicateSuppressions:0,
+            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
             dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
             eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1036,7 +1036,6 @@ const PIN_RAHASIA_2 = "0199";
             "INPUT DIAGNOSTICS (sementara)",
             "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
             "Sentuhan sekunder: terdeteksi / diproses "+d.nonPrimaryTouchDowns+" / "+d.nonPrimaryTouchProcessed,
-            "TouchStart karakter / duplikat dicegah: "+d.touchStartChars+" / "+d.touchStartDuplicateSuppressions,
             "Click huruf: "+d.clicks,
             "PointerDown tanpa Click >1.2s: "+d.pointerWithoutClick,
             "Click tanpa PointerDown: "+d.clickWithoutPointer,
@@ -1103,39 +1102,7 @@ const PIN_RAHASIA_2 = "0199";
         }
     });
 
-    const recentTouchStartsByButton=new WeakMap();
-
-    function recordRecentTouchStart(button){
-        const now=performance.now();
-        const times=(recentTouchStartsByButton.get(button)||[]).filter(at=>now-at<1500);
-        times.push(now);
-        if(times.length>12)times.splice(0,times.length-12);
-        recentTouchStartsByButton.set(button,times);
-    }
-
-    function consumeRecentTouchStart(button,maxAge=1500){
-        const now=performance.now();
-        const times=(recentTouchStartsByButton.get(button)||[]).filter(at=>now-at<=maxAge);
-        if(!times.length){
-            recentTouchStartsByButton.delete(button);
-            return false;
-        }
-        times.shift();
-        if(times.length)recentTouchStartsByButton.set(button,times);
-        else recentTouchStartsByButton.delete(button);
-        return true;
-    }
-
     if(gameKeyboard){
-        gameKeyboard.addEventListener("touchstart",event=>{
-            const target=event.target;
-            const button=target instanceof Element?target.closest("button"):null;
-            if(!button||button.disabled||!button.matches(".game-key[data-key]")||!gameActive)return;
-            inputDiagnostics.touchStartChars++;
-            recordRecentTouchStart(button);
-            handleGameKeyboardButton(button);
-        },{passive:true});
-
         gameKeyboard.addEventListener("pointerdown",event=>{
             const target=event.target;
             const button=target instanceof Element?target.closest("button"):null;
@@ -1164,9 +1131,7 @@ const PIN_RAHASIA_2 = "0199";
                         inputDiagnostics.pointerWithoutClick++;
                     }
                 }
-                const alreadyHandledByTouchStart=event.pointerType==="touch"&&button.matches(".game-key[data-key]")&&consumeRecentTouchStart(button,500);
-                if(alreadyHandledByTouchStart)inputDiagnostics.touchStartDuplicateSuppressions++;
-                else handleGameKeyboardButton(button);
+                handleGameKeyboardButton(button);
                 if(event.pointerType==="touch"&&!event.isPrimary&&button.matches(".game-key[data-key]")&&gameActive){
                     inputDiagnostics.nonPrimaryTouchProcessed++;
                 }
@@ -1282,11 +1247,7 @@ const PIN_RAHASIA_2 = "0199";
             if(button.dataset.keyboardMode==="number"||event.detail===0){
                 handleGameKeyboardButton(button);
             }else if(event.detail>0&&button.matches(".game-key[data-key]")&&!matchedPointer){
-                if(consumeRecentTouchStart(button,1500)){
-                    inputDiagnostics.touchStartDuplicateSuppressions++;
-                }else{
-                    handleGameKeyboardButton(button);
-                }
+                handleGameKeyboardButton(button);
             }
         });
     }
