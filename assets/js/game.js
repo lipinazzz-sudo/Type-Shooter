@@ -934,7 +934,7 @@ const PIN_RAHASIA_2 = "0199";
     // Temporary low-overhead diagnostics to pinpoint losses in the touch -> click ->
     // dispatch -> input -> game pipeline. UI refresh and frame sampling run only while open.
     const inputDiagnostics={
-        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
+        pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,clickFallbackActivations:0,duplicateClicksSuppressed:0,
         dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
         pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
         eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1005,7 +1005,7 @@ const PIN_RAHASIA_2 = "0199";
 
     function resetInputDiagnostics(){
         Object.assign(inputDiagnostics,{
-            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,
+            pointerDowns:0,touchDowns:0,mouseDowns:0,clicks:0,clickWithoutPointer:0,pointerWithoutClick:0,nonPrimaryTouchDowns:0,nonPrimaryTouchProcessed:0,clickFallbackActivations:0,duplicateClicksSuppressed:0,
             dispatchedChars:0,inputEvents:0,inputLettersReceived:0,processedLetters:0,matches:0,misses:0,hitProjectiles:0,missProjectiles:0,
             pendingPointers:[],clickDelayTotal:0,clickDelaySamples:0,clickDelayMax:0,
             eventQueueDelayTotal:0,eventQueueDelaySamples:0,eventQueueDelayMax:0,
@@ -1036,6 +1036,7 @@ const PIN_RAHASIA_2 = "0199";
             "INPUT DIAGNOSTICS (sementara)",
             "PointerDown huruf: "+d.pointerDowns+"  (touch "+d.touchDowns+" / mouse "+d.mouseDowns+")",
             "Sentuhan sekunder: terdeteksi / diproses "+d.nonPrimaryTouchDowns+" / "+d.nonPrimaryTouchProcessed,
+            "Click fallback / duplikat dicegah: "+d.clickFallbackActivations+" / "+d.duplicateClicksSuppressed,
             "Click huruf: "+d.clicks,
             "PointerDown tanpa Click >1.2s: "+d.pointerWithoutClick,
             "Click tanpa PointerDown: "+d.clickWithoutPointer,
@@ -1102,6 +1103,49 @@ const PIN_RAHASIA_2 = "0199";
         }
     });
 
+    const activeGameKeyPointers=new Map();
+    const recentReleasedPointerById=new Map();
+    const recentReleasedPointersByButton=new WeakMap();
+
+    function rememberReleasedKeyPointer(button,event){
+        const now=performance.now();
+        const entry={button,pointerId:event.pointerId,at:now};
+        if(Number.isFinite(event.pointerId))recentReleasedPointerById.set(event.pointerId,entry);
+        const recent=(recentReleasedPointersByButton.get(button)||[]).filter(item=>now-item.at<=120);
+        recent.push(entry);
+        if(recent.length>8)recent.splice(0,recent.length-8);
+        recentReleasedPointersByButton.set(button,recent);
+    }
+
+    function consumeMatchingKeyClick(button,event){
+        const now=performance.now();
+        // Modern PointerEvent-based clicks carry their originating pointerId.
+        // This is the safest way to avoid pairing a click with an older tap on the same key.
+        if(Number.isFinite(event.pointerId)){
+            const entry=recentReleasedPointerById.get(event.pointerId);
+            if(entry&&entry.button===button&&now-entry.at<=1000){
+                recentReleasedPointerById.delete(event.pointerId);
+                const recent=(recentReleasedPointersByButton.get(button)||[]).filter(item=>item!==entry&&now-item.at<=120);
+                if(recent.length)recentReleasedPointersByButton.set(button,recent);
+                else recentReleasedPointersByButton.delete(button);
+                return true;
+            }
+            return false;
+        }
+        // Legacy MouseEvent clicks have no pointerId. Pair only with a very recent
+        // pointerup from the same key; never use a stale pointerdown from seconds ago.
+        const recent=(recentReleasedPointersByButton.get(button)||[]).filter(item=>now-item.at<=120);
+        if(!recent.length){
+            recentReleasedPointersByButton.delete(button);
+            return false;
+        }
+        const entry=recent.shift();
+        if(recent.length)recentReleasedPointersByButton.set(button,recent);
+        else recentReleasedPointersByButton.delete(button);
+        if(Number.isFinite(entry.pointerId))recentReleasedPointerById.delete(entry.pointerId);
+        return true;
+    }
+
     if(gameKeyboard){
         gameKeyboard.addEventListener("pointerdown",event=>{
             const target=event.target;
@@ -1116,6 +1160,7 @@ const PIN_RAHASIA_2 = "0199";
                 if(button.matches(".game-key[data-key]")){
                     const now=performance.now();
                     const type=event.pointerType||"unknown";
+                    activeGameKeyPointers.set(event.pointerId,{button,at:now,pointerType:type});
                     inputDiagnostics.pointerDowns++;
                     if(type==="touch"){
                         inputDiagnostics.touchDowns++;
@@ -1136,6 +1181,21 @@ const PIN_RAHASIA_2 = "0199";
                     inputDiagnostics.nonPrimaryTouchProcessed++;
                 }
             }
+        },{passive:true});
+
+        gameKeyboard.addEventListener("pointerup",event=>{
+            const active=activeGameKeyPointers.get(event.pointerId);
+            if(!active)return;
+            activeGameKeyPointers.delete(event.pointerId);
+            const target=event.target;
+            const button=target instanceof Element?target.closest("button"):null;
+            if(button===active.button&&button.matches(".game-key[data-key]")){
+                rememberReleasedKeyPointer(button,event);
+            }
+        },{passive:true});
+
+        gameKeyboard.addEventListener("pointercancel",event=>{
+            activeGameKeyPointers.delete(event.pointerId);
         },{passive:true});
     }
 
@@ -1226,24 +1286,32 @@ const PIN_RAHASIA_2 = "0199";
                 const d=inputDiagnostics;
                 d.clicks++;
                 if(event.detail>0){
-                    // Match this click to the pointerdown for the SAME key.
-                    // A global FIFO can pair fast taps on different keys incorrectly.
-                    const pointerIndex=d.pendingPointers.findIndex(pointer=>pointer.button===button);
+                    const now=performance.now();
+                    // Keep pointer statistics bounded and prevent seconds-old pointerdowns
+                    // from being mistaken for the click of a newer same-letter tap.
+                    for(let i=d.pendingPointers.length-1;i>=0;i--){
+                        if(now-d.pendingPointers[i].at>1200){
+                            d.pendingPointers.splice(i,1);
+                            d.pointerWithoutClick++;
+                        }
+                    }
+                    const pointerIndex=d.pendingPointers.findIndex(pointer=>pointer.button===button&&now-pointer.at<=1200);
                     if(pointerIndex>=0){
                         const pointer=d.pendingPointers.splice(pointerIndex,1)[0];
-                        matchedPointer=true;
-                        const delay=Math.max(0,performance.now()-pointer.at);
+                        const delay=Math.max(0,now-pointer.at);
                         d.clickDelayTotal+=delay;d.clickDelaySamples++;
                         d.clickDelayMax=Math.max(d.clickDelayMax,delay);
                     }else{
                         d.clickWithoutPointer++;
                     }
+
+                    matchedPointer=consumeMatchingKeyClick(button,event);
+                    if(matchedPointer)d.duplicateClicksSuppressed++;
+                    else d.clickFallbackActivations++;
                 }
             }
-            // PointerDown normally dispatches letters immediately. If iOS/browser
-            // delivers a trusted click without a matching PointerDown for this key,
-            // use the click as a fallback instead of silently dropping the character.
-            // A click paired with PointerDown must NOT dispatch twice.
+            // Suppress only a click correlated with a recent pointerup for that exact tap.
+            // A click without such a match is a fallback input, regardless of old pointerdowns.
             if(button.dataset.keyboardMode==="number"||event.detail===0){
                 handleGameKeyboardButton(button);
             }else if(event.detail>0&&button.matches(".game-key[data-key]")&&!matchedPointer){
