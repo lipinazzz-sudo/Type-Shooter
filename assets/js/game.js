@@ -110,7 +110,7 @@ function goToDashboard2() {
     // Kumpulan Data Bahasa (Localization)
     const translations = {
         id: {
-            title: "TYPE-SHOOTER", subtitle: "FAR AND BEYOND", madeWithLove: "Dibuat Dengan Cinta",
+            title: "DJ-SHOOTING", subtitle: "FAR AND BEYOND", madeWithLove: "Dibuat Dengan Cinta",
             playGame: "PLAY GAME", settings: "SETTINGS", scoreboard: "SCOREBOARD",
             mobileHint: "Sentuh layar saat bermain untuk memunculkan keyboard virtual.",
             volumeBgm: "Volume Musik (BGM)", volumeSfx: "Volume Efek (SFX)", language: "Bahasa",
@@ -130,7 +130,7 @@ function goToDashboard2() {
             scoreMode: "MODE", scoreModeLegacy: "LAMA", pauseButton: "Jeda permainan"
         },
         en: {
-            title: "TYPE-SHOOTER", subtitle: "FAR AND BEYOND", madeWithLove: "Made With Love",
+            title: "DJ-SHOOTING", subtitle: "FAR AND BEYOND", madeWithLove: "Made With Love",
             playGame: "PLAY GAME", settings: "SETTINGS", scoreboard: "SCOREBOARD",
             mobileHint: "Tap the screen while playing to show the virtual keyboard.",
             volumeBgm: "Music Volume (BGM)", volumeSfx: "Effects Volume (SFX)", language: "Language",
