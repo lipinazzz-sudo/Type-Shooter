@@ -1630,6 +1630,9 @@
   /* Keep SHIELD centered as the dedicated lower action bar. */
   .game-keyboard .game-key-row-space{
     width:100%!important;
+    flex:1 1 0!important;
+    min-height:0!important;
+    align-items:stretch!important;
     justify-content:center!important;
   }
   .game-keyboard .game-key-row-space>.game-space-key{
