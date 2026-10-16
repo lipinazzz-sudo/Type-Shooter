@@ -1556,3 +1556,87 @@
   font:10px/1.45 ui-monospace,Menlo,Consolas,monospace;
 }
 
+
+
+/* IPHONE 12-STYLE VIRTUAL KEYBOARD GEOMETRY
+   CSS-only layout pass. Preserves key IDs/actions and all JavaScript input handling.
+   Row 2 is indented like iOS QWERTY; 123/CLEAR occupy the wider Shift/Delete positions. */
+@media (max-width:720px) and (orientation:portrait){
+  .game-keyboard .game-keyboard-rows{
+    width:100%!important;
+    min-width:0!important;
+    gap:5px!important;
+  }
+  .game-keyboard .game-key-row{
+    width:100%!important;
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:center!important;
+    gap:5px!important;
+    min-height:0!important;
+  }
+
+  /* Top QWERTY row: ten equal key widths, like the iPhone alphabet row. */
+  .game-keyboard .game-key-row:not(.game-key-row-middle):not(.game-key-row-short)>.game-key{
+    box-sizing:border-box!important;
+    flex:1 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+
+  /* Home row: inset both ends and allow its nine letters slightly more width. */
+  .game-keyboard .game-key-row-middle{
+    width:calc(100% - 24px)!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .game-keyboard .game-key-row-middle>.game-key{
+    box-sizing:border-box!important;
+    flex:1 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+
+  /* Bottom letter row: 123/CLEAR use the wider modifier-key footprints;
+     seven letter keys keep the same unit width as the top row. */
+  .game-keyboard .game-key-row-short{
+    width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    gap:5px!important;
+  }
+  .game-keyboard .game-key-row-short>.game-key{
+    box-sizing:border-box!important;
+    flex:1 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  .game-keyboard .game-key-row-short>.game-number-key,
+  .game-keyboard .game-key-row-short>.game-backspace-key{
+    box-sizing:border-box!important;
+    flex:1.45 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+
+  /* Keep SHIELD centered as the dedicated lower action bar. */
+  .game-keyboard .game-key-row-space{
+    width:100%!important;
+    justify-content:center!important;
+  }
+  .game-keyboard .game-key-row-space>.game-space-key{
+    width:58%!important;
+    max-width:58%!important;
+    flex:0 0 58%!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+}
